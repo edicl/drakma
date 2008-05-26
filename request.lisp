@@ -1,0 +1,672 @@
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: DRAKMA; Base: 10 -*-
+;;; $Header: /usr/local/cvsrep/drakma/request.lisp,v 1.57 2008/05/24 03:21:22 edi Exp $
+
+;;; Copyright (c) 2006-2008, Dr. Edmund Weitz.  All rights reserved.
+
+;;; Redistribution and use in source and binary forms, with or without
+;;; modification, are permitted provided that the following conditions
+;;; are met:
+
+;;;   * Redistributions of source code must retain the above copyright
+;;;     notice, this list of conditions and the following disclaimer.
+
+;;;   * Redistributions in binary form must reproduce the above
+;;;     copyright notice, this list of conditions and the following
+;;;     disclaimer in the documentation and/or other materials
+;;;     provided with the distribution.
+
+;;; THIS SOFTWARE IS PROVIDED BY THE AUTHOR 'AS IS' AND ANY EXPRESSED
+;;; OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+;;; WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+;;; ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+;;; DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+;;; DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+;;; GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+;;; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+;;; WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+(in-package :drakma)
+
+(defun determine-body-format (headers external-format-in)
+  "The default function used by Drakma to determine how the content
+body is to be read.  See the docstring of *BODY-FORMAT-FUNCTION* for
+more info."
+  (handler-case
+      (let ((transfer-encodings (header-value :transfer-encoding headers))
+            (content-encodings (header-value :content-encoding headers)))
+        (when transfer-encodings
+          (setq transfer-encodings (split-tokens transfer-encodings)))
+        (when content-encodings
+          (setq content-encodings (split-tokens content-encodings)))
+        (multiple-value-bind (type subtype params)
+            (get-content-type headers)
+          (when (and (text-content-type-p type subtype)
+                     (null (set-difference transfer-encodings
+                                           '("chunked" "identity")
+                                           :test #'equalp))
+                     (null (set-difference content-encodings
+                                           '("identity")
+                                           :test #'equalp)))
+            (let* ((charset (parameter-value "charset" params))
+                   (name (cond (charset (as-keyword charset))
+                               (t external-format-in))))
+              (make-external-format name :eol-style :lf)))))
+    (error (condition)
+      (warn "Problems determining charset \(falling back to binary):~%~A"
+            condition))))
+
+(defun send-content (content stream &optional external-format-out)
+  "Sends CONTENT to the stream STREAM as part of the request body
+depending on the type of CONTENT."
+  (when content
+    (cond ((stringp content)
+           (setf (flexi-stream-external-format stream) external-format-out)
+           (write-string content stream)
+           (setf (flexi-stream-external-format stream) +latin-1+))
+          ((or (arrayp content) (listp content))
+           (write-sequence content stream))
+          ((and (streamp content)
+                (input-stream-p content)
+                (open-stream-p content)
+                (subtypep (stream-element-type content) 'octet))
+           (let ((buf (make-array +buffer-size+ :element-type 'octet)))
+             (loop
+              (let ((pos (read-sequence buf content)))
+                (when (zerop pos) (return))
+                (write-sequence buf stream :end pos)))))
+          ((pathnamep content)
+           (with-open-file (from content :element-type 'octet)
+             ;; calls itself with a stream now
+             (send-content from stream)))
+          ((or (functionp content)
+               (and (symbolp content)
+                    (fboundp content)))
+           (funcall content stream))
+          (t (error "Don't know how to send content ~S to server." content)))))
+
+(defun make-form-data-function (parameters boundary)
+  "Creates and returns a closure which can be used as an argument for
+SEND-CONTENT to send PARAMETERS as a `multipart/form-data' request
+body using the boundary BOUNDARY."
+  (lambda (stream)
+    (flet ((crlf ()
+             "Sends carriage return and linefeed to STREAM."
+             (write-char #\Return stream)
+             (write-char #\Linefeed stream)))
+      (dolist (name/value parameters)
+        (destructuring-bind (name . value)
+            name/value
+          (when (or (pathnamep value)
+                    (streamp value)
+                    (functionp value))
+            (setq value (list value)))
+          (format stream "--~A" boundary)
+          (crlf)
+          (format stream "Content-Disposition: form-data; name=\"~A\"" name)
+          (cond ((stringp value)
+                 (crlf) (crlf)
+                 (format stream "~A" value))
+                ((and (listp value)
+                      (first value)
+                      (not (stringp (first value))))
+                 (let* ((file-source (first value))
+                        (filename (or (if (functionp file-source) "user-closure")
+                                      (if (streamp file-source) "user-stream")
+                                      (getf (rest value) :filename)
+                                      (file-namestring file-source)))
+                        (content-type (or (getf (rest value) :content-type)
+                                          "application/octet-stream")))
+                   (format stream "; filename=\"~A\"" filename)
+                   (crlf)
+                   (format stream "Content-Type: ~A" content-type)
+                   (crlf) (crlf)
+                   ;; use SEND-CONTENT to send file as binary data
+                   (send-content file-source stream)))
+                (t (error "Don't know what to do with name/value pair (~S . ~S) in multipart/form-data body."
+                          name value)))
+          (crlf)))
+      (format stream "--~A--" boundary)
+      (crlf))))
+
+(defun read-body (stream headers must-close textp)
+  "Reads the message body from the HTTP stream STREAM using the
+information contained in HEADERS \(as produced by HTTP-REQUEST).  If
+TEXTP is true, the body is assumed to be of content type `text' and
+will be returned as a string.  Otherwise an array of octets \(or NIL
+for an empty body) is returned.  Returns the optional `trailer' HTTP
+headers of the chunked stream \(if any) as a second value."
+  (let ((content-length (ignore-errors
+                           (parse-integer (header-value :content-length headers))))
+        (element-type (if textp
+                        #+:lispworks 'lw:simple-char #-:lispworks 'character
+                        'octet))
+        (chunkedp (chunked-stream-input-chunking-p (flexi-stream-stream stream))))
+    #+:clisp
+    (setf (flexi-stream-element-type stream) element-type)
+    (multiple-value-prog1 
+        (values (cond ((eql content-length 0) nil)
+                      (content-length
+                       (when chunkedp
+                         ;; see RFC 2616, section 4.4
+                         (error "Got Content-Length header although input chunking is on."))
+                       (let ((result (make-array content-length
+                                                 :element-type element-type
+                                                 :fill-pointer t)))
+                         (setf (fill-pointer result)
+                               (read-sequence result stream))
+                         result))
+                      ((or chunkedp must-close)
+                       ;; no content length, read until EOF (or end of chunking)
+                       (let ((buffer (make-array +buffer-size+
+                                                 :element-type element-type))
+                             (result (make-array 0
+                                                 :element-type element-type
+                                                 :adjustable t)))
+                         (loop for index = 0 then (+ index pos)
+                               for pos = (read-sequence buffer stream)
+                               do (adjust-array result (+ index pos))
+                                  (replace result buffer :start1 index :end2 pos)
+                               while (= pos +buffer-size+))
+                         result)))
+                (chunked-input-stream-trailers stream)))))
+
+(defun http-request (uri &rest args
+                         &key (protocol :http/1.1)
+                              (method :get)
+                              force-ssl
+                              parameters
+                              content
+                              (content-type "application/x-www-form-urlencoded")
+                              (content-length nil content-length-provided-p)
+                              form-data
+                              cookie-jar
+                              basic-authorization
+                              (user-agent :drakma)
+                              (accept "*/*")
+                              proxy
+                              proxy-basic-authorization
+                              additional-headers
+                              (redirect 5)
+                              (redirect-methods '(:get :head))
+                              auto-referer
+                              keep-alive
+                              (close t)
+                              (external-format-out *drakma-default-external-format*)
+                              (external-format-in *drakma-default-external-format*)
+                              force-binary
+                              want-stream
+                              stream
+                              #+:lispworks (connection-timeout 20)
+                              #+:lispworks (read-timeout 20)
+                              #+(and :lispworks (not :lw-does-not-have-write-timeout))
+                              (write-timeout 20 write-timeout-provided-p))
+  "Sends an HTTP request to a web server and returns its reply.  URI
+is where the request is sent to, and it is either a string denoting a
+uniform resource identifier or a PURI:URI object.  The scheme of URI
+must be `http' or `https'.  The function returns SEVEN values - the
+body of the reply \(but see below), the status code as an integer, an
+alist of the headers sent by the server where for each element the car
+\(the name of the header) is a keyword and the cdr \(the value of the
+header) is a string, the URI the reply comes from \(which might be
+different from the URI the request was sent to in case of redirects),
+the stream the reply was read from, a generalized boolean which
+denotes whether the stream should be closed \(and which you can
+usually ignore), and finally the reason phrase from the status line as
+a string.
+
+PROTOCOL is the HTTP protocol which is going to be used in the
+request line, it must be one of the keywords :HTTP/1.0 or
+:HTTP/1.1.  METHOD is the method used in the request line, a
+keyword \(like :GET or :HEAD) denoting a valid HTTP/1.1 or WebDAV
+request method.  Additionally, you can also use the pseudo
+method :OPTIONS* which is like :OPTIONS but means that an
+\"OPTIONS *\" request line will be sent, i.e. the URI's path and
+query parts will be ignored.
+
+If FORCE-SSL is true, SSL will be attached to the socket stream
+which connects Drakma with the web server.  Usually, you don't
+have to provide this argument, as SSL will be attached anyway if
+the scheme of URI is `https'.
+
+PARAMETERS is an alist of name/value pairs \(the car and the cdr each
+being a string) which denotes the parameters which are added to the
+query part of the URL or \(in the case of a POST request) comprise the
+body of the request.  (But see CONTENT below.)  The name/value pairs
+are URL-encoded using the FLEXI-STREAMS external format
+EXTERNAL-FORMAT-OUT before they are sent to the server unless
+FORM-DATA is true in which case the POST request body is sent as
+`multipart/form-data' using EXTERNAL-FORMAT-OUT.  The values of the
+PARAMETERS alist can also be pathnames, open binary input streams,
+unary functions, or lists where the first element is of one of the
+former types.  These values denote files which should be sent as part
+of the request body, i.e. if files are present in PARAMETERS, the
+content type of the request is always `multipart/form-data'.  If the
+value is a list, the part of the list behind the first element is
+treated as a plist which can be used to specify a content type and/or
+a filename for the file, i.e. such a value could look like, e.g.,
+\(#p\"/tmp/my_file.doc\" :content-type \"application/msword\"
+:filename \"upload.doc\").
+
+CONTENT, if not NIL, is used as the request body - PARAMETERS is
+ignored in this case.  CONTENT can be a string, a sequence of
+octets, a pathname, an open binary input stream, or a function
+designator.  If CONTENT is a sequence, it will be directly sent
+to the server \(using EXTERNAL-FORMAT-OUT in the case of
+strings).  If CONTENT is a pathname, the binary contents of the
+corresponding file will be sent to the server.  If CONTENT is a
+stream, everything that can be read from the stream until EOF
+will be sent to the server.  If CONTENT is a function designator,
+the corresponding function will be called with one argument, the
+stream to the server, to which it should send data.
+
+Finally, CONTENT can also be the keyword :CONTINUATION in which case
+HTTP-REQUEST returns only one value - a `continuation' function.  This
+function has one required argument and one optional argument.  The
+first argument will be interpreted like CONTENT above \(but it cannot
+be a keyword), i.e. it will be sent to the server according to its
+type.  If the second argument is true, the continuation function can
+be called again to send more content, if it is NIL the continuation
+function returns what HTTP-REQUEST would have returned.
+
+If CONTENT is a sequence, Drakma will use LENGTH to determine its
+length and will use the result for the `Content-Length' header sent to
+the server.  You can overwrite this with the CONTENT-LENGTH parameter
+\(a non-negative integer) which you can also use for the cases where
+Drakma can't or won't determine the content length itself.  You can
+also explicitly provide a CONTENT-LENGTH argument of NIL which will
+imply that no `Content-Length' header will be sent in any case.  If no
+`Content-Length' header is sent, Drakma will use chunked encoding to
+send the content body.  Note that this will not work with older web
+servers.
+
+A non-NIL CONTENT-LENGTH argument means that Drakma /must/ build the
+request body in RAM and compute the content length even if it would
+have otherwise used chunked encoding, for example in the case of file
+uploads.  A special case is the value T for CONTENT-LENGTH which means
+that Drakma should compute the content length after building the
+request body.
+
+CONTENT-TYPE is the corresponding `Content-Type' header to be sent and
+will be ignored unless CONTENT is provided as well.
+
+Note that a query already contained in URI will always be sent with
+the request line anyway in addition to other parameters sent by
+Drakma.
+
+COOKIE-JAR is a cookie jar containing cookies which will
+potentially be sent to the server \(if the domain matches, if
+they haven't expired, etc.) - this cookie jar will be modified
+according to the `Set-Cookie' header\(s) sent back by the server.
+
+BASIC-AUTHORIZATION, if not NIL, should be a list of two strings
+\(username and password) which will be sent to the server for
+basic authorization.  USER-AGENT, if not NIL, denotes which
+`User-Agent' header will be sent with the request.  It can be one
+of the keywords :DRAKMA, :FIREFOX, :EXPLORER, :OPERA, or :SAFARI
+which denote the current version of Drakma or, in the latter four
+cases, a fixed string corresponding to a more or less recent \(as
+of August 2006) version of the corresponding browser.  Or it can
+be a string which is used directly.  ACCEPT, if not NIL, is the
+`Accept' header sent.
+
+If PROXY is not NIL, it should be a string denoting a proxy
+server through which the request should be sent.  Or it can be a
+list of two values - a string denoting the proxy server and an
+integer denoting the port to use \(which will default to 80
+otherwise).  PROXY-BASIC-AUTHORIZATION is used like
+BASIC-AUTHORIZATION, but for the proxy, and only if PROXY is
+true.
+
+ADDITIONAL-HEADERS is a name/value alist \(like PARAMETERS) of
+additional HTTP headers which should be sent with the request.
+
+If REDIRECT is not NIL, it must be a non-negative integer or T.
+If REDIRECT is true, Drakma will follow redirects \(return codes
+301, 302, 303, or 307) unless REDIRECT is 0.  If REDIRECT is an
+integer, it will be decreased by 1 with each redirect.
+Furthermore, if AUTO-REFERER is true when following redirects,
+Drakma will populate the `Referer' header with the URI that
+triggered the redirection, overwriting an existing `Referer'
+header (in ADDITIONAL-HEADERS) if necessary.
+
+If KEEP-ALIVE is T, the server will be asked to keep the
+connection alive, i.e. not to close it after the reply has been
+sent.  \(Note that this not necessary if both the client and the
+server use HTTP 1.1.)  If CLOSE is T, the server is explicitly
+asked to close the connection after the reply has been sent.
+KEEP-ALIVE and CLOSE are obviously mutually exclusive.
+
+If the message body sent by the server has a text content type,
+Drakma will try to return it as a Lisp string.  It'll first check
+if the `Content-Type' header denotes an encoding to be used, or
+otherwise it will use the EXTERNAL-FORMAT-IN argument.  The body
+is decoded using FLEXI-STREAMS.  If FLEXI-STREAMS doesn't know
+the external format, the body is returned as an array of octets.
+
+If the message body doesn't have a text content type or if
+FORCE-BINARY is true, the body is always returned as an array of
+octets.
+
+If WANT-STREAM is true, the message body is NOT read and instead the
+\(open) socket stream is returned as the first return value.  If the
+sixth value of HTTP-REQUEST is true, the stream should be closed \(and
+not be re-used) after the body has been read.  The stream returned is
+a flexi stream \(see http://weitz.de/flexi-streams/) with a chunked
+stream \(see http://weitz.de/chunga/) as its underlying stream.  If
+you want to read binary data from this stream, read from the
+underlying stream which you can get with FLEXI-STREAM-STREAM.
+
+Drakma will usually create a new socket connection for each HTTP
+request.  However, you can use the STREAM argument to provide an
+open socket stream which should be re-used.  STREAM MUST be a
+stream returned by a previous invocation of HTTP-REQUEST where
+the sixth return value wasn't true.  Obviously, it must also be
+connected to the correct server and at the right position
+\(i.e. the message body, if any, must have been read).  Drakma
+will NEVER attach SSL to a stream provided as the STREAM
+argument.
+
+CONNECTION-TIMEOUT is the time \(in seconds) Drakma will wait until it
+considers an attempt to connect to a server as a failure.
+READ-TIMEOUT and WRITE-TIMEOUT are the read and write timeouts \(in
+seconds) for the socket stream to the server.  All three timeout
+arguments can also be NIL \(meaning no timeout), and they don't apply
+if an existing stream is re-used.  All timeout keyword arguments are
+only available for LispWorks, WRITE-TIMEOUT is only available for
+LispWorks 5.0 or higher."
+  (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
+    (error "Don't know how to handle protocol ~S." protocol))
+  (setq uri (cond ((uri-p uri) (copy-uri uri))
+                  (t (parse-uri uri))))
+  (unless (member method +known-methods+ :test #'eq)
+    (error "Don't know how to handle method ~S." method))
+  (unless (member (uri-scheme uri) '(:http :https) :test #'eq)
+    (error "Don't know how to handle scheme ~S." (uri-scheme uri)))
+  (when (and close keep-alive)
+    (error "CLOSE and KEEP-ALIVE must not be both true."))
+  (when (and (eq content :continuation) content-length)
+    (error "CONTENT-LENGTH must be NIL if CONTENT is :CONTINUATION."))
+  (when (and form-data (not (eq method :post)))
+    (error "FORM-DATA makes only sense with POST requests."))
+  ;; convert PROXY argument to canonical form
+  (when proxy
+    (when (atom proxy)
+      (setq proxy (list proxy 80))))
+  ;; make sure we don't get :CRLF on Windows
+  (let ((*default-eol-style* :lf)
+        (file-parameters-p (find-if-not #'stringp parameters :key #'cdr))
+        parameters-used-p)
+    (when (and file-parameters-p (not (eq method :post)))
+      (error "Don't know how to handle parameters in ~S, as this is not a POST request."
+             parameters))
+    (when (eq method :post)
+      ;; create content body for POST unless it was provided
+      (unless content
+        ;; mark PARAMETERS argument as used up, so we don't use it
+        ;; again below
+        (setq parameters-used-p t)
+        (cond ((or form-data file-parameters-p)
+               (let ((boundary (format nil "----------~A" (make-random-string))))
+                 (setq content (make-form-data-function parameters boundary)
+                       content-type (format nil "multipart/form-data; boundary=~A" boundary)))
+               (unless (or file-parameters-p content-length-provided-p)
+                 (setq content-length (or content-length t))))
+              (t
+               (setq content (alist-to-url-encoded-string parameters external-format-out)
+                     content-type "application/x-www-form-urlencoded")))))
+    (let (http-stream must-close done)
+      (unwind-protect
+          (progn
+            (let ((host (or (and proxy (first proxy))
+                            (uri-host uri)))
+                  (port (cond (proxy (second proxy))
+                              ((uri-port uri))
+                              (t (default-port uri))))
+                  (use-ssl (or force-ssl
+                               (eq (uri-scheme uri) :https))))
+              #+(and :lispworks5.0 :mswindows
+                     (not :lw-does-not-have-write-timeout))
+              (when use-ssl
+                (when (and write-timeout write-timeout-provided-p)
+                  (warn "Disabling WRITE-TIMEOUT because it doesn't mix well with SSL."))
+                (setq write-timeout nil))
+              (setq http-stream (or stream
+                                    #+:lispworks
+                                    (comm:open-tcp-stream host port
+                                                          :element-type 'octet
+                                                          :timeout connection-timeout
+                                                          :read-timeout read-timeout
+                                                          #-:lw-does-not-have-write-timeout
+                                                          #-:lw-does-not-have-write-timeout
+                                                          :write-timeout write-timeout
+                                                          :errorp t)
+                                    #-:lispworks
+                                    (usocket:socket-stream
+                                     (usocket:socket-connect host port :element-type 'octet))))
+              (when (and use-ssl
+                         ;; don't attach SSL to existing streams
+                         (not stream))
+                #+:lispworks
+                (comm:attach-ssl http-stream :ssl-side :client)
+                #-:lispworks
+                (setq http-stream
+                      #+:allegro
+                      (socket:make-ssl-client-stream http-stream)
+                      #-:allegro
+                      (let ((s http-stream))
+                        (cl+ssl:make-ssl-client-stream 
+                         (cl+ssl:stream-fd s)
+                         :close-callback (lambda () (close s)))))))
+            (cond (stream
+                   (setf (flexi-stream-element-type http-stream)
+                         #+:lispworks 'lw:simple-char #-:lispworks 'character
+                         (flexi-stream-external-format http-stream) +latin-1+))
+                  (t
+                   (setq http-stream
+                         (make-flexi-stream (make-chunked-stream http-stream)
+                                            :external-format +latin-1+))))
+            (labels ((write-http-line (fmt &rest args)
+                       (when *header-stream*
+                         (format *header-stream* "~?~%" fmt args))
+                       (format http-stream "~?~C~C" fmt args #\Return #\Linefeed))
+                     (write-header (name value-fmt &rest value-args)
+                       (write-http-line "~A: ~?" name value-fmt value-args)))
+              (when (and (not parameters-used-p)
+                         parameters)
+                (setf (uri-query uri)
+                      ;; append parameters to existing query of URI
+                      (format nil "~@[~A~]~:*~:[~;&~]~A"
+                              (uri-query uri)
+                              (alist-to-url-encoded-string parameters external-format-out))))
+              (when (eq method :options*)
+                ;; special pseudo-method
+                (setf method :options
+                      (uri-path uri) "*"
+                      (uri-query uri) nil))
+              (write-http-line "~A ~A ~A"
+                               (string-upcase method)
+                               (cond (proxy (render-uri uri nil))
+                                     (t (format nil "~A~@[?~A~]"
+                                                (or (uri-path uri) "/")
+                                                (uri-query uri))))
+                               (string-upcase protocol))
+              (write-header "Host" "~A~@[:~A~]" (uri-host uri) (non-default-port uri))
+              (when user-agent
+                (write-header "User-Agent" (user-agent-string user-agent)))
+              (when basic-authorization
+                (write-header "Authorization" "Basic ~A"
+                              (base64:string-to-base64-string
+                               (format nil "~A:~A"
+                                       (first basic-authorization)
+                                       (second basic-authorization)))))
+              (when (and proxy proxy-basic-authorization)
+                (write-header "Proxy-Authorization" "Basic ~A"
+                              (base64:string-to-base64-string
+                               (format nil "~A:~A"
+                                       (first proxy-basic-authorization)
+                                       (second proxy-basic-authorization)))))
+              (when accept
+                (write-header "Accept" "~A" accept))
+              (when cookie-jar
+                ;; write all cookies in one fell swoop, so even Sun's
+                ;; web server has a change to get it
+                (when-let (cookies (loop for cookie in (cookie-jar-cookies cookie-jar)
+                                         when (send-cookie-p cookie uri force-ssl)
+                                         collect (cookie-name cookie) and
+                                         collect (cookie-value cookie)))
+                  (write-header "Cookie" "~{~A=~A~^; ~}" cookies)))
+              (when keep-alive
+                (write-header "Connection" "Keep-Alive"))
+              (when close
+                (setq must-close close)
+                (write-header "Connection" "close"))
+              (loop for (name . value) in additional-headers
+                    do (write-header name "~A" value))
+              (when content
+                (when content-type
+                  (write-header "Content-Type" "~A" content-type))
+                (when (and content-length
+                           (not (or (arrayp content)
+                                    (listp content)
+                                    (eq content :continuation))))
+                  ;; CONTENT-LENGTH forces us to compute request body
+                  ;; in RAM
+                  (setq content
+                        (with-output-to-sequence (bin-out)
+                          (let ((out (make-flexi-stream bin-out :external-format +latin-1+)))
+                            (send-content content out)))))
+                (when (and (or (not content-length-provided-p)
+                               (eq content-length t))
+                           (or (arrayp content) (listp content)))
+                  (setq content-length (length content)))
+                (cond (content-length
+                       (write-header "Content-Length" "~D" content-length))
+                      (t
+                       (write-header "Transfer-Encoding" "chunked"))))
+              ;; end of request headers
+              (when *header-stream*
+                (terpri *header-stream*))
+              (format http-stream "~C~C" #\Return #\Linefeed)
+              (force-output http-stream)
+              (when (and content (null content-length))
+                (setf (chunked-stream-output-chunking-p
+                       (flexi-stream-stream http-stream)) t))         
+              (labels ((finish-request (content &optional continuep)
+                         (send-content content http-stream external-format-out)
+                         (when continuep
+                           (force-output http-stream)
+                           (return-from finish-request))
+                         (setf (chunked-stream-output-chunking-p
+                                (flexi-stream-stream http-stream)) nil)
+                         (finish-output http-stream)
+                         (with-character-stream-semantics
+                           (multiple-value-bind (server-protocol status-code status-text)
+                               ;; loop until status is NOT 100
+                               (loop for (server-protocol status-code status-text)
+                                     = (read-status-line http-stream *header-stream*)
+                                     when (= status-code 100)
+                                     ;; ignore headers sent until non-100 status is seen
+                                     do (read-http-headers http-stream *header-stream*)
+                                     until (/= status-code 100)
+                                     finally (return (values server-protocol status-code status-text)))
+                             (let ((headers (read-http-headers http-stream *header-stream*))
+                                   body external-format-body)
+                               (let ((connections (header-value :connection headers)))
+                                 (when connections
+                                   (setq connections (split-tokens connections)))
+                                 (when (or (member "close" connections :test #'string-equal)
+                                           (not (or (and (eq protocol :http/1.1)
+                                                         (eq server-protocol :http/1.1))
+                                                    (member "Keep-Alive" connections
+                                                            :test #'string-equal))))
+                                   (setq must-close t)))
+                               (when cookie-jar
+                                 (update-cookies (get-cookies headers uri) cookie-jar))
+                               (when (and redirect
+                                          (member status-code +redirect-codes+)
+                                          (member method redirect-methods))
+                                 (unless (or (eq redirect t)
+                                             (and (integerp redirect)
+                                                  (plusp redirect)))
+                                   (cerror "Continue anyway."
+                                           "Status code was ~A, but ~
+~:[REDIRECT is ~S~;redirection limit has been exceeded~]."
+                                           status-code (integerp redirect) redirect))
+                                 (when auto-referer
+                                   (setq additional-headers (set-referer uri additional-headers)))
+                                 (let* ((location (header-value :location headers))
+                                        (new-uri (merge-uris (cond ((or (null location)
+                                                                        (zerop (length location)))
+                                                                    (warn "Empty `Location' header, assuming \"/\".")
+                                                                    "/")
+                                                                   (t location))
+                                                             uri))
+                                        ;; can we re-use the stream?
+                                        (old-server-p (and (string= (uri-host new-uri)
+                                                                    (uri-host uri))
+                                                           (eql (uri-port new-uri)
+                                                                (uri-port uri))
+                                                           (eq (uri-scheme new-uri)
+                                                               (uri-scheme uri)))))
+                                   (unless old-server-p
+                                     (setq must-close t
+                                           want-stream nil))
+                                   ;; try to re-use the stream, but only
+                                   ;; if the user hasn't opted for a
+                                   ;; connection which is always secure
+                                   (let ((re-use-stream (and old-server-p
+                                                             (not must-close)
+                                                             (not force-ssl))))
+                                     ;; close stream if we can't re-use it
+                                     (unless re-use-stream
+                                       (ignore-errors (close http-stream)))
+                                     (setq done t)
+                                     (return-from http-request
+                                       (apply #'http-request new-uri
+                                              :redirect (cond ((integerp redirect) (1- redirect))
+                                                              (t redirect))
+                                              :stream (and re-use-stream http-stream)
+                                              :additional-headers additional-headers
+                                              args)))))
+                               (let ((transfer-encodings (header-value :transfer-encoding headers)))
+                                 (when transfer-encodings
+                                   (setq transfer-encodings (split-tokens transfer-encodings)))
+                                 (when (member "chunked" transfer-encodings :test #'equalp)
+                                   (setf (chunked-stream-input-chunking-p
+                                          (flexi-stream-stream http-stream)) t)))
+                               (when (setq external-format-body
+                                           (and (not force-binary)
+                                                (funcall *body-format-function*
+                                                         headers external-format-in)))
+                                 (setf (flexi-stream-external-format http-stream)
+                                       external-format-body))
+                               (when force-binary
+                                 (setf (flexi-stream-element-type http-stream) 'octet))
+                               (unless (or want-stream (eq method :head))
+                                 (let (trailers)
+                                   (multiple-value-setq (body trailers)
+                                       (read-body http-stream headers must-close external-format-body))
+                                   (when trailers
+                                     (warn "Adding trailers from chunked encoding to HTTP headers.")
+                                     (setq headers (nconc headers trailers)))))
+                               (setq done t)
+                               (values (cond (want-stream http-stream)
+                                             (t body))
+                                       status-code
+                                       headers
+                                       uri
+                                       http-stream
+                                       must-close
+                                       status-text))))))
+                (when (eq content :continuation)
+                  (return-from http-request #'finish-request))
+                (finish-request content))))
+        ;; the cleanup form of the UNWIND-PROTECT above
+        (when (and http-stream
+                   (or (not done)
+                       (and must-close
+                            (not want-stream)))
+                   (not (eq content :continuation)))
+          (ignore-errors (close http-stream)))))))
