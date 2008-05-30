@@ -1,5 +1,5 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: DRAKMA; Base: 10 -*-
-;;; $Header: /usr/local/cvsrep/drakma/util.lisp,v 1.35 2008/01/14 01:57:02 edi Exp $
+;;; $Header: /usr/local/cvsrep/drakma/util.lisp,v 1.36 2008/05/30 11:30:45 edi Exp $
 
 ;;; Copyright (c) 2006-2008, Dr. Edmund Weitz.  All rights reserved.
 
@@ -273,15 +273,4 @@ matches an entry of *TEXT-CONTENT-TYPES*.  See docstring of
                          (string-equal type candidate-type))
                      (or (null candidate-subtype)
                          (string-equal subtype candidate-subtype)))))
-
-(defun as-keyword (string)
-  "Converts the string STRING to a keyword where all characters are
-uppercase or lowercase, taking into account the current readtable
-case."
-  (intern (funcall
-            (if (eq (readtable-case *readtable*) :upcase)
-              #'string-upcase
-              #'string-downcase)
-            string)
-          :keyword))
 

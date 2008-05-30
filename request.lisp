@@ -1,5 +1,5 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: DRAKMA; Base: 10 -*-
-;;; $Header: /usr/local/cvsrep/drakma/request.lisp,v 1.57 2008/05/24 03:21:22 edi Exp $
+;;; $Header: /usr/local/cvsrep/drakma/request.lisp,v 1.58 2008/05/30 11:30:45 edi Exp $
 
 ;;; Copyright (c) 2006-2008, Dr. Edmund Weitz.  All rights reserved.
 
@@ -329,7 +329,7 @@ integer, it will be decreased by 1 with each redirect.
 Furthermore, if AUTO-REFERER is true when following redirects,
 Drakma will populate the `Referer' header with the URI that
 triggered the redirection, overwriting an existing `Referer'
-header (in ADDITIONAL-HEADERS) if necessary.
+header \(in ADDITIONAL-HEADERS) if necessary.
 
 If KEEP-ALIVE is T, the server will be asked to keep the
 connection alive, i.e. not to close it after the reply has been
@@ -338,12 +338,13 @@ server use HTTP 1.1.)  If CLOSE is T, the server is explicitly
 asked to close the connection after the reply has been sent.
 KEEP-ALIVE and CLOSE are obviously mutually exclusive.
 
-If the message body sent by the server has a text content type,
-Drakma will try to return it as a Lisp string.  It'll first check
-if the `Content-Type' header denotes an encoding to be used, or
-otherwise it will use the EXTERNAL-FORMAT-IN argument.  The body
-is decoded using FLEXI-STREAMS.  If FLEXI-STREAMS doesn't know
-the external format, the body is returned as an array of octets.
+If the message body sent by the server has a text content type, Drakma
+will try to return it as a Lisp string.  It'll first check if the
+`Content-Type' header denotes an encoding to be used, or otherwise it
+will use the EXTERNAL-FORMAT-IN argument.  The body is decoded using
+FLEXI-STREAMS.  If FLEXI-STREAMS doesn't know the external format, the
+body is returned as an array of octets.  If the body is empty, Drakma
+will return NIL.
 
 If the message body doesn't have a text content type or if
 FORCE-BINARY is true, the body is always returned as an array of
@@ -511,7 +512,7 @@ LispWorks 5.0 or higher."
                 (write-header "Accept" "~A" accept))
               (when cookie-jar
                 ;; write all cookies in one fell swoop, so even Sun's
-                ;; web server has a change to get it
+                ;; web server has a chance to get it
                 (when-let (cookies (loop for cookie in (cookie-jar-cookies cookie-jar)
                                          when (send-cookie-p cookie uri force-ssl)
                                          collect (cookie-name cookie) and
