@@ -70,6 +70,11 @@ HTTP-REQUEST.")
 which incoming and outgoing headers will be written for debugging
 purposes.")
 
+(defvar *allow-dotless-cookie-domains-p* nil
+  "When this variable is not NIL, cookie domains containing no dots
+are considered valid.  The default is NIL, meaning to disallow such
+domains except for \"localhost\".")
+
 (defvar *ignore-unparseable-cookie-dates-p* nil
   "Whether Drakma is allowed to treat `Expires' dates in cookie
 headers as non-existent if it can't parse them.  If the value of this

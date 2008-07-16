@@ -1,3 +1,5 @@
+Added *ALLOW-DOTLESS-COOKIE-DOMAINS-P* (thanks to Daniel Janus)
+
 Version 0.11.5
 2008-03-21
 Added workaround for CLISP (thanks to Anton Vodonosov)

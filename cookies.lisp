@@ -93,8 +93,10 @@ is already one."
 
 (defun valid-cookie-domain-p (domain)
   "Checks if the string DOMAIN contains enough dots to be
-acceptable."
-  (or (string-equal domain "localhost")
+acceptable.  If *ALLOW-DOTLESS-COOKIE-DOMAINS-P* is non-NIL,
+every domain name is considered acceptable."
+  (or *allow-dotless-cookie-domains-p*
+      (string-equal domain "localhost")
       (> (count #\. (normalize-cookie-domain domain) :test #'char=) 1)))
 
 (defun cookie-domain-matches (domain uri)

@@ -84,6 +84,7 @@ license</a> so you can basically do with it whatever you want.
           <li><a href="#cookie-jar-cookies"><code>cookie-jar-cookies</code></a>
           <li><a href="#cookie="><code>cookie=</code></a>
           <li><a href="#delete-old-cookies"><code>delete-old-cookies</code></a>
+          <li><a href="#*allow-dotless-cookie-domains-p*"><code>*allow-dotless-cookie-domains-p*</code></a>
           <li><a href="#*ignore-unparseable-cookie-dates-p*"><code>*ignore-unparseable-cookie-dates-p*</code></a>
         </ol>
       <li><a href="#headers">Headers</a>
@@ -1259,6 +1260,20 @@ which don't have an expiry date.
 </blockquote>
 
 <!-- End of entry for DELETE-OLD-COOKIES -->
+
+
+<!-- Entry for *ALLOW-DOTLESS-COOKIE-DOMAINS-P* -->
+
+<p><br>[Special variable]<br><a class=none name='*allow-dotless-cookie-domains-p*'><b>*allow-dotless-cookie-domains-p*</b></a>
+<blockquote><br>
+
+When this variable is not <code>NIL</code>, cookie domains containing
+no dots are considered valid.  The default is <code>NIL</code>,
+meaning to disallow such domains except for <code>"localhost"<code>.
+
+</blockquote>
+
+<!-- End of entry for *ALLOW-DOTLESS-COOKIE-DOMAINS-P* -->
 
 
 <!-- Entry for *IGNORE-UNPARSEABLE-COOKIE-DATES-P* -->
