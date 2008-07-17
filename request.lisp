@@ -201,7 +201,9 @@ headers of the chunked stream \(if any) as a second value."
                               #+:lispworks (connection-timeout 20)
                               #+:lispworks (read-timeout 20)
                               #+(and :lispworks (not :lw-does-not-have-write-timeout))
-                              (write-timeout 20 write-timeout-provided-p))
+                              (write-timeout 20 write-timeout-provided-p)
+                              #+openmcl
+                              deadline)
   "Sends an HTTP request to a web server and returns its reply.  URI
 is where the request is sent to, and it is either a string denoting a
 uniform resource identifier or a PURI:URI object.  The scheme of URI
@@ -376,7 +378,14 @@ seconds) for the socket stream to the server.  All three timeout
 arguments can also be NIL \(meaning no timeout), and they don't apply
 if an existing stream is re-used.  All timeout keyword arguments are
 only available for LispWorks, WRITE-TIMEOUT is only available for
-LispWorks 5.0 or higher."
+LispWorks 5.0 or higher.
+
+DEADLINE, a time in the future, specifies the time until which the
+request should be finished.  The DEADLINE is specified in internal
+time units (see (GET-INTERNAL-TIME-UNITS) and
+INTERNAL-TIME-UNITS-PER-SECOND).  If the server fails to respond until
+that time, a COMMUNICATION-DEADLINE-EXPIRED condition is signalled.
+DEADLINE is available on CCL 1.2 and later."
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (error "Don't know how to handle protocol ~S." protocol))
   (setq uri (cond ((uri-p uri) (copy-uri uri))
@@ -445,7 +454,17 @@ LispWorks 5.0 or higher."
                                                           :errorp t)
                                     #-:lispworks
                                     (usocket:socket-stream
-                                     (usocket:socket-connect host port :element-type 'octet))))
+                                     (usocket:socket-connect host port
+                                                             :element-type 'octet
+                                                             #+openmcl #+openmcl
+                                                             :deadline deadline
+                                                             :nodelay t))))
+              #+openmcl
+              (when deadline
+                ;; It is correct to set the deadline here even though it may have been initialized
+                ;; by SOCKET-CONNECT already:  The stream may have been passed in by the user and
+                ;; the user may want to adjust the deadline for every request.
+                (setf (ccl:stream-deadline http-stream) deadline))
               (when (and use-ssl
                          ;; don't attach SSL to existing streams
                          (not stream))
