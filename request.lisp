@@ -146,7 +146,7 @@ headers of the chunked stream \(if any) as a second value."
     #+:clisp
     (setf (flexi-stream-element-type stream) element-type)
     (multiple-value-prog1 
-        (values (cond ((eql content-length 0) nil)
+        (values (cond ((eql content-length 0) (if textp "" nil))
                       (content-length
                        (when chunkedp
                          ;; see RFC 2616, section 4.4
