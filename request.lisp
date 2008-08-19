@@ -514,7 +514,7 @@ DEADLINE is available on CCL 1.2 and later."
                                (string-upcase protocol))
               (write-header "Host" "~A~@[:~A~]" (uri-host uri) (non-default-port uri))
               (when user-agent
-                (write-header "User-Agent" (user-agent-string user-agent)))
+                (write-header "User-Agent" "~A" (user-agent-string user-agent)))
               (when basic-authorization
                 (write-header "Authorization" "Basic ~A"
                               (base64:string-to-base64-string

@@ -1,4 +1,5 @@
 Added *ALLOW-DOTLESS-COOKIE-DOMAINS-P* (thanks to Daniel Janus)
+Fix generation of user agent header (bug caught by Chaitanya Gupta)
 
 Version 0.11.5
 2008-03-21
