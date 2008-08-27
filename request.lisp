@@ -143,34 +143,35 @@ headers of the chunked stream \(if any) as a second value."
                         #+:lispworks 'lw:simple-char #-:lispworks 'character
                         'octet))
         (chunkedp (chunked-stream-input-chunking-p (flexi-stream-stream stream))))
-    #+:clisp
-    (setf (flexi-stream-element-type stream) element-type)
-    (multiple-value-prog1 
-        (values (cond ((eql content-length 0) (if textp "" nil))
-                      (content-length
-                       (when chunkedp
-                         ;; see RFC 2616, section 4.4
-                         (error "Got Content-Length header although input chunking is on."))
-                       (let ((result (make-array content-length
-                                                 :element-type element-type
-                                                 :fill-pointer t)))
-                         (setf (fill-pointer result)
-                               (read-sequence result stream))
-                         result))
-                      ((or chunkedp must-close)
-                       ;; no content length, read until EOF (or end of chunking)
-                       (let ((buffer (make-array +buffer-size+
-                                                 :element-type element-type))
-                             (result (make-array 0
-                                                 :element-type element-type
-                                                 :adjustable t)))
-                         (loop for index = 0 then (+ index pos)
-                               for pos = (read-sequence buffer stream)
-                               do (adjust-array result (+ index pos))
-                                  (replace result buffer :start1 index :end2 pos)
-                               while (= pos +buffer-size+))
-                         result)))
-                (chunked-input-stream-trailers stream)))))
+    (values (cond ((eql content-length 0) nil)
+                  (content-length
+                   (when chunkedp
+                     ;; see RFC 2616, section 4.4
+                     (error "Got Content-Length header although input chunking is on."))
+                   (setf (flexi-stream-element-type stream) 'octet)
+                   (let ((result (make-array content-length :element-type 'octet)))
+                     #+:clisp
+                     (setf (flexi-stream-element-type stream) 'octet)
+                     (read-sequence result stream)
+                     (when textp
+                       (setf result
+                             (octets-to-string result :external-format (flexi-stream-external-format stream))
+                             #+:clisp #+:clisp
+                             (flexi-stream-element-type stream) element-type))
+                     result))
+                  ((or chunkedp must-close)
+                   ;; no content length, read until EOF (or end of chunking)
+                   #+:clisp
+                   (setf (flexi-stream-element-type stream) element-type)
+                   (let ((buffer (make-array +buffer-size+ :element-type element-type))
+                         (result (make-array 0 :element-type element-type :adjustable t)))
+                     (loop for index = 0 then (+ index pos)
+                           for pos = (read-sequence buffer stream)
+                           do (adjust-array result (+ index pos))
+                           (replace result buffer :start1 index :end2 pos)
+                           while (= pos +buffer-size+))
+                     result)))
+            (chunked-input-stream-trailers (flexi-stream-stream stream)))))
 
 (defun http-request (uri &rest args
                          &key (protocol :http/1.1)
