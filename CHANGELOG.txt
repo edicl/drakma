@@ -1,3 +1,7 @@
+Version 0.12.0
+2009-02-09
+Use the new ("binary") version of Chunga
+Added conditions types
 Added *ALLOW-DOTLESS-COOKIE-DOMAINS-P* (thanks to Daniel Janus)
 Fix generation of user agent header (bug caught by Chaitanya Gupta)
 

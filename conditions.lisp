@@ -58,7 +58,7 @@ provided format control and arguments."
 
 (define-condition parameter-error (drakma-simple-error)
   ()
-  (:documentation "Signalled if a function was called with incosistent or illegal parameters."))
+  (:documentation "Signalled if a function was called with inconsistent or illegal parameters."))
 
 (defun parameter-error (format-control &rest format-arguments)
   "Signals an error of type PARAMETER-ERROR with the provided

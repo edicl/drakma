@@ -42,6 +42,7 @@
            :cookie
            :cookie-error
            :cookie-error-cookie
+           :cookie-date-parse-error
            :cookie-domain
            :cookie-expires
            :cookie-http-only-p
@@ -63,4 +64,5 @@
            :parameter-present-p
            :parameter-value
            :read-tokens-and-parameters
-           :split-tokens))
+           :split-tokens
+           :syntax-error))

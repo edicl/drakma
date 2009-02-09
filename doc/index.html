@@ -96,6 +96,17 @@ license</a> so you can basically do with it whatever you want.
           <li><a href="#parameter-value"><code>parameter-value</code></a>
           <li><a href="#get-content-type"><code>get-content-type</code></a>
         </ol>
+      <li><a href="#conditions">Conditions</a>
+        <ol>
+          <li><a href="#drakma-condition"><code>drakma-condition</code></a>
+          <li><a href="#drakma-error"><code>drakma-error</code></a>
+          <li><a href="#drakma-warning"><code>drakma-warning</code></a>
+          <li><a href="#syntax-error"><code>syntax-error</code></a>
+          <li><a href="#parameter-error"><code>parameter-error</code></a>
+          <li><a href="#cookie-error"><code>cookie-error</code></a>
+          <li><a href="#cookie-error-cookie"><code>cookie-error-cookie</code></a>
+          <li><a href="#cookie-date-parse-error"><code>cookie-date-parse-error</code></a>
+        </ol>
     </ol>
   <li><a href="#prob">Potential problems</a>
   <li><a href="#ack">Acknowledgements</a>
@@ -643,7 +654,7 @@ Connection: close</font>
 
 Drakma together with this documentation can be downloaded
 from <a href="http://weitz.de/files/drakma.tar.gz">http://weitz.de/files/drakma.tar.gz</a>.
-The current version is 0.11.5.  Drakma can be installed
+The current version is 0.12.0.  Drakma can be installed
 via <a href="http://www.cliki.net/asdf">ASDF</a> and depends on the
 open source
 libraries <a href="http://www.cliki.net/cl-base64">CL-BASE64</a> (use
@@ -1284,6 +1295,8 @@ meaning to disallow such domains except for <code>"localhost"<code>.
 Whether Drakma is allowed to treat <code>Expires</code> dates in
 cookie headers as non-existent if it can't parse them.  If the value
 of this variable is <code>NIL</code> (which is the default), an error
+of
+type <a href="#cookie-date-parse-error"><code>COOKIE-DATE-PARSE-ERROR</code></a>
 will be signalled instead.
 <p>
 Note that Drakma tries hard to parse every date representation its
@@ -1450,6 +1463,109 @@ is supposed to be an <a href="http://www.lispworks.com/documentation/HyperSpec/B
 </blockquote>
 
 <!-- End of entry for GET-CONTENT-TYPE -->
+
+<h4><a name="conditions" class=none>Conditions</a></h4>
+
+This section lists all the condition types that are defined by Drakma.
+
+<!-- Entry for DRAKMA-CONDITION -->
+
+<p><br>[Condition]
+<br><a class=none name="drakma-condition"><b>drakma-condition</b></a>
+
+<blockquote><br>
+All conditions signalled by Drakma are of this type.  This is a subtype of <a href="http://www.lispworks.com/documentation/HyperSpec/Body/e_cnd.htm"><code>CONDITION</code></a>.
+</blockquote>
+
+<!-- End of entry for DRAKMA-CONDITION -->
+
+<!-- Entry for DRAKMA-ERROR -->
+
+<p><br>[Error]
+<br><a class=none name="drakma-error"><b>drakma-error</b></a>
+
+<blockquote><br>
+All errors signalled by Drakma are of this type.  This is a subtype of <a href="#drakma-condition"><code>DRAKMA-CONDITION</code></a> and of <a href="http://www.lispworks.com/documentation/HyperSpec/Body/e_error.htm"><code>ERROR</code></a>.
+</blockquote>
+
+<!-- End of entry for DRAKMA-ERROR -->
+
+<!-- Entry for DRAKMA-WARNING -->
+
+<p><br>[Warning]
+<br><a class=none name="drakma-warning"><b>drakma-warning</b></a>
+
+<blockquote><br>
+All warnings signalled by Drakma are of this type.  This is a subtype of <a href="#drakma-condition"><code>DRAKMA-CONDITION</code></a> and of <a href="http://www.lispworks.com/documentation/HyperSpec/Body/e_warnin.htm"><code>WARNING</code></a>.
+</blockquote>
+
+<!-- End of entry for DRAKMA-WARNING -->
+
+<!-- Entry for SYNTAX-ERROR -->
+
+<p><br>[Error]
+<br><a class=none name="syntax-error"><b>syntax-error</b></a>
+
+<blockquote><br> An error of this type is signalled if Drakma
+encounters wrong or unknown syntax when reading the reply from the
+server.  This is a subtype
+of <a href="#drakma-error"><code>DRAKMA-ERROR</code></a>.
+</blockquote>
+
+<!-- End of entry for SYNTAX-ERROR -->
+
+<!-- Entry for PARAMETER-ERROR -->
+
+<p><br>[Error]
+<br><a class=none name="parameter-error"><b>parameter-error</b></a>
+
+<blockquote><br> An error of this type is signalled if a function was
+called with inconsistent or illegal parameters.  This is a subtype
+of <a href="#drakma-error"><code>DRAKMA-ERROR</code></a>.
+</blockquote>
+
+<!-- End of entry for PARAMETER-ERROR -->
+
+<!-- Entry for COOKIE-ERROR -->
+
+<p><br>[Error]
+<br><a class=none name="cookie-error"><b>cookie-error</b></a>
+
+<blockquote><br> An error of this type is signalled in case of an
+attempt to create a <a href="#cookie"><code>COOKIE</code></a> object
+that's not valid.  This is a subtype
+of <a href="#drakma-error"><code>DRAKMA-ERROR</code></a>.  The
+condition object contains a <code><i>cookie</i></code> slot which can be accessed with the
+<a href="#cookie-error-cookie"><code>COOKIE-ERROR-COOKIE</code></a> reader.  Note that the content of this slot can be
+<code>NIL</code> if the cookie couldn't be initialized.
+</blockquote>
+
+<!-- End of entry for COOKIE-ERROR -->
+
+<p><br>[Reader]
+<br><a class=none name="cookie-error-cookie"><b>cookie-error-cookie</b> <i>error</i> =&gt; <i>cookie-or-nil</i></a>
+
+<blockquote><br> If <code><i>error</i></code> is of
+type <a href="#cookie-error"><code>COOKIE-ERROR</code></a>, this
+function will return the associated invalid cookie or <code>NIL</code> if the
+cookie couldn't be created.
+</blockquote>
+
+<!-- Entry for COOKIE-DATE-PARSE-ERROR -->
+
+<p><br>[Error]
+<br><a class=none name="cookie-date-parse-error"><b>cookie-date-parse-error</b></a>
+
+<blockquote><br> An error of this type is signalled if Drakma tried to
+parse the date of an incoming cookie header and can't interpret it.
+This is a subtype
+of <a href="#cookie-error"><code>COOKIE-ERROR</code></a>.
+<p>
+See also <a href="#*ignore-unparseable-cookie-dates-p*"><code>*IGNORE-UNPARSEABLE-COOKIE-DATES-P*</code></a>.
+</blockquote>
+
+<!-- End of entry for COOKIE-DATE-PARSE-ERROR -->
+
 
 <br>&nbsp;<br><h3><a class=none name="prob">Potential problems</a></h3>
 
