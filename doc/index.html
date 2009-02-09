@@ -724,7 +724,7 @@ to <a href="http://livehttpheaders.mozdev.org/">LiveHTTPHeaders</a>.
 
 <!-- Entry for HTTP-REQUEST -->
 
-<p><br><table border=0><tr><td colspan=4 valign=top>[Function]</td></tr><tr><td valign=top style="white-space:nowrap"><a class=none name='http-request'><b>http-request</b></a>&nbsp;</td><td valign=top><i><a class=none href="#uri">uri</a>&nbsp;</i></td><td valign=top><tt>&amp;key</tt>&nbsp;</td><td><i><a class=none href="#protocol">protocol</a> <a class=none href="#method">method</a> <a class=none href="#force-ssl">force-ssl</a> <a class=none href="#parameters">parameters</a> <a class=none href="#form-data">form-data</a> <a class=none href="#content">content</a> <a class=none href="#content-length">content-length</a> <a class=none href="#content-type">content-type</a> <a class=none href="#cookie-jar-param">cookie-jar</a> <a class=none href="#basic-authorization">basic-authorization</a> <a class=none href="#user-agent">user-agent</a> <a class=none href="#accept">accept</a> <a class=none href="#proxy">proxy</a> <a class=none href="#proxy-basic-authorization">proxy-basic-authorization</a> <a class=none href="#additional-headers">additional-headers</a> <a class=none href="#redirect">redirect</a> <a class=none href="#redirect-methods">redirect-methods</a> <a class=none href="#auto-referer">auto-referer</a> <a class=none href="#keep-alive">keep-alive</a> <a class=none href="#close">close</a> <a class=none href="#external-format-out">external-format-out</a> <a class=none href="#external-format-in">external-format-in</a> <a class=none href="#force-binary">force-binary</a> <a class=none href="#want-stream">want-stream</a> <a class=none href="#stream">stream</a> <a class=none href="#connection-timeout">connection-timeout</a> <a class=none href="#read-timeout">read-timeout</a> <a class=none href="#write-timeout">write-timeout</a></i></td></tr><tr><td colspan=2></td><td colspan=2 valign=top> =&gt; <i>body-or-stream, status-code, headers, uri, stream, <a class=none href="#must-close">must-close</a>, reason-phrase</i></td></tr></table>
+<p><br><table border=0><tr><td colspan=4 valign=top>[Function]</td></tr><tr><td valign=top style="white-space:nowrap"><a class=none name='http-request'><b>http-request</b></a>&nbsp;</td><td valign=top><i><a class=none href="#uri">uri</a>&nbsp;</i></td><td valign=top><tt>&amp;key</tt>&nbsp;</td><td><i><a class=none href="#protocol">protocol</a> <a class=none href="#method">method</a> <a class=none href="#force-ssl">force-ssl</a> <a class=none href="#parameters">parameters</a> <a class=none href="#form-data">form-data</a> <a class=none href="#content">content</a> <a class=none href="#content-length">content-length</a> <a class=none href="#content-type">content-type</a> <a class=none href="#cookie-jar-param">cookie-jar</a> <a class=none href="#basic-authorization">basic-authorization</a> <a class=none href="#user-agent">user-agent</a> <a class=none href="#accept">accept</a> <a class=none href="#proxy">proxy</a> <a class=none href="#proxy-basic-authorization">proxy-basic-authorization</a> <a class=none href="#additional-headers">additional-headers</a> <a class=none href="#redirect">redirect</a> <a class=none href="#redirect-methods">redirect-methods</a> <a class=none href="#auto-referer">auto-referer</a> <a class=none href="#keep-alive">keep-alive</a> <a class=none href="#close">close</a> <a class=none href="#external-format-out">external-format-out</a> <a class=none href="#external-format-in">external-format-in</a> <a class=none href="#force-binary">force-binary</a> <a class=none href="#want-stream">want-stream</a> <a class=none href="#stream">stream</a> <a class=none href="#connection-timeout">connection-timeout</a> <a class=none href="#read-timeout">read-timeout</a> <a class=none href="#write-timeout">write-timeout</a> <a class=none href="#deadline">deadline</a></i></td></tr><tr><td colspan=2></td><td colspan=2 valign=top> =&gt; <i>body-or-stream, status-code, headers, uri, stream, <a class=none href="#must-close">must-close</a>, reason-phrase</i></td></tr></table>
 <blockquote><br>
 
 Sends an <a href="http://www.rfc.net/rfc2616.html">HTTP</a> request to a web server and returns its reply.
@@ -1030,6 +1030,16 @@ don't apply if an existing stream is re-used.  All timeout keyword
 arguments are only available for
 LispWorks, <code><i>write-timeout</i></code> is only available for
 LispWorks&nbsp;5.0 or higher.
+<p>
+<a class=none name="deadline"><code><i>deadline</i></code></a>, a time
+in the future, specifies the time until which the request should be
+finished.  The deadline is specified
+in <a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_i.htm#internal_time_unit">internal
+time units</a>.  If the server fails to respond until that time, a
+<a href="http://ccl.clozure.com/manual/chapter9.1.html"><code>COMMUNICATION-DEADLINE-EXPIRED</code></a>
+condition is signalled.  DEADLINE is only available
+on <a href="http://www.clozure.com/clozurecl.html">CCL&nbsp;1.2</a>
+and later.
 
 </blockquote>
 

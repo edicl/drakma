@@ -6,6 +6,8 @@ Some performance improvements
 Be more lenient about content length (thanks to Zach Beane and "pix")
 Added *ALLOW-DOTLESS-COOKIE-DOMAINS-P* (thanks to Daniel Janus)
 Fix generation of user agent header (bug caught by Chaitanya Gupta)
+Added DEADLINE parameter for CCL (thanks to Hans Hübner)
+Fixed bug where READ-BODY returned NIL although TEXTP was true (thanks to Hans Hübner)
 
 Version 0.11.5
 2008-03-21

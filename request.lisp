@@ -381,11 +381,10 @@ only available for LispWorks, WRITE-TIMEOUT is only available for
 LispWorks 5.0 or higher.
 
 DEADLINE, a time in the future, specifies the time until which the
-request should be finished.  The DEADLINE is specified in internal
-time units (see (GET-INTERNAL-TIME-UNITS) and
-INTERNAL-TIME-UNITS-PER-SECOND).  If the server fails to respond until
-that time, a COMMUNICATION-DEADLINE-EXPIRED condition is signalled.
-DEADLINE is available on CCL 1.2 and later."
+request should be finished.  The deadline is specified in internal
+time units.  If the server fails to respond until that time, a
+COMMUNICATION-DEADLINE-EXPIRED condition is signalled.  DEADLINE is
+only available on CCL 1.2 and later."
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
   (setq uri (cond ((uri-p uri) (copy-uri uri))
@@ -459,9 +458,11 @@ DEADLINE is available on CCL 1.2 and later."
                                                              :nodelay t))))
               #+openmcl
               (when deadline
-                ;; It is correct to set the deadline here even though it may have been initialized
-                ;; by SOCKET-CONNECT already:  The stream may have been passed in by the user and
-                ;; the user may want to adjust the deadline for every request.
+                ;; it is correct to set the deadline here even though
+                ;; it may have been initialized by SOCKET-CONNECT
+                ;; already - the stream may have been passed in by the
+                ;; user and the user may want to adjust the deadline
+                ;; for every request.
                 (setf (ccl:stream-deadline http-stream) deadline))
               (when (and use-ssl
                          ;; don't attach SSL to existing streams
