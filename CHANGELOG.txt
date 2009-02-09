@@ -1,8 +1,9 @@
-Version 0.12.0
+Version 1.0.0
 2009-02-09
 Use the new ("binary") version of Chunga
-Be more lenient about content length (thanks to Zach Beane and "pix")
 Added conditions types
+Some performance improvements
+Be more lenient about content length (thanks to Zach Beane and "pix")
 Added *ALLOW-DOTLESS-COOKIE-DOMAINS-P* (thanks to Daniel Janus)
 Fix generation of user agent header (bug caught by Chaitanya Gupta)
 
