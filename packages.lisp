@@ -33,6 +33,7 @@
   (:use :cl :puri :flexi-streams :chunga)
   ;; the variable defined in the ASDF system definition
   (:import-from :drakma-asd :*drakma-version-string*)
+  (:shadow :syntax-error :parameter-error)
   (:export :*allow-dotless-cookie-domains-p*
            :*body-format-function*
            :*drakma-default-external-format*
