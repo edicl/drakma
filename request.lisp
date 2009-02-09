@@ -84,7 +84,7 @@ depending on the type of CONTENT."
                (and (symbolp content)
                     (fboundp content)))
            (funcall content stream))
-          (t (error "Don't know how to send content ~S to server." content)))))
+          (t (parameter-error "Don't know how to send content ~S to server." content)))))
 
 (defun make-form-data-function (parameters boundary)
   "Creates and returns a closure which can be used as an argument for
@@ -124,8 +124,9 @@ body using the boundary BOUNDARY."
                    (crlf) (crlf)
                    ;; use SEND-CONTENT to send file as binary data
                    (send-content file-source stream)))
-                (t (error "Don't know what to do with name/value pair (~S . ~S) in multipart/form-data body."
-                          name value)))
+                (t (parameter-error
+                    "Don't know what to do with name/value pair (~S . ~S) in multipart/form-data body."
+                    name value)))
           (crlf)))
       (format stream "--~A--" boundary)
       (crlf))))
@@ -147,7 +148,7 @@ headers of the chunked stream \(if any) as a second value."
                   (content-length
                    (when chunkedp
                      ;; see RFC 2616, section 4.4
-                     (error "Got Content-Length header although input chunking is on."))
+                     (syntax-error "Got Content-Length header although input chunking is on."))
                    (setf (flexi-stream-element-type stream) 'octet)
                    (let ((result (make-array content-length :element-type 'octet)))
                      #+:clisp
@@ -388,19 +389,19 @@ INTERNAL-TIME-UNITS-PER-SECOND).  If the server fails to respond until
 that time, a COMMUNICATION-DEADLINE-EXPIRED condition is signalled.
 DEADLINE is available on CCL 1.2 and later."
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
-    (error "Don't know how to handle protocol ~S." protocol))
+    (parameter-error "Don't know how to handle protocol ~S." protocol))
   (setq uri (cond ((uri-p uri) (copy-uri uri))
                   (t (parse-uri uri))))
   (unless (member method +known-methods+ :test #'eq)
-    (error "Don't know how to handle method ~S." method))
+    (parameter-error "Don't know how to handle method ~S." method))
   (unless (member (uri-scheme uri) '(:http :https) :test #'eq)
-    (error "Don't know how to handle scheme ~S." (uri-scheme uri)))
+    (parameter-error "Don't know how to handle scheme ~S." (uri-scheme uri)))
   (when (and close keep-alive)
-    (error "CLOSE and KEEP-ALIVE must not be both true."))
+    (parameter-error "CLOSE and KEEP-ALIVE must not be both true."))
   (when (and (eq content :continuation) content-length)
-    (error "CONTENT-LENGTH must be NIL if CONTENT is :CONTINUATION."))
+    (parameter-error "CONTENT-LENGTH must be NIL if CONTENT is :CONTINUATION."))
   (when (and form-data (not (eq method :post)))
-    (error "FORM-DATA makes only sense with POST requests."))
+    (parameter-error "FORM-DATA makes only sense with POST requests."))
   ;; convert PROXY argument to canonical form
   (when proxy
     (when (atom proxy)
@@ -410,8 +411,8 @@ DEADLINE is available on CCL 1.2 and later."
         (file-parameters-p (find-if-not #'stringp parameters :key #'cdr))
         parameters-used-p)
     (when (and file-parameters-p (not (eq method :post)))
-      (error "Don't know how to handle parameters in ~S, as this is not a POST request."
-             parameters))
+      (parameter-error "Don't know how to handle parameters in ~S, as this is not a POST request."
+                       parameters))
     (when (eq method :post)
       ;; create content body for POST unless it was provided
       (unless content

@@ -35,19 +35,20 @@ interprets it as a HTTP status line.  Returns a list of two or
 three values - the protocol \(HTTP version) as a keyword, the
 status code as an integer, and optionally the reason phrase."
   (let* ((*current-error-message* "While reading status line:")
-         (line (read-line* stream log-stream))
+         (line (or (read-line* stream log-stream)
+                   (error "Could not read status line.")))
          (first-space-pos (or (position #\Space line :test #'char=)
-                              (error "No space in status line ~S." line)))
+                              (syntax-error "No space in status line ~S." line)))
          (second-space-pos (position #\Space line
                                      :test #'char=
                                      :start (1+ first-space-pos))))
     (list (cond ((string-equal line "HTTP/1.0" :end1 first-space-pos) :http/1.0)
                 ((string-equal line "HTTP/1.1" :end1 first-space-pos) :http/1.1)
-                (t (error "Unknown protocol in ~S." line)))
+                (t (syntax-error "Unknown protocol in ~S." line)))
           (or (ignore-errors (parse-integer line
                                             :start (1+ first-space-pos)
                                             :end second-space-pos))
-              (error "Status code in ~S is not an integer." line))
+              (syntax-error "Status code in ~S is not an integer." line))
           (and second-space-pos (subseq line (1+ second-space-pos))))))
 
 (defun get-content-type (headers)

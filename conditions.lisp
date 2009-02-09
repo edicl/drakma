@@ -59,12 +59,24 @@ format control and arguments."
          :format-control format-control
          :format-arguments format-arguments))
 
+(define-condition syntax-error (drakma-simple-error)
+  ()
+  (:documentation "Signalled if Drakma encounters wrong or unknown
+syntax when reading the reply from the server."))
+
+(defun syntax-error (format-control &rest format-arguments)
+  "Signals an error of type SYNTAX-ERROR with the provided
+format control and arguments."
+  (error 'syntax-error
+         :format-control format-control
+         :format-arguments format-arguments))
+
 (define-condition cookie-error (drakma-simple-error)
   ((cookie :initarg :cookie
            :initform nil
            :reader cookie-error-cookie
            :documentation "The COOKIE object that provoked this error.
-Can be NIL in case such an object couldn't be initialited."))
+Can be NIL in case such an object couldn't be initialized."))
   (:documentation "Signalled if someone tries to create a COOKIE object that's not valid."))
 
 (defun cookie-error (cookie format-control &rest format-arguments)
