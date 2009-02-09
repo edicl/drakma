@@ -881,13 +881,12 @@ use <a href="http://weitz.de/chunga/">chunked encoding</a> to send the
 content body.  Note that this will not work with some older web
 servers.
 <p>
-<a class=none name="content-length2">A non-<code>NIL</code> <code><i>content-length</i></code> argument</a>
-means that Drakma <em>must</em> build the request body in RAM and
-compute the content length even if it would have otherwise used
-chunked encoding - for example in the case of file uploads.  A special
-case is the value <code>T</code>
-for <code><i>content-length</i></code> which means that Drakma should
-compute the content length after building the request body.
+<a class=none name="content-length2">Providing
+a</a> <a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_t.htm#true">true</a>
+CONTENT-LENGTH argument which is not a non-negative integer means that
+Drakma <em>must</em> build the request body in RAM and compute the
+content length even if it would have otherwise used chunked encoding,
+for example in the case of file uploads.
 <p>
 <a class=none name="content-type"><code><i>content-type</i></code></a> is the
 corresponding 'Content-Type' header to be sent and will be ignored

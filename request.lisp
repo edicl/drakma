@@ -285,12 +285,10 @@ imply that no `Content-Length' header will be sent in any case.  If no
 send the content body.  Note that this will not work with older web
 servers.
 
-A non-NIL CONTENT-LENGTH argument means that Drakma /must/ build the
-request body in RAM and compute the content length even if it would
-have otherwise used chunked encoding, for example in the case of file
-uploads.  A special case is the value T for CONTENT-LENGTH which means
-that Drakma should compute the content length after building the
-request body.
+Providing a true CONTENT-LENGTH argument which is not a non-negative
+integer means that Drakma /must/ build the request body in RAM and
+compute the content length even if it would have otherwise used
+chunked encoding, for example in the case of file uploads.
 
 CONTENT-TYPE is the corresponding `Content-Type' header to be sent and
 will be ignored unless CONTENT is provided as well.
@@ -398,8 +396,6 @@ DEADLINE is available on CCL 1.2 and later."
     (parameter-error "Don't know how to handle scheme ~S." (uri-scheme uri)))
   (when (and close keep-alive)
     (parameter-error "CLOSE and KEEP-ALIVE must not be both true."))
-  (when (and (eq content :continuation) content-length)
-    (parameter-error "CONTENT-LENGTH must be NIL if CONTENT is :CONTINUATION."))
   (when (and form-data (not (eq method :post)))
     (parameter-error "FORM-DATA makes only sense with POST requests."))
   ;; convert PROXY argument to canonical form
@@ -550,7 +546,9 @@ DEADLINE is available on CCL 1.2 and later."
                 (when content-type
                   (write-header "Content-Type" "~A" content-type))
                 (when (and content-length
-                           (not (or (arrayp content)
+                           (not (or (and (integerp content-length)
+                                         (not (minusp content-length)))
+                                    (arrayp content)
                                     (listp content)
                                     (eq content :continuation))))
                   ;; CONTENT-LENGTH forces us to compute request body
