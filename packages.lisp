@@ -40,6 +40,8 @@
            :*ignore-unparseable-cookie-dates-p*
            :*text-content-types*
            :cookie
+           :cookie-error
+           :cookie-error-cookie
            :cookie-domain
            :cookie-expires
            :cookie-http-only-p
@@ -51,9 +53,12 @@
            :cookie-value
            :cookie=
            :delete-old-cookies
+           :drakma-condition
+           :drakma-error
            :get-content-type
            :header-value
            :http-request
+           :parameter-error
            :parameter-present-p
            :parameter-value
            :read-tokens-and-parameters

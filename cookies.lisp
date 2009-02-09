@@ -31,7 +31,7 @@
 
 (defclass cookie ()
   ((name :initarg :name
-         :initform (error "A cookie must have a name.")
+         :initform (cookie-error nil "A cookie must have a name.")
          :accessor cookie-name
          :documentation "The name of the cookie.")
    (value :initarg :value
@@ -39,7 +39,7 @@
           :accessor cookie-value
           :documentation "The cookie's value.")
    (domain :initarg :domain
-           :initform (error "A cookie must have a domain.")
+           :initform (cookie-error nil "A cookie must have a domain.")
            :accessor cookie-domain
            :documentation "The domain the cookie is valid for.")
    (path :initarg :path
@@ -122,22 +122,22 @@ in HTTP-REQUEST)."
            (eq (uri-scheme uri) :https))))
 
 (defun check-cookie (cookie)
-  "Checks if the slots of the COOKIE object COOKIE have valid
-values and raises a corresponding error otherwise."
+  "Checks if the slots of the COOKIE object COOKIE have valid values
+and raises a corresponding error of type COOKIE-ERROR otherwise."
   (with-slots (name value domain path expires)
       cookie
     (unless (and (stringp name) (plusp (length name)))
-      (error "Cookie name ~S must be a non-empty string." name))
+      (cookie-error cookie "Cookie name ~S must be a non-empty string." name))
     (unless (stringp value)
-      (error "Cookie value ~S must be a non-empty string." value))
+      (cookie-error cookie "Cookie value ~S must be a non-empty string." value))
     (unless (valid-cookie-domain-p domain)
-      (error "Invalid cookie domain ~S." domain))
+      (cookie-error cookie "Invalid cookie domain ~S." domain))
     (unless (and (stringp path) (plusp (length path)))
-      (error "Cookie path ~S must be a non-empty string." path))
+      (cookie-error cookie "Cookie path ~S must be a non-empty string." path))
     (unless (or (null expires)
                 (and (integerp expires)
                      (plusp expires)))
-      (error "Cookie expiry ~S should have been NIL or a universal time." expires))))
+      (cookie-error cookie "Cookie expiry ~S should have been NIL or a universal time." expires))))
 
 (defmethod initialize-instance :after ((cookie cookie) &rest initargs)
   "Check cookie validity after creation."
@@ -208,8 +208,9 @@ offsets like \"GMT-01:30\" are also allowed."
   ;; could try to employ CL-PPCRE, but that'd add a new dependency
   ;; without making this code much cleaner
   (handler-case 
-      (let* ((last-space-pos (or (position #\Space string :test #'char= :from-end t)
-                                 (error "Can't parse cookie date ~S, no space found." string)))
+      (let* ((last-space-pos
+              (or (position #\Space string :test #'char= :from-end t)
+                  (cookie-date-parse-error "Can't parse cookie date ~S, no space found." string)))
              (time-zone-string (subseq string (1+ last-space-pos)))
              (time-zone (interpret-as-time-zone time-zone-string))
              second minute hour day month year)
@@ -217,25 +218,27 @@ offsets like \"GMT-01:30\" are also allowed."
           (when (and day month)
             (cond ((every #'digit-char-p part)
                    (when year
-                     (error "Can't parse cookie date ~S, confused by ~S part." string part))
+                     (cookie-date-parse-error "Can't parse cookie date ~S, confused by ~S part."
+                                              string part))
                    (setq year (parse-integer part)))
                   ((= (count #\: part :test #'char=) 2)
                    (let ((h-m-s (mapcar #'safe-parse-integer (split-string part ":"))))
                      (setq hour (first h-m-s)
                            minute (second h-m-s)
                            second (third h-m-s))))
-                  (t (error "Can't parse cookie date ~S, confused by ~S part." string part))))
+                  (t (cookie-date-parse-error "Can't parse cookie date ~S, confused by ~S part."
+                                              string part))))
           (cond ((null day)
                  (unless (setq day (safe-parse-integer part))               
                    (setq month (interpret-as-month part))))
                 ((null month)
                  (setq month (interpret-as-month part)))))
         (unless (and second minute hour day month year)
-          (error "Can't parse cookie date ~S, component missing." string))
+          (cookie-date-parse-error "Can't parse cookie date ~S, component missing." string))
         (when (< year 100)
           (setq year (+ year 2000)))
         (encode-universal-time second minute hour day month year time-zone))
-    (error (condition)
+    (cookie-date-parse-error (condition)
       (cond (*ignore-unparseable-cookie-dates-p*
              (warn "~A" condition)
              nil)

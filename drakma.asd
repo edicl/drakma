@@ -49,6 +49,7 @@
   :version #.*drakma-version-string*
   :components ((:file "packages")
                (:file "specials")
+               (:file "conditions")
                (:file "util")
                (:file "read")
                (:file "cookies")
