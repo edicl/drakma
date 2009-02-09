@@ -54,8 +54,8 @@ more info."
                                (t external-format-in))))
               (make-external-format name :eol-style :lf)))))
     (error (condition)
-      (warn "Problems determining charset \(falling back to binary):~%~A"
-            condition))))
+      (drakma-warn "Problems determining charset \(falling back to binary):~%~A"
+                   condition))))
 
 (defun send-content (content stream &optional external-format-out)
   "Sends CONTENT to the stream STREAM as part of the request body
@@ -442,7 +442,7 @@ DEADLINE is available on CCL 1.2 and later."
                      (not :lw-does-not-have-write-timeout))
               (when use-ssl
                 (when (and write-timeout write-timeout-provided-p)
-                  (warn "Disabling WRITE-TIMEOUT because it doesn't mix well with SSL."))
+                  (drakma-warn "Disabling WRITE-TIMEOUT because it doesn't mix well with SSL."))
                 (setq write-timeout nil))
               (setq http-stream (or stream
                                     #+:lispworks
@@ -613,18 +613,21 @@ DEADLINE is available on CCL 1.2 and later."
                                              (and (integerp redirect)
                                                   (plusp redirect)))
                                    (cerror "Continue anyway."
-                                           "Status code was ~A, but ~
+                                           'drakma-simple-error
+                                           :format-control "Status code was ~A, but ~
 ~:[REDIRECT is ~S~;redirection limit has been exceeded~]."
-                                           status-code (integerp redirect) redirect))
+                                           :format-arguments (list status-code (integerp redirect) redirect)))
                                  (when auto-referer
                                    (setq additional-headers (set-referer uri additional-headers)))
                                  (let* ((location (header-value :location headers))
-                                        (new-uri (merge-uris (cond ((or (null location)
-                                                                        (zerop (length location)))
-                                                                    (warn "Empty `Location' header, assuming \"/\".")
-                                                                    "/")
-                                                                   (t location))
-                                                             uri))
+                                        (new-uri (merge-uris
+                                                  (cond ((or (null location)
+                                                             (zerop (length location)))
+                                                         (drakma-warn
+                                                          "Empty `Location' header, assuming \"/\".")
+                                                         "/")
+                                                        (t location))
+                                                  uri))
                                         ;; can we re-use the stream?
                                         (old-server-p (and (string= (uri-host new-uri)
                                                                     (uri-host uri))
@@ -671,7 +674,7 @@ DEADLINE is available on CCL 1.2 and later."
                                    (multiple-value-setq (body trailers)
                                        (read-body http-stream headers must-close external-format-body))
                                    (when trailers
-                                     (warn "Adding trailers from chunked encoding to HTTP headers.")
+                                     (drakma-warn "Adding trailers from chunked encoding to HTTP headers.")
                                      (setq headers (nconc headers trailers)))))
                                (setq done t)
                                (values (cond (want-stream http-stream)

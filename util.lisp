@@ -250,7 +250,7 @@ either be something like \"PST\" or \"GMT\" with an offset like
                (every (lambda (pos)
                         (digit-char-p (char string pos)))
                       '(4 5 7 8)))
-    (error "Can't interpret ~S as a time zone." string))
+    (cookie-date-parse-error "Can't interpret ~S as a time zone." string))
   (let ((hours (parse-integer string :start 4 :end 6))
         (minutes (parse-integer string :start 7 :end 9)))
     (* (if (char= (char string 3) #\+) -1 1)

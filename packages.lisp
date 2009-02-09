@@ -55,6 +55,7 @@
            :delete-old-cookies
            :drakma-condition
            :drakma-error
+           :drakma-warning
            :get-content-type
            :header-value
            :http-request

@@ -41,12 +41,20 @@
   ()
   (:documentation "Like DRAKMA-ERROR but with formatting capabilities."))
 
-(defun drakma-error (format-control &rest format-arguments)
-  "Signals an error of type DRAKMA-SIMPLE-ERROR with the provided
-format control and arguments."
-  (error 'drakma-simple-error
-         :format-control format-control
-         :format-arguments format-arguments))
+(define-condition drakma-warning (drakma-condition warning)
+  ()
+  (:documentation "Superclass for all warnings related to Drakma."))
+
+(define-condition drakma-simple-warning (drakma-warning simple-condition)
+  ()
+  (:documentation "Like DRAKMA-WARNING but with formatting capabilities."))
+
+(defun drakma-warn (format-control &rest format-arguments)
+  "Signals a warning of type DRAKMA-SIMPLE-WARNING with the
+provided format control and arguments."
+  (warn 'drakma-simple-warning
+        :format-control format-control
+        :format-arguments format-arguments))
 
 (define-condition parameter-error (drakma-simple-error)
   ()

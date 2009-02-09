@@ -240,7 +240,7 @@ offsets like \"GMT-01:30\" are also allowed."
         (encode-universal-time second minute hour day month year time-zone))
     (cookie-date-parse-error (condition)
       (cond (*ignore-unparseable-cookie-dates-p*
-             (warn "~A" condition)
+             (drakma-warn "~A" condition)
              nil)
             (t (error condition))))))
 

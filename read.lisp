@@ -36,7 +36,8 @@ three values - the protocol \(HTTP version) as a keyword, the
 status code as an integer, and optionally the reason phrase."
   (let* ((*current-error-message* "While reading status line:")
          (line (or (read-line* stream log-stream)
-                   (error "Could not read status line.")))
+                   (error 'drakma-simple-error
+                          :format-control "No status line - probably network error.")))
          (first-space-pos (or (position #\Space line :test #'char=)
                               (syntax-error "No space in status line ~S." line)))
          (second-space-pos (position #\Space line
