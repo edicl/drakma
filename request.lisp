@@ -245,11 +245,11 @@ FORM-DATA is true in which case the POST request body is sent as
 PARAMETERS alist can also be pathnames, open binary input streams,
 unary functions, or lists where the first element is of one of the
 former types.  These values denote files which should be sent as part
-of the request body, i.e. if files are present in PARAMETERS, the
-content type of the request is always `multipart/form-data'.  If the
-value is a list, the part of the list behind the first element is
-treated as a plist which can be used to specify a content type and/or
-a filename for the file, i.e. such a value could look like, e.g.,
+of the request body.  If files are present in PARAMETERS, the content
+type of the request is always `multipart/form-data'.  If the value is
+a list, the part of the list behind the first element is treated as a
+plist which can be used to specify a content type and/or a filename
+for the file, i.e. such a value could look like, e.g.,
 \(#p\"/tmp/my_file.doc\" :content-type \"application/msword\"
 :filename \"upload.doc\").
 
