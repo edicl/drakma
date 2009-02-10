@@ -274,3 +274,9 @@ matches an entry of *TEXT-CONTENT-TYPES*.  See docstring of
                      (or (null candidate-subtype)
                          (string-equal subtype candidate-subtype)))))
 
+(defmacro with-sequence-from-string ((stream string) &body body)
+  "Kludge to make Chunga tokenizing functionality usable.  Works like
+  WITH-INPUT-FROM-STRING, but creates a sequence of octets that works
+  with CHUNGA::PEEK-CHAR* and friends."
+  `(flex:with-input-from-sequence (,stream (map 'list #'char-code ,string))
+     ,@body))

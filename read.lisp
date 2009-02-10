@@ -60,7 +60,7 @@ is supposed to be an alist of headers as returned by
 HTTP-REQUEST.  Returns NIL if there is no such header amongst
 HEADERS."
   (when-let (content-type (header-value :content-type headers))
-    (with-input-from-sequence (stream (map 'list 'char-code content-type))
+    (with-sequence-from-string (stream content-type)
       (let* ((*current-error-message* "Corrupted Content-Type header:")
              (type (read-token stream))
              (subtype (and (assert-char stream #\/)
@@ -80,8 +80,8 @@ following the token."
   "Reads and consumes from STREAM any number of commas and
 whitespace.  Returns the following character or NIL in case of
 END-OF-FILE."
-  (loop while (eql (peek-char nil stream nil) #\,)
-        do (read-char stream) (skip-whitespace stream))
+  (loop while (eql (peek-char* stream nil) #\,)
+        do (read-char* stream) (skip-whitespace stream))
   (skip-whitespace stream))
 
 (defun read-tokens-and-parameters (string &key (value-required-p t))
@@ -94,7 +94,7 @@ simple token) or a cons of a string \(the token) and an alist
 \(the attribute/value pairs).  If VALUE-REQUIRED-P is NIL, the
 value part \(including the #\\= character) of each attribute/value
 pair is optional."
-  (with-input-from-string (stream string)
+  (with-sequence-from-string (stream string)
     (loop with *current-error-message* = (format nil "While parsing ~S:" string)
           for first = t then nil
           for next = (and (skip-whitespace stream)

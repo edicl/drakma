@@ -249,7 +249,7 @@ offsets like \"GMT-01:30\" are also allowed."
 of three-element lists where each one contains the name of the
 cookie, the value of the cookie, and an attribute/value list for
 the optional cookie parameters."
-  (with-input-from-string (stream string)
+  (with-sequence-from-string (stream string)
     (loop with *current-error-message* = (format nil "While parsing cookie header ~S:" string)
           for first = t then nil
           for next = (and (skip-whitespace stream)
