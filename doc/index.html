@@ -805,7 +805,7 @@ using
 the <code><i>parameters</i></code> alist can also be pathnames, unary
 functions, open binary input streams, or lists where the first element
 is of one of the former types.  These values denote files which should
-be sent as part of the request body, i.e. if such file designators are
+be sent as part of the request body.  If such file designators are
 present in <code><i>parameters</i></code>, the content type of the
 request is <em>always</em> <code>multipart/form-data</code>.  If the
 value denoting a file is a list, the part of the list behind the first
