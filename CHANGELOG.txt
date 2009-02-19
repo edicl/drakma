@@ -1,5 +1,5 @@
 Version 1.0.0
-2009-02-09
+2009-02-19
 Use the new ("binary") version of Chunga
 Added conditions types
 Some performance improvements
