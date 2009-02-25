@@ -111,7 +111,7 @@ in HTTP-REQUEST)."
   (and ;; check domain
        (cookie-domain-matches (cookie-domain cookie) uri)
        ;; check path
-       (starts-with-p (uri-path uri) (cookie-path cookie))
+       (starts-with-p (or (uri-path uri) "/") (cookie-path cookie))
        ;; check expiry date
        (let ((expires (cookie-expires cookie)))
          (or (null expires)

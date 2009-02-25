@@ -1,3 +1,5 @@
+Make SEND-COOKIE-P work for pathless URIs (thanks to Tomo Matsumoto)
+
 Version 1.0.0
 2009-02-19
 Use the new ("binary") version of Chunga
