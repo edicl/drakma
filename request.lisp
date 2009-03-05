@@ -157,8 +157,8 @@ headers of the chunked stream \(if any) as a second value."
                      (when textp
                        (setf result
                              (octets-to-string result :external-format (flexi-stream-external-format stream))
-                             #+:clisp #+:clisp
-                             (flexi-stream-element-type stream) element-type))
+                             #+:clisp (flexi-stream-element-type stream)
+                             #+:clisp element-type))
                      result))
                   ((or chunkedp must-close)
                    ;; no content length, read until EOF (or end of chunking)
@@ -204,7 +204,7 @@ headers of the chunked stream \(if any) as a second value."
                               #+:lispworks (read-timeout 20)
                               #+(and :lispworks (not :lw-does-not-have-write-timeout))
                               (write-timeout 20 write-timeout-provided-p)
-                              #+openmcl
+                              #+:openmcl
                               deadline)
   "Sends an HTTP request to a web server and returns its reply.  URI
 is where the request is sent to, and it is either a string denoting a
@@ -446,17 +446,18 @@ only available on CCL 1.2 and later."
                                                           :timeout connection-timeout
                                                           :read-timeout read-timeout
                                                           #-:lw-does-not-have-write-timeout
+                                                          :write-timeout
                                                           #-:lw-does-not-have-write-timeout
-                                                          :write-timeout write-timeout
+                                                          write-timeout
                                                           :errorp t)
                                     #-:lispworks
                                     (usocket:socket-stream
                                      (usocket:socket-connect host port
                                                              :element-type 'octet
-                                                             #+openmcl #+openmcl
-                                                             :deadline deadline
+                                                             #+:openmcl :deadline
+                                                             #+:openmcl deadline
                                                              :nodelay t))))
-              #+openmcl
+              #+:openmcl
               (when deadline
                 ;; it is correct to set the deadline here even though
                 ;; it may have been initialized by SOCKET-CONNECT

@@ -1,3 +1,4 @@
+Solidify feature expressions (thanks to Joshua Taylor)
 Make SEND-COOKIE-P work for pathless URIs (thanks to Tomo Matsumoto)
 
 Version 1.0.0
