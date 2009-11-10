@@ -654,6 +654,8 @@ only available on CCL 1.2 and later."
                                                               (t redirect))
                                               :stream (and re-use-stream http-stream)
                                               :additional-headers additional-headers
+                                              ;; don't send GET parameters again in redirect
+                                              :parameters (and (not (eq method :get)) parameters)
                                               args)))))
                                (let ((transfer-encodings (header-value :transfer-encoding headers)))
                                  (when transfer-encodings
