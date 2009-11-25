@@ -56,7 +56,8 @@
                                    :proppatch
                                    :put
                                    :trace
-                                   :unlock)
+                                   :unlock
+				   :patch)
   "The HTTP methods \(including WebDAV methods) Drakma knows.")
 
 (defconstant +buffer-size+ 8192)

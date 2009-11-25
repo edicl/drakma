@@ -1,3 +1,4 @@
+Added HTTP method PATCH (thanks to Xiangjun Wu)
 Don't send GET parameters again when redirecting (reported by Eugene Ossintsev)
 Solidify feature expressions (thanks to Joshua Taylor)
 Make SEND-COOKIE-P work for pathless URIs (thanks to Tomo Matsumoto)
