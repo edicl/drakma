@@ -1,3 +1,5 @@
+Version 1.1.0
+2009-12-01
 Allowed additional headers to be function designators (suggested by Xiangjun Wu)
 Be more liberal when parsing cookies (thanks to Andrei Stebakov)
 Added HTTP method PATCH (thanks to Xiangjun Wu)
