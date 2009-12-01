@@ -249,20 +249,14 @@ offsets like \"GMT-01:30\" are also allowed."
 of three-element lists where each one contains the name of the
 cookie, the value of the cookie, and an attribute/value list for
 the optional cookie parameters."
-  (with-sequence-from-string (stream string)
-    (loop with *current-error-message* = (format nil "While parsing cookie header ~S:" string)
-          for first = t then nil
-          for next = (and (skip-whitespace stream)
-                          (or first (assert-char stream #\,))
-                          (skip-whitespace stream)
-                          (skip-more-commas stream))
-          for name/value = (and next (read-name-value-pair stream
-                                                           :cookie-syntax t))
-          for parameters = (and name/value (read-name-value-pairs stream
-                                                                  :value-required-p nil
-                                                                  :cookie-syntax t))
-          while name/value
-          collect (list (car name/value) (cdr name/value) parameters))))
+  (let ((*current-error-message* (format nil "While parsing cookie header ~S:" string))
+        result)
+    (dolist (substring (split-set-cookie-string string))        
+      (with-sequence-from-string (stream substring)
+        (let* ((name/value (read-name-value-pair stream :cookie-syntax t))
+               (parameters (read-name-value-pairs stream :value-required-p nil :cookie-syntax t)))
+          (push (list (car name/value) (cdr name/value) parameters) result))))
+    (nreverse result)))
 
 (defun get-cookies (headers uri)
   "Returns a list of COOKIE objects corresponding to the

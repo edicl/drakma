@@ -280,3 +280,48 @@ matches an entry of *TEXT-CONTENT-TYPES*.  See docstring of
   with CHUNGA::PEEK-CHAR* and friends."
   `(flex:with-input-from-sequence (,stream (map 'list #'char-code ,string))
      ,@body))
+
+(defun split-set-cookie-string (string)
+  "Splits the string STRING which is assumed to be the value of a
+`Set-Cookie' into parts corresponding to individual cookies and
+returns a list of these parts \(substrings).
+
+The string /should/ be split at commas, but heuristical approach is
+used instead which doesn't split at commas which are followed by what
+cannot be recognized as the start of the next cookie.  This is
+necessary because servers send headers containing unquoted commas
+which are not meant as separators."
+  ;; this would of course be a lot easier with CL-PPCRE's SPLIT
+  (let ((cookie-start 0)
+        (string-length (length string))
+        search-start
+        result)
+    (tagbody     
+     ;; at this point we know that COOKIE-START is the start of a new
+     ;; cookie (at the start of the string or behind a comma)
+     next-cookie
+     (setq search-start cookie-start)
+     ;; we reach this point if the last comma didn't separate two
+     ;; cookies or if there was no previous comma
+     skip-comma
+     (unless (< search-start string-length)
+       (return-from split-set-cookie-string (nreverse result)))
+     ;; look is there's a comma
+     (let* ((comma-pos (position #\, string :start search-start))
+            ;; and if so, look for a #\= behind the comma
+            (equals-pos (and comma-pos (position #\= string :start comma-pos)))
+            ;; check that (except for whitespace) there's only a token
+            ;; (the name of the next cookie) between #\, and #\=
+            (new-cookie-start-p (and equals-pos                                     
+                                     (every 'token-char-p
+                                            (trim-whitespace string
+                                                             :start (1+ comma-pos)
+                                                             :end equals-pos)))))
+       (when (and comma-pos (not new-cookie-start-p))
+         (setq search-start (1+ comma-pos))
+         (go skip-comma))
+       (let ((end-pos (or comma-pos string-length)))
+         (push (trim-whitespace (subseq string cookie-start end-pos)) result)
+         (setq cookie-start (1+ end-pos))
+         (go next-cookie))))))
+         

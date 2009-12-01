@@ -1,3 +1,4 @@
+Be more liberal when parsing cookies (thanks to Andrei Stebakov)
 Added HTTP method PATCH (thanks to Xiangjun Wu)
 Don't send GET parameters again when redirecting (reported by Eugene Ossintsev)
 Solidify feature expressions (thanks to Joshua Taylor)
