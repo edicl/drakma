@@ -935,11 +935,15 @@ the port to use (which will default to 80 otherwise).
 <a class=none name="proxy-basic-authorization"><code><i>proxy-basic-authorization</i></code></a> is used like <code><i>basic-authorization</i></code>, but for
 the proxy, and only if <code><i>proxy</i></code> is true.
 <p>
-<a class=none name="additional-headers"><code><i>additional-headers</i></code></a> is a
-name/value <a
-href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#alist">alist</a>
-(like <code><i>parameters</i></code>) of additional HTTP headers which
-should be sent with the request.
+<a class=none
+name="additional-headers"><code><i>additional-headers</i></code></a>
+is a
+name/value <a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#alist">alist</a>
+of additional HTTP headers which should be sent with the request.
+Unlike in <code><i>parameters</i></code>, the cdrs can not only be
+strings but also designators for unary functions (which should in turn
+return a string) in which case the function is called each time the
+header is written.
 <p>
 If <a name="redirect" class=none><code><i>redirect</i></code></a> is
 not <code>NIL</code>, it must be a non-negative integer

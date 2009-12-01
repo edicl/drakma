@@ -321,8 +321,11 @@ otherwise).  PROXY-BASIC-AUTHORIZATION is used like
 BASIC-AUTHORIZATION, but for the proxy, and only if PROXY is
 true.
 
-ADDITIONAL-HEADERS is a name/value alist \(like PARAMETERS) of
-additional HTTP headers which should be sent with the request.
+ADDITIONAL-HEADERS is a name/value alist of additional HTTP headers
+which should be sent with the request.  Unlike in PARAMETERS, the cdrs
+can not only be strings but also designators for unary functions
+\(which should in turn return a string) in which case the function is
+called each time the header is written.
 
 If REDIRECT is not NIL, it must be a non-negative integer or T.
 If REDIRECT is true, Drakma will follow redirects \(return codes
@@ -543,7 +546,10 @@ only available on CCL 1.2 and later."
                 (setq must-close close)
                 (write-header "Connection" "close"))
               (loop for (name . value) in additional-headers
-                    do (write-header name "~A" value))
+                    do (write-header name "~A"
+                                     (cond ((or (functionp value) (symbolp value))
+                                            (funcall value))
+                                           (t value))))
               (when content
                 (when content-type
                   (write-header "Content-Type" "~A" content-type))
