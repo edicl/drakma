@@ -1,3 +1,5 @@
+Allow for GET/POST parameters without a value (seen on Lotus webservers)
+
 Version 1.1.0
 2009-12-01
 Allowed additional headers to be function designators (suggested by Xiangjun Wu)

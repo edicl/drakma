@@ -111,18 +111,19 @@ LispWorks external format EXTERNAL-FORMAT."
 
 (defun alist-to-url-encoded-string (alist external-format)
   "ALIST is supposed to be an alist of name/value pairs where both
-names and values are strings.  This function returns a string where
-this list is represented as for the content type
-`application/x-www-form-urlencoded', i.e. the values are URL-encoded
-using the external format EXTERNAL-FORMAT, the pairs are joined with a
-#\\& character, and each name is separated from its value with a #\\=
-character."
+names and values are strings \(or, for values, NIL).  This function
+returns a string where this list is represented as for the content
+type `application/x-www-form-urlencoded', i.e. the values are
+URL-encoded using the external format EXTERNAL-FORMAT, the pairs are
+joined with a #\\& character, and each name is separated from its
+value with a #\\= character.  If the value is NIL, no #\\= is used."
   (with-output-to-string (out)
     (loop for first = t then nil
           for (name . value) in alist
           unless first do (write-char #\& out)
-          do (format out "~A=~A"
+          do (format out "~A~:[~;=~A~]"
                       (url-encode name external-format)
+                      value
                       (url-encode value external-format)))))
 
 (defun default-port (uri)

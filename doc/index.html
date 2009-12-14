@@ -789,7 +789,10 @@ href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_c.htm#cdr">cd
 each being a string) which denotes the parameters which are added to
 the query part of the URI or (in the case of a POST request) comprise
 the request body.  (But
-see <a href="#content"><code><i>content</i></code></a> below.)  The
+see <a href="#content"><code><i>content</i></code></a> below.)
+The values can also be
+<code>NIL</code> in which case only the name (without an equal sign) is used in
+the query string.  The
 name/value pairs
 are <a
 href="http://www.blooberry.com/indexdot/html/topics/urlencoding.htm">URL-encoded</a>

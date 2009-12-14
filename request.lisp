@@ -237,19 +237,20 @@ the scheme of URI is `https'.
 PARAMETERS is an alist of name/value pairs \(the car and the cdr each
 being a string) which denotes the parameters which are added to the
 query part of the URL or \(in the case of a POST request) comprise the
-body of the request.  (But see CONTENT below.)  The name/value pairs
-are URL-encoded using the FLEXI-STREAMS external format
-EXTERNAL-FORMAT-OUT before they are sent to the server unless
-FORM-DATA is true in which case the POST request body is sent as
-`multipart/form-data' using EXTERNAL-FORMAT-OUT.  The values of the
-PARAMETERS alist can also be pathnames, open binary input streams,
-unary functions, or lists where the first element is of one of the
-former types.  These values denote files which should be sent as part
-of the request body.  If files are present in PARAMETERS, the content
-type of the request is always `multipart/form-data'.  If the value is
-a list, the part of the list behind the first element is treated as a
-plist which can be used to specify a content type and/or a filename
-for the file, i.e. such a value could look like, e.g.,
+body of the request.  (But see CONTENT below.)  The values can also be
+NIL in which case only the name \(without an equal sign) is used in
+the query string.  The name/value pairs are URL-encoded using the
+FLEXI-STREAMS external format EXTERNAL-FORMAT-OUT before they are sent
+to the server unless FORM-DATA is true in which case the POST request
+body is sent as `multipart/form-data' using EXTERNAL-FORMAT-OUT.  The
+values of the PARAMETERS alist can also be pathnames, open binary
+input streams, unary functions, or lists where the first element is of
+one of the former types.  These values denote files which should be
+sent as part of the request body.  If files are present in PARAMETERS,
+the content type of the request is always `multipart/form-data'.  If
+the value is a list, the part of the list behind the first element is
+treated as a plist which can be used to specify a content type and/or
+a filename for the file, i.e. such a value could look like, e.g.,
 \(#p\"/tmp/my_file.doc\" :content-type \"application/msword\"
 :filename \"upload.doc\").
 
@@ -406,7 +407,10 @@ only available on CCL 1.2 and later."
       (setq proxy (list proxy 80))))
   ;; make sure we don't get :CRLF on Windows
   (let ((*default-eol-style* :lf)
-        (file-parameters-p (find-if-not #'stringp parameters :key #'cdr))
+        (file-parameters-p (find-if-not (lambda (thing)
+                                          (or (stringp thing)
+                                              (null thing)))
+                                        parameters :key #'cdr))
         parameters-used-p)
     (when (and file-parameters-p (not (eq method :post)))
       (parameter-error "Don't know how to handle parameters in ~S, as this is not a POST request."
