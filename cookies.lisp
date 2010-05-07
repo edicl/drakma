@@ -1,7 +1,7 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: DRAKMA; Base: 10 -*-
 ;;; $Header: /usr/local/cvsrep/drakma/cookies.lisp,v 1.15 2008/01/14 01:57:01 edi Exp $
 
-;;; Copyright (c) 2006-2009, Dr. Edmund Weitz.  All rights reserved.
+;;; Copyright (c) 2006-2010, Dr. Edmund Weitz.  All rights reserved.
 
 ;;; Redistribution and use in source and binary forms, with or without
 ;;; modification, are permitted provided that the following conditions

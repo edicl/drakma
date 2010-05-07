@@ -1,7 +1,7 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: DRAKMA; Base: 10 -*-
 ;;; $Header: /usr/local/cvsrep/drakma/read.lisp,v 1.17 2008/05/25 11:35:20 edi Exp $
 
-;;; Copyright (c) 2006-2009, Dr. Edmund Weitz.  All rights reserved.
+;;; Copyright (c) 2006-2010, Dr. Edmund Weitz.  All rights reserved.
 
 ;;; Redistribution and use in source and binary forms, with or without
 ;;; modification, are permitted provided that the following conditions
