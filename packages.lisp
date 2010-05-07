@@ -64,6 +64,7 @@
            :parameter-error
            :parameter-present-p
            :parameter-value
+           :parse-cookie-date
            :read-tokens-and-parameters
            :split-tokens
            :syntax-error))
