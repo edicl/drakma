@@ -514,10 +514,14 @@ only available on CCL 1.2 and later."
                       (uri-query uri) nil))
               (write-http-line "~A ~A ~A"
                                (string-upcase method)
-                               (cond (proxy (render-uri uri nil))
-                                     (t (format nil "~A~@[?~A~]"
-                                                (or (uri-path uri) "/")
-                                                (uri-query uri))))
+                               (render-uri (cond (proxy uri)
+                                                 (t (copy-uri uri
+                                                              :scheme nil
+                                                              :host nil
+                                                              :port nil
+                                                              :parsed-path nil
+                                                              :plist nil)))
+                                           nil)
                                (string-upcase protocol))
               (write-header "Host" "~A~@[:~A~]" (uri-host uri) (non-default-port uri))
               (when user-agent
