@@ -487,6 +487,9 @@ only available on CCL 1.2 and later."
               (when (and use-ssl
                          ;; don't attach SSL to existing streams
                          (not stream))
+                #+:lispworks
+                (comm:attach-ssl http-stream :ssl-side :client)
+                #-:lispworks
                 (setq http-stream (make-ssl-stream http-stream)))
               (cond (stream
                      (setf (flexi-stream-element-type http-stream)

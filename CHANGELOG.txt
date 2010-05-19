@@ -1,3 +1,7 @@
+Version 1.2.1
+2010-05-19
+Fix a couple of typos (thanks to Stelian Ionescu and Giovanni Gigante)
+
 Version 1.2.0
 2010-05-19
 Introduced *REMOVE-DUPLICATE-COOKIES-P* (Ryan Davis)

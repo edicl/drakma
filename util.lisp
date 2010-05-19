@@ -331,7 +331,7 @@ which are not meant as separators."
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
 \(which will not be equal to HTTP-STREAM)."
   #+:allegro
-  (socket:make-ssl-client-stream http-stream))
+  (socket:make-ssl-client-stream http-stream)
   #-:allegro
   (let ((s http-stream))
     (cl+ssl:make-ssl-client-stream
