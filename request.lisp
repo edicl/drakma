@@ -509,6 +509,9 @@ only available on CCL 1.2 and later."
                 ;; got a connection; we have to read a blank line,
                 ;; turn on SSL, and then we can transmit
                 (read-line* http-stream)
+                #+:lispworks
+                (comm:attach-ssl raw-http-stream :ssl-side :client)
+                #-:lispworks
                 (setq http-stream (wrap-stream (make-ssl-stream raw-http-stream))))
               (when (and (not parameters-used-p)
                          parameters)

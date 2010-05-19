@@ -326,24 +326,14 @@ which are not meant as separators."
          (setq cookie-start (1+ end-pos))
          (go next-cookie))))))
 
-#+:lispworks
+#-:lispworks
 (defun make-ssl-stream (http-stream)
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
-\(which might not be equal to HTTP-STREAM)."
-  (comm:attach-ssl http-stream :ssl-side :client)
-  http-stream)
-
-#+:allegro
-(defun make-ssl-stream (http-stream)
-  "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
-\(which might not be equal to HTTP-STREAM)."
+\(which will not be equal to HTTP-STREAM)."
+  #+:allegro
   (socket:make-ssl-client-stream http-stream))
-
-#-(or :lispworks :allegro)
-(defun make-ssl-stream (http-stream)
-  "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
-\(which might not be equal to HTTP-STREAM)."
+  #-:allegro
   (let ((s http-stream))
-    (cl+ssl:make-ssl-client-stream 
+    (cl+ssl:make-ssl-client-stream
      (cl+ssl:stream-fd s)
      :close-callback (lambda () (close s)))))
