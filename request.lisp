@@ -430,7 +430,7 @@ only available on CCL 1.2 and later."
               (t
                (setq content (alist-to-url-encoded-string parameters external-format-out)
                      content-type "application/x-www-form-urlencoded")))))
-    (let ((proxying-https? (and proxy (not stream) (eq :https (puri:uri-scheme uri))))
+    (let ((proxying-https-p (and proxy (not stream) (eq :https (puri:uri-scheme uri))))
            http-stream raw-http-stream must-close done)
       (unwind-protect
           (progn
@@ -439,7 +439,7 @@ only available on CCL 1.2 and later."
                   (port (cond (proxy (second proxy))
                               ((uri-port uri))
                               (t (default-port uri))))
-                  (use-ssl (and (not proxying-https?)
+                  (use-ssl (and (not proxying-https-p)
                                 (or force-ssl
                                     (eq (uri-scheme uri) :https)))))
               #+(and :lispworks5.0 :mswindows
@@ -473,7 +473,7 @@ only available on CCL 1.2 and later."
                 ;; it may have been initialized by SOCKET-CONNECT
                 ;; already - the stream may have been passed in by the
                 ;; user and the user may want to adjust the deadline
-                ;; for every request.
+                ;; for every request
                 (setf (ccl:stream-deadline http-stream) deadline))
             (labels ((write-http-line (fmt &rest args)
                        (when *header-stream*
@@ -481,19 +481,6 @@ only available on CCL 1.2 and later."
                        (format http-stream "~?~C~C" fmt args #\Return #\Linefeed))
                      (write-header (name value-fmt &rest value-args)
                        (write-http-line "~A: ~?" name value-fmt value-args))
-                     (make-ssl-stream (http-stream)
-                       #+:lispworks
-                       (progn
-                         (comm:attach-ssl http-stream :ssl-side :client)
-                         http-stream)
-                       #-:lispworks
-                       #+:allegro
-                       (socket:make-ssl-client-stream http-stream)
-                       #-:allegro
-                       (let ((s http-stream))
-                         (cl+ssl:make-ssl-client-stream 
-                          (cl+ssl:stream-fd s)
-                          :close-callback (lambda () (close s)))))
                      (wrap-stream (http-stream)
                        (make-flexi-stream (make-chunked-stream http-stream)
                                           :external-format +latin-1+)))
@@ -507,21 +494,20 @@ only available on CCL 1.2 and later."
                            (flexi-stream-external-format http-stream) +latin-1+))
                     (t
                      (setq http-stream (wrap-stream http-stream))))
-              (when proxying-https?
-                ;; Setup a tunnel through the proxy server to the
-                ;; final destination.
-                (write-http-line "CONNECT ~A:~A HTTP/1.1" (puri:uri-host uri)
-                                 (or (puri:uri-port uri) 443))
-                (write-http-line "Host: ~A:~A" (puri:uri-host uri)
-                                 (or (puri:uri-port uri) 443))
+              (when proxying-https-p
+                ;; set up a tunnel through the proxy server to the
+                ;; final destination
+                (write-http-line "CONNECT ~A:~:[443~;~:*~A~] HTTP/1.1"
+                                 (uri-host uri) (uri-port uri))
+                (write-http-line "Host: ~A:~:[443~;~:*~A~]"
+                                 (uri-host uri) (uri-port uri))
                 (write-http-line "")
                 (force-output http-stream)
-                ;; Check we get a 200 response before proceeding.
-                (let ((line (read-status-line http-stream *header-stream*)))
-                  (unless (eq (second line) 200)
-                    (error "Unable to establish HTTPS tunnel through proxy.")))
-                ;; Got a connection. We have to read a blank line,
-                ;; turn on SSL, and then we can transmit.
+                ;; check we get a 200 response before proceeding
+                (unless (eql (second (read-status-line http-stream *header-stream*)) 200)
+                  (error "Unable to establish HTTPS tunnel through proxy."))
+                ;; got a connection; we have to read a blank line,
+                ;; turn on SSL, and then we can transmit
                 (read-line* http-stream)
                 (setq http-stream (wrap-stream (make-ssl-stream raw-http-stream))))
               (when (and (not parameters-used-p)
@@ -539,8 +525,8 @@ only available on CCL 1.2 and later."
               (write-http-line "~A ~A ~A"
                                (string-upcase method)
                                (render-uri (cond ((and proxy
-                                                       (not stream)
-                                                       (not proxying-https?)) uri)
+                                                       (null stream)
+                                                       (not proxying-https-p)) uri)
                                                  (t (copy-uri uri
                                                               :scheme nil
                                                               :host nil
