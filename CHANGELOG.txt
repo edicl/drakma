@@ -1,9 +1,11 @@
+Version 1.2.0
+2010-05-19
 Introduced *REMOVE-DUPLICATE-COOKIES-P* (Ryan Davis)
-Enable https through a proxy (Bill St. Clair and Dave Lambert)
+Enabled https through a proxy (Bill St. Clair and Dave Lambert)
 Bugfix for redirect of a request through a proxy (Bill St. Clair)
 Export PARSE-COOKIE-DATE
 Safer method to render URIs
-Allow for GET/POST parameters without a value (seen on Lotus webservers)
+Allowed for GET/POST parameters without a value (seen on Lotus webservers)
 
 Version 1.1.0
 2009-12-01
