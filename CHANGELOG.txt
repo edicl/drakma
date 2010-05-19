@@ -1,3 +1,5 @@
+Enable https through a proxy (Bill St. Clair and Dave Lambert)
+Bugfix for redirect of a request through a proxy (Bill St. Clair)
 Export PARSE-COOKIE-DATE
 Safer method to render URIs
 Allow for GET/POST parameters without a value (seen on Lotus webservers)

@@ -430,7 +430,8 @@ only available on CCL 1.2 and later."
               (t
                (setq content (alist-to-url-encoded-string parameters external-format-out)
                      content-type "application/x-www-form-urlencoded")))))
-    (let (http-stream must-close done)
+    (let ((proxying-https? (and proxy (not stream) (eq :https (puri:uri-scheme uri))))
+           http-stream raw-http-stream must-close done)
       (unwind-protect
           (progn
             (let ((host (or (and proxy (first proxy))
@@ -438,8 +439,9 @@ only available on CCL 1.2 and later."
                   (port (cond (proxy (second proxy))
                               ((uri-port uri))
                               (t (default-port uri))))
-                  (use-ssl (or force-ssl
-                               (eq (uri-scheme uri) :https))))
+                  (use-ssl (and (not proxying-https?)
+                                (or force-ssl
+                                    (eq (uri-scheme uri) :https)))))
               #+(and :lispworks5.0 :mswindows
                      (not :lw-does-not-have-write-timeout))
               (when use-ssl
@@ -463,7 +465,8 @@ only available on CCL 1.2 and later."
                                                              :element-type 'octet
                                                              #+:openmcl :deadline
                                                              #+:openmcl deadline
-                                                             :nodelay t))))
+                                                             :nodelay t)))
+                    raw-http-stream http-stream)
               #+:openmcl
               (when deadline
                 ;; it is correct to set the deadline here even though
@@ -472,34 +475,55 @@ only available on CCL 1.2 and later."
                 ;; user and the user may want to adjust the deadline
                 ;; for every request.
                 (setf (ccl:stream-deadline http-stream) deadline))
-              (when (and use-ssl
-                         ;; don't attach SSL to existing streams
-                         (not stream))
-                #+:lispworks
-                (comm:attach-ssl http-stream :ssl-side :client)
-                #-:lispworks
-                (setq http-stream
-                      #+:allegro
-                      (socket:make-ssl-client-stream http-stream)
-                      #-:allegro
-                      (let ((s http-stream))
-                        (cl+ssl:make-ssl-client-stream 
-                         (cl+ssl:stream-fd s)
-                         :close-callback (lambda () (close s)))))))
-            (cond (stream
-                   (setf (flexi-stream-element-type http-stream)
-                         #+:lispworks 'lw:simple-char #-:lispworks 'character
-                         (flexi-stream-external-format http-stream) +latin-1+))
-                  (t
-                   (setq http-stream
-                         (make-flexi-stream (make-chunked-stream http-stream)
-                                            :external-format +latin-1+))))
             (labels ((write-http-line (fmt &rest args)
                        (when *header-stream*
                          (format *header-stream* "~?~%" fmt args))
                        (format http-stream "~?~C~C" fmt args #\Return #\Linefeed))
                      (write-header (name value-fmt &rest value-args)
-                       (write-http-line "~A: ~?" name value-fmt value-args)))
+                       (write-http-line "~A: ~?" name value-fmt value-args))
+                     (make-ssl-stream (http-stream)
+                       #+:lispworks
+                       (progn
+                         (comm:attach-ssl http-stream :ssl-side :client)
+                         http-stream)
+                       #-:lispworks
+                       #+:allegro
+                       (socket:make-ssl-client-stream http-stream)
+                       #-:allegro
+                       (let ((s http-stream))
+                         (cl+ssl:make-ssl-client-stream 
+                          (cl+ssl:stream-fd s)
+                          :close-callback (lambda () (close s)))))
+                     (wrap-stream (http-stream)
+                       (make-flexi-stream (make-chunked-stream http-stream)
+                                          :external-format +latin-1+)))
+              (when (and use-ssl
+                         ;; don't attach SSL to existing streams
+                         (not stream))
+                (setq http-stream (make-ssl-stream http-stream)))
+              (cond (stream
+                     (setf (flexi-stream-element-type http-stream)
+                           #+:lispworks 'lw:simple-char #-:lispworks 'character
+                           (flexi-stream-external-format http-stream) +latin-1+))
+                    (t
+                     (setq http-stream (wrap-stream http-stream))))
+              (when proxying-https?
+                ;; Setup a tunnel through the proxy server to the
+                ;; final destination.
+                (write-http-line "CONNECT ~A:~A HTTP/1.1" (puri:uri-host uri)
+                                 (or (puri:uri-port uri) 443))
+                (write-http-line "Host: ~A:~A" (puri:uri-host uri)
+                                 (or (puri:uri-port uri) 443))
+                (write-http-line "")
+                (force-output http-stream)
+                ;; Check we get a 200 response before proceeding.
+                (let ((line (read-status-line http-stream *header-stream*)))
+                  (unless (eq (second line) 200)
+                    (error "Unable to establish HTTPS tunnel through proxy.")))
+                ;; Got a connection. We have to read a blank line,
+                ;; turn on SSL, and then we can transmit.
+                (read-line* http-stream)
+                (setq http-stream (wrap-stream (make-ssl-stream raw-http-stream))))
               (when (and (not parameters-used-p)
                          parameters)
                 (setf (uri-query uri)
@@ -514,7 +538,9 @@ only available on CCL 1.2 and later."
                       (uri-query uri) nil))
               (write-http-line "~A ~A ~A"
                                (string-upcase method)
-                               (render-uri (cond (proxy uri)
+                               (render-uri (cond ((and proxy
+                                                       (not stream)
+                                                       (not proxying-https?)) uri)
                                                  (t (copy-uri uri
                                                               :scheme nil
                                                               :host nil
@@ -703,7 +729,7 @@ only available on CCL 1.2 and later."
                                        status-text))))))
                 (when (eq content :continuation)
                   (return-from http-request #'finish-request))
-                (finish-request content))))
+                (finish-request content)))))
         ;; the cleanup form of the UNWIND-PROTECT above
         (when (and http-stream
                    (or (not done)
