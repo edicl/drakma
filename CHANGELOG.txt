@@ -1,6 +1,6 @@
 Version 1.2.1
 2010-05-19
-Fix a couple of typos (thanks to Stelian Ionescu and Giovanni Gigante)
+Fix a couple of typos (thanks to Stelian Ionescu, Giovanni Gigante, and Zach Beane)
 
 Version 1.2.0
 2010-05-19
