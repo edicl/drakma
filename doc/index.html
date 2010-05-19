@@ -86,6 +86,7 @@ license</a> so you can basically do with it whatever you want.
           <li><a href="#delete-old-cookies"><code>delete-old-cookies</code></a>
           <li><a href="#*allow-dotless-cookie-domains-p*"><code>*allow-dotless-cookie-domains-p*</code></a>
           <li><a href="#*ignore-unparseable-cookie-dates-p*"><code>*ignore-unparseable-cookie-dates-p*</code></a>
+          <li><a href="#*remove-duplicate-cookies-p*"><code>*remove-duplicate-cookies-p*</code></a>
           <li><a href="#parse-cookie-date"><code>parse-cookie-date</code></a>
         </ol>
       <li><a href="#headers">Headers</a>
@@ -1351,6 +1352,59 @@ convenience function.
 </blockquote>
 
 <!-- End of entry for PARSE-COOKIE-DATE -->
+
+
+<!-- Entry for *REMOVE-DUPLICATE-COOKIES-P* -->
+
+<p><br>[Special variable]<br><a class=none name='*remove-duplicate-cookies-p*'><b>*remove-duplicate-cookies-p*</b></a>
+<blockquote><br>
+Determines how duplicate cookies in the response are handled, defaults
+to <code>T</code>.  Cookies are considered duplicate using 
+<a href="#cookie="><code>COOKIE=</code></a>.
+
+Valid values are:
+<ul>
+ <li><code>NIL</code> - duplicates will not be removed</li>
+ <li><code>T</code> - for duplicates, only the last cookie value will 
+   be kept, based on the order of the response header</li>
+ <li><code>:KEEP-LAST</code> - for duplicates, only the last cookie 
+   value will be kept, based on the order of the response header</li>
+ <li><code>:KEEP-FIRST</code> - for duplicates, only the first cookie 
+   value will be kept, based on the order of the response header</li>
+</ul>
+
+Misbehaving servers may send duplicate cookies back in the same 
+<code>Set-Cookie</code> header:
+<pre>
+HTTP/1.1 200  OK
+Server: My-hand-rolled-server
+Date: Wed, 07 Apr 2010 15:12:30 GMT
+Connection: Close
+Content-Type: text/html
+Content-Length: 82
+Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
+</pre>
+<p>
+In this case Drakma has to choose whether cookie "a" has the value 
+"1" or "2".  By default, Drakma will choose the last value specified, 
+in this case "2".
+</p>
+<p>
+By default, Drakma conforms to <a href="http://www.ietf.org/rfc/rfc2109.txt">RFC2109 HTTP State 
+Management Mechanism</a>, section 4.3.3 Cookie Management:
+<blockquote><em>
+If a user agent receives a Set-Cookie response header whose NAME is
+the same as a pre-existing cookie, and whose Domain and Path
+attribute values exactly (string) match those of a pre-existing
+cookie, the new cookie supersedes the old.</em>
+</blockquote>
+</p>
+
+</blockquote>
+
+<!-- End of entry for *REMOVE-DUPLICATE-COOKIES-P* -->
+
+
 
 <h4><a name="headers" class=none>Headers</a></h4>
 

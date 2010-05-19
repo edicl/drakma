@@ -258,6 +258,14 @@ the optional cookie parameters."
           (push (list (car name/value) (cdr name/value) parameters) result))))
     (nreverse result)))
 
+(defvar *remove-duplicate-cookies-p* T
+  "Determines how duplicate cookies are handled.  Valid values are:
+ * nil - duplicates will not be removed
+ * (T :KEEP-LAST) - for duplicates, only the last cookie value will be kept,
+   based on the order of the response header
+ * :KEEP-FIRST - for duplicates, only the first cookie value will be kept,
+   based on the order of the response header")
+
 (defun get-cookies (headers uri)
   "Returns a list of COOKIE objects corresponding to the
 `Set-Cookie' header as found in HEADERS \(an alist as returned by
@@ -281,7 +289,13 @@ the \(PURI) URI URI."
                                              (parse-cookie-date expires))
                                :domain domain
                                :securep (not (not (parameter-present-p "secure" parameters)))
-                               :http-only-p (not (not (parameter-present-p "HttpOnly" parameters))))))
+                               :http-only-p (not (not (parameter-present-p "HttpOnly" parameters))))
+		into new-cookies
+	finally (return (ccase *remove-duplicate-cookies-p*
+			  ((nil) new-cookies)
+			  ((:keep-last t) (delete-duplicates new-cookies :test #'cookie=))
+			  (:keep-first (delete-duplicates new-cookies :test #'cookie=
+							  :from-end T))))))
 
 (defun update-cookies (new-cookies cookie-jar)
   "Updates the cookies in COOKIE-JAR by replacing those which are

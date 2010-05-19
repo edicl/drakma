@@ -36,6 +36,7 @@
   (:shadow :syntax-error :parameter-error)
   (:export :*allow-dotless-cookie-domains-p*
            :*body-format-function*
+           :*remove-duplicate-cookies-p*
            :*drakma-default-external-format*
            :*header-stream*
            :*ignore-unparseable-cookie-dates-p*
