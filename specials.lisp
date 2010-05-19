@@ -82,6 +82,13 @@ headers as non-existent if it can't parse them.  If the value of this
 variable is NIL \(which is the default), an error will be signalled
 instead.")
 
+(defvar *remove-duplicate-cookies-p* t
+  "Determines how duplicate cookies are handled.  Valid values are NIL
+\(duplicates will not be removed), :KEEP-LAST or T \(for duplicates,
+only the last cookie value will be kept based on the order of the
+response header), or :KEEP-FIRST (only the first value will be
+kept).")
+
 (defvar *text-content-types* '(("text" . nil))
   "A list of conses which are used by DETERMINE-BODY-FORMAT to decide
 whether a `Content-Type' header denotes text content.  The car and cdr

@@ -1364,13 +1364,11 @@ to <code>T</code>.  Cookies are considered duplicate using
 
 Valid values are:
 <ul>
- <li><code>NIL</code> - duplicates will not be removed</li>
- <li><code>T</code> - for duplicates, only the last cookie value will 
-   be kept, based on the order of the response header</li>
- <li><code>:KEEP-LAST</code> - for duplicates, only the last cookie 
-   value will be kept, based on the order of the response header</li>
+ <li><code>NIL</code> - duplicates will not be removed,</li>
+ <li><code>T</code> or <code>:KEEP-LAST</code> - for duplicates, only the last cookie 
+   value will be kept, based on the order of the response header,</li>
  <li><code>:KEEP-FIRST</code> - for duplicates, only the first cookie 
-   value will be kept, based on the order of the response header</li>
+   value will be kept, based on the order of the response header.</li>
 </ul>
 
 Misbehaving servers may send duplicate cookies back in the same 

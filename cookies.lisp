@@ -258,14 +258,6 @@ the optional cookie parameters."
           (push (list (car name/value) (cdr name/value) parameters) result))))
     (nreverse result)))
 
-(defvar *remove-duplicate-cookies-p* T
-  "Determines how duplicate cookies are handled.  Valid values are:
- * nil - duplicates will not be removed
- * (T :KEEP-LAST) - for duplicates, only the last cookie value will be kept,
-   based on the order of the response header
- * :KEEP-FIRST - for duplicates, only the first cookie value will be kept,
-   based on the order of the response header")
-
 (defun get-cookies (headers uri)
   "Returns a list of COOKIE objects corresponding to the
 `Set-Cookie' header as found in HEADERS \(an alist as returned by
