@@ -535,8 +535,7 @@ only available on CCL 1.2 and later."
                                                        (not proxying-https-p)) uri)
                                                  (t (make-instance 'uri
                                                                    :path (or (uri-path uri) "/")
-                                                                   :query (uri-query uri)
-                                                                   :fragment (uri-fragment uri))))
+                                                                   :query (uri-query uri))))
                                            nil)
                                (string-upcase protocol))
               (write-header "Host" "~A~@[:~A~]" (uri-host uri) (non-default-port uri))
