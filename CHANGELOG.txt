@@ -1,3 +1,7 @@
+Version 1.2.2
+2010-07-10
+Make sure pathless URIs work (Hans Hübner, Manuel Odendahl)
+
 Version 1.2.1
 2010-05-19
 Fix a couple of typos (thanks to Stelian Ionescu, Giovanni Gigante, and Zach Beane)
