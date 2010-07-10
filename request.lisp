@@ -533,8 +533,10 @@ only available on CCL 1.2 and later."
                                (render-uri (cond ((and proxy
                                                        (null stream)
                                                        (not proxying-https-p)) uri)
-                                                 (t (uri (or (uri-path uri)
-                                                             "/"))))
+                                                 (t (make-instance 'uri
+                                                                   :path (or (uri-path uri) "/")
+                                                                   :query (uri-query uri)
+                                                                   :fragment (uri-fragment uri))))
                                            nil)
                                (string-upcase protocol))
               (write-header "Host" "~A~@[:~A~]" (uri-host uri) (non-default-port uri))
