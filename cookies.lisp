@@ -299,7 +299,8 @@ equal to a cookie in \(the list) NEW-COOKIES with the corresponding
                      collect (or (find old-cookie new-cookies :test #'cookie=)
                                  old-cookie))))
           (union updated-cookies
-                 (set-difference new-cookies updated-cookies))))                               
+                 (set-difference new-cookies updated-cookies :test #'cookie=)
+                 :test #'cookie=)))
   cookie-jar)
 
 (defun delete-old-cookies (cookie-jar)
