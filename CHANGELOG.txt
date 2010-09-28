@@ -1,3 +1,5 @@
+Don't funcall symbols that aren't FBOUNDP (Faré Rideau)
+
 Version 1.2.3
 2010-08-05
 Fix UPDATE-COOKIES (Vsevolod Dyomkin)

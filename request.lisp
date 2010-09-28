@@ -570,7 +570,9 @@ only available on CCL 1.2 and later."
                 (write-header "Connection" "close"))
               (loop for (name . value) in additional-headers
                     do (write-header name "~A"
-                                     (cond ((or (functionp value) (symbolp value))
+                                     (cond ((or (functionp value)
+                                                (and (symbolp value)
+                                                     (fboundp value)))
                                             (funcall value))
                                            (t value))))
               (when content
