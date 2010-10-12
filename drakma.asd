@@ -59,4 +59,4 @@
                :chunga
                :flexi-streams
                #-:lispworks :usocket
-               #-(or :lispworks :allegro) :cl+ssl))
+               #-(or :lispworks :allegro :drakma-no-ssl) :cl+ssl))

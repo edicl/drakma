@@ -330,10 +330,12 @@ which are not meant as separators."
 (defun make-ssl-stream (http-stream)
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
 \(which will not be equal to HTTP-STREAM)."
-  #+:allegro
+  #+(and :allegro (not :drakma-no-ssl))
   (socket:make-ssl-client-stream http-stream)
-  #-:allegro
+  #+(and (not :allegro) (not :drakma-no-ssl))
   (let ((s http-stream))
     (cl+ssl:make-ssl-client-stream
      (cl+ssl:stream-fd s)
-     :close-callback (lambda () (close s)))))
+     :close-callback (lambda () (close s))))
+  #+:drakma-no-ssl
+  (error "SSL not supported. Remove :drakma-no-ssl from *features* to enable SSL"))

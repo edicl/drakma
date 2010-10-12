@@ -680,7 +680,8 @@ will need to
 have <a
 href="http://www.lispworks.com/documentation/lw50/LWUG/html/lwuser-344.htm">the
 corresponding C libraries</a> as well.  You'll usually have them
-already unless you're on Windows.
+already unless you're on Windows. If you don't have required C libraries you can add <b>:drakma-no-ssl</b>
+to <b>*features*</b> to avoid using CL+SSL for https support.
 <p>
 The current development version of Drakma can be found
 at <a href="http://bknr.net/trac/browser/trunk/thirdparty">http://bknr.net/trac/browser/trunk/thirdparty</a>.

@@ -1,4 +1,5 @@
 Don't funcall symbols that aren't FBOUNDP (Faré Rideau)
+Allowed disabling of SSL when building (Marko Kocic)
 
 Version 1.2.3
 2010-08-05
