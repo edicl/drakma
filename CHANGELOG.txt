@@ -1,3 +1,4 @@
+Better handling of optional filenames when uploading (Stas Boukarev)
 Don't funcall symbols that aren't FBOUNDP (Faré Rideau)
 Allowed disabling of SSL when building (Marko Kocic)
 
