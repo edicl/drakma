@@ -190,6 +190,7 @@ headers of the chunked stream \(if any) as a second value."
                               basic-authorization
                               (user-agent :drakma)
                               (accept "*/*")
+                              range
                               proxy
                               proxy-basic-authorization
                               additional-headers
@@ -314,8 +315,14 @@ of the keywords :DRAKMA, :FIREFOX, :EXPLORER, :OPERA, or :SAFARI
 which denote the current version of Drakma or, in the latter four
 cases, a fixed string corresponding to a more or less recent \(as
 of August 2006) version of the corresponding browser.  Or it can
-be a string which is used directly.  ACCEPT, if not NIL, is the
-`Accept' header sent.
+be a string which is used directly.
+
+ACCEPT, if not NIL, specifies the contents of the `Accept' header
+sent.
+
+RANGE optionally specifies a subrange of the resource to be requested.
+It must be specified as list of two integers which indicate the start
+and (inclusive) end offset of the requested range, in bytes.
 
 If PROXY is not NIL, it should be a string denoting a proxy
 server through which the request should be sent.  Or it can be a
@@ -404,6 +411,12 @@ only available on CCL 1.2 and later."
     (parameter-error "CLOSE and KEEP-ALIVE must not be both true."))
   (when (and form-data (not (eq method :post)))
     (parameter-error "FORM-DATA makes only sense with POST requests."))
+  (when range
+    (unless (and (listp range)
+                 (integerp (first range))
+                 (integerp (second range))
+                 (<= (first range) (second range)))
+      (parameter-error "RANGE parameter must be specified as list of two integers, with the second larger or equal to the first")))
   ;; convert PROXY argument to canonical form
   (when proxy
     (when (atom proxy)
@@ -558,6 +571,8 @@ only available on CCL 1.2 and later."
                                        (second proxy-basic-authorization)))))
               (when accept
                 (write-header "Accept" "~A" accept))
+              (when range
+                (write-header "Range" "bytes ~A-~A" (first range) (second range)))
               (when cookie-jar
                 ;; write all cookies in one fell swoop, so even Sun's
                 ;; web server has a chance to get it

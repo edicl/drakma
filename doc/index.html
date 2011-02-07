@@ -731,7 +731,55 @@ to <a href="http://livehttpheaders.mozdev.org/">LiveHTTPHeaders</a>.
 
 <!-- Entry for HTTP-REQUEST -->
 
-<p><br><table border=0><tr><td colspan=4 valign=top>[Function]</td></tr><tr><td valign=top style="white-space:nowrap"><a class=none name='http-request'><b>http-request</b></a>&nbsp;</td><td valign=top><i><a class=none href="#uri">uri</a>&nbsp;</i></td><td valign=top><tt>&amp;key</tt>&nbsp;</td><td><i><a class=none href="#protocol">protocol</a> <a class=none href="#method">method</a> <a class=none href="#force-ssl">force-ssl</a> <a class=none href="#parameters">parameters</a> <a class=none href="#form-data">form-data</a> <a class=none href="#content">content</a> <a class=none href="#content-length">content-length</a> <a class=none href="#content-type">content-type</a> <a class=none href="#cookie-jar-param">cookie-jar</a> <a class=none href="#basic-authorization">basic-authorization</a> <a class=none href="#user-agent">user-agent</a> <a class=none href="#accept">accept</a> <a class=none href="#proxy">proxy</a> <a class=none href="#proxy-basic-authorization">proxy-basic-authorization</a> <a class=none href="#additional-headers">additional-headers</a> <a class=none href="#redirect">redirect</a> <a class=none href="#redirect-methods">redirect-methods</a> <a class=none href="#auto-referer">auto-referer</a> <a class=none href="#keep-alive">keep-alive</a> <a class=none href="#close">close</a> <a class=none href="#external-format-out">external-format-out</a> <a class=none href="#external-format-in">external-format-in</a> <a class=none href="#force-binary">force-binary</a> <a class=none href="#want-stream">want-stream</a> <a class=none href="#stream">stream</a> <a class=none href="#connection-timeout">connection-timeout</a> <a class=none href="#read-timeout">read-timeout</a> <a class=none href="#write-timeout">write-timeout</a> <a class=none href="#deadline">deadline</a></i></td></tr><tr><td colspan=2></td><td colspan=2 valign=top> =&gt; <i>body-or-stream, status-code, headers, uri, stream, <a class=none href="#must-close">must-close</a>, reason-phrase</i></td></tr></table>
+<p>
+  <br>
+  <table border=0>
+    <tr>
+      <td colspan=4 valign=top>[Function]</td>
+    </tr>
+    <tr>
+      <td valign=top style="white-space:nowrap"><a class=none name='http-request'><b>http-request</b></a>&nbsp;</td>
+      <td valign=top><i><a class=none href="#uri">uri</a>&nbsp;</i></td>
+      <td valign=top><tt>&amp;key</tt>&nbsp;</td>
+      <td>
+        <i>
+          <a class=none href="#protocol">protocol</a>
+          <a class=none href="#method">method</a>
+          <a class=none href="#force-ssl">force-ssl</a>
+          <a class=none href="#parameters">parameters</a>
+          <a class=none href="#form-data">form-data</a>
+          <a class=none href="#content">content</a>
+          <a class=none href="#content-length">content-length</a>
+          <a class=none href="#content-type">content-type</a>
+          <a class=none href="#cookie-jar-param">cookie-jar</a>
+          <a class=none href="#basic-authorization">basic-authorization</a>
+          <a class=none href="#user-agent">user-agent</a>
+          <a class=none href="#accept">accept</a>
+          <a class=none href="#range">range</a>
+          <a class=none href="#proxy">proxy</a>
+          <a class=none href="#proxy-basic-authorization">proxy-basic-authorization</a>
+          <a class=none href="#additional-headers">additional-headers</a>
+          <a class=none href="#redirect">redirect</a>
+          <a class=none href="#redirect-methods">redirect-methods</a>
+          <a class=none href="#auto-referer">auto-referer</a>
+          <a class=none href="#keep-alive">keep-alive</a>
+          <a class=none href="#close">close</a>
+          <a class=none href="#external-format-out">external-format-out</a>
+          <a class=none href="#external-format-in">external-format-in</a>
+          <a class=none href="#force-binary">force-binary</a>
+          <a class=none href="#want-stream">want-stream</a>
+          <a class=none href="#stream">stream</a>
+          <a class=none href="#connection-timeout">connection-timeout</a>
+          <a class=none href="#read-timeout">read-timeout</a>
+          <a class=none href="#write-timeout">write-timeout</a>
+          <a class=none href="#deadline">deadline</a></i>
+      </td>
+    </tr>
+    <tr>
+      <td colspan=2></td>
+      <td colspan=2 valign=top> =&gt; <i>body-or-stream, status-code, headers, uri, stream, <a class=none href="#must-close">must-close</a>, reason-phrase</i></td>
+    </tr>
+  </table>
 <blockquote><br>
 
 Sends an <a href="http://www.rfc.net/rfc2616.html">HTTP</a> request to a web server and returns its reply.
@@ -935,6 +983,10 @@ recent (as of August 2006) version of the corresponding browser.  Or
 it can be a string which is used
 directly.  <a class=none name="accept"><code><i>accept</i></code></a>, if not <code>NIL</code>, is the
 'Accept' header sent - the default is <code>"*/*"</code>.
+<a class=none name="range"><code><i>range</i></code></a> optionally
+specifies a subrange of the resource to be requested.  It must be
+specified as list of two integers which indicate the start and
+(inclusive) end offset of the requested range, in bytes
 <p>
 If <a class=none name="proxy"><code><i>proxy</i></code></a> is not <code>NIL</code>, it should be a
 string denoting
