@@ -1,6 +1,8 @@
+Make sure GET parameters are always URL-encoded
+Add :RANGE keyword argument (Hans Hübner)
 Better handling of optional filenames when uploading (Stas Boukarev)
 Don't funcall symbols that aren't FBOUNDP (Faré Rideau)
-Allowed disabling of SSL when building (Marko Kocic)
+Allow disabling of SSL when building (Marko Kocic)
 
 Version 1.2.3
 2010-08-05
