@@ -181,6 +181,13 @@ headers of the chunked stream \(if any) as a second value."
                          &key (protocol :http/1.1)
                               (method :get)
                               force-ssl
+                              certificate
+                              key
+                              certificate-password
+                              verify
+                              max-depth
+                              ca-file
+                              ca-directory
                               parameters
                               content
                               (content-type "application/x-www-form-urlencoded")
@@ -237,6 +244,28 @@ If FORCE-SSL is true, SSL will be attached to the socket stream
 which connects Drakma with the web server.  Usually, you don't
 have to provide this argument, as SSL will be attached anyway if
 the scheme of URI is `https'.
+
+CERTIFICATE is the file name of the PEM encoded client certificate to
+present to the server when making a SSL connection.  KEY specifies the
+file name of the PEM encoded private key matching the certificate.
+CERTIFICATE-PASSWORD specifies the pass phrase to use to decrypt the
+private key.
+
+VERIFY can be specified to force verification of the certificate that
+is presented by the server in an SSL connection.  It can be specified
+either as NIL if no check should be performed, :OPTIONAL to verify the
+server's certificate if it presented one or :REQUIRED to verify the
+server's certificate and fail if an invalid or no certificate was
+presented.
+
+MAX-DEPTH can be specified to change the maximum allowed certificate
+signing depth that is accepted.  The default is 10.
+
+CA-FILE and CA-DIRECTORY can be specified to set the certificate
+authority bundle file or directory to use for certificate validation.
+
+The CERTIFICATE, KEY, CERTIFICATE-PASSWORD, VERIFY, MAX-DEPTH, CA-FILE
+and CA-DIRECTORY parameters are ignored for non-SSL requests.
 
 PARAMETERS is an alist of name/value pairs \(the car and the cdr each
 being a string) which denotes the parameters which are added to the
@@ -507,7 +536,14 @@ only available on CCL 1.2 and later."
                 #+:lispworks
                 (comm:attach-ssl http-stream :ssl-side :client)
                 #-:lispworks
-                (setq http-stream (make-ssl-stream http-stream)))
+                (setq http-stream (make-ssl-stream http-stream
+                                                   :certificate certificate
+                                                   :key key
+                                                   :certificate-password certificate-password
+                                                   :verify verify
+                                                   :max-depth max-depth
+                                                   :ca-file ca-file
+                                                   :ca-directory ca-directory)))
               (cond (stream
                      (setf (flexi-stream-element-type http-stream)
                            #+:lispworks 'lw:simple-char #-:lispworks 'character

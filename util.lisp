@@ -327,16 +327,30 @@ which are not meant as separators."
          (go next-cookie))))))
 
 #-:lispworks
-(defun make-ssl-stream (http-stream)
+(defun make-ssl-stream (http-stream &key certificate key certificate-password verify (max-depth 10 max-depth-provided-p) ca-file ca-directory)
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
 \(which will not be equal to HTTP-STREAM)."
+  (declare (ignorable max-depth-provided-p))
+  (check-type verify (member nil :optional :required))
   #+(and :allegro (not :drakma-no-ssl))
-  (socket:make-ssl-client-stream http-stream)
+  (socket:make-ssl-client-stream http-stream
+                                 :certificate certificate
+                                 :key key
+                                 :certificate-password certificate-password
+                                 :verify verify
+                                 :max-depth max-depth
+                                 :ca-file ca-file
+                                 :ca-directory ca-directory)
   #+(and (not :allegro) (not :drakma-no-ssl))
   (let ((s http-stream))
+    (when (or verify max-depth-provided-p ca-file ca-directory)
+      (warn ":verify, :max-depth, :ca-file and :ca-directory arguments not available on this platform"))
     (cl+ssl:make-ssl-client-stream
      (cl+ssl:stream-fd s)
-     :close-callback (lambda () (close s))))
+     :close-callback (lambda () (close s))
+     :certificate certificate-password
+     :key key
+     :password certificate-password))
   #+:drakma-no-ssl
   (error "SSL not supported. Remove :drakma-no-ssl from *features* to enable SSL"))
 

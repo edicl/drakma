@@ -746,6 +746,13 @@ to <a href="http://livehttpheaders.mozdev.org/">LiveHTTPHeaders</a>.
           <a class=none href="#protocol">protocol</a>
           <a class=none href="#method">method</a>
           <a class=none href="#force-ssl">force-ssl</a>
+          <a class=none href="#certificate">certificate</a>
+          <a class=none href="#key">key</a>
+          <a class=none href="#certificate-password">certificate-password</a>
+          <a class=none href="#verify">verify</a>
+          <a class=none href="#max-depth">max-depth</a>
+          <a class=none href="#ca-file">ca-file</a>
+          <a class=none href="#ca-directory">ca-directory</a>
           <a class=none href="#parameters">parameters</a>
           <a class=none href="#form-data">form-data</a>
           <a class=none href="#content">content</a>
@@ -831,6 +838,40 @@ name="force-ssl"><code><i>force-ssl</i></code></a> is true,
 will be <a href="http://www.lispworks.com/documentation/lw50/LWRM/html/lwref-24.htm">attached</a> to the socket stream which connects Drakma with the
 web server.  Usually, you don't have to provide this argument, as SSL
 will be attached anyway if the scheme of <code><i>uri</i></code> is 'https'.
+<p>
+<a class=none name="certificate"><code><i>certificate</i></code></a>
+is the file name of the PEM encoded client certificate to present to
+the server when making a SSL connection.  <a class=none
+name="key"><code><i>key</i></code></a> specifies the file name
+of the PEM encoded private key matching the certificate.
+<a class=none
+name="certificate-password"><code><i>certificate-password</i></code></a>
+specifies the pass phrase to use to decrypt the private key.
+The <i>certificate</i>, <i>key</i> and <i>certificate-password</i>
+parameters are ignored for non-SSL connections.
+<p>
+<a class=none name="verify"><code><i>verify</i></code></a> can be
+specified to force verification of the certificate that is presented
+by the server in an SSL connection.  It can be specified either
+as <i>nil</i> if no check should be performed, <i>:optional</i> to
+verify the server's certificate if it presented one
+or <i>:required</i> to verify the server's certificate and fail if an
+invalid or no certificate was presented.
+<p>
+<a class=none name="max-depth"><code><i>max-depth</i></code></a> can
+be specified to change the maximum allowed certificate signing depth
+that is accepted.  The default is 10.
+<p>
+<a class=none name="ca-file"><code><i>ca-file</i></code></a>
+and <a class=none
+name="ca-directory"><code><i>ca-directory</i></code></a> can be
+specified to set the certificate authority bundle file or directory to
+use for certificate validation.
+<p>
+The <i>certificate</i>, <i>key</i>, <i>certificate-password</i>,
+<i>verify</i>, <i>max-depth</i>, <i>ca-file</i>
+and <i>ca-directory</i> parameters are ignored for non-SSL
+requests.
 <p>
 <a class=none name="parameters"><code><i>parameters</i></code></a> is
 an <a
