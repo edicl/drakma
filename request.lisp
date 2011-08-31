@@ -321,8 +321,9 @@ ACCEPT, if not NIL, specifies the contents of the `Accept' header
 sent.
 
 RANGE optionally specifies a subrange of the resource to be requested.
-It must be specified as list of two integers which indicate the start
-and (inclusive) end offset of the requested range, in bytes.
+It must be specified as a list of two integers which indicate the
+start and \(inclusive) end offset of the requested range, in bytes
+\(i.e. octets).
 
 If PROXY is not NIL, it should be a string denoting a proxy
 server through which the request should be sent.  Or it can be a

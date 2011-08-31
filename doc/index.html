@@ -985,8 +985,8 @@ directly.  <a class=none name="accept"><code><i>accept</i></code></a>, if not <c
 'Accept' header sent - the default is <code>"*/*"</code>.
 <a class=none name="range"><code><i>range</i></code></a> optionally
 specifies a subrange of the resource to be requested.  It must be
-specified as list of two integers which indicate the start and
-(inclusive) end offset of the requested range, in bytes
+specified as a list of two integers which indicate the start and
+(inclusive) end offset of the requested range, in bytes (i.e. octets).
 <p>
 If <a class=none name="proxy"><code><i>proxy</i></code></a> is not <code>NIL</code>, it should be a
 string denoting
