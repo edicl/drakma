@@ -45,6 +45,7 @@
 (export '*drakma-version-string*)
 
 (defsystem :drakma
+  :description "Full-featured http/https client based on usocket"
   :serial t
   :version #.*drakma-version-string*
   :components ((:file "packages")
