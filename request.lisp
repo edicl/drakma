@@ -569,11 +569,15 @@ only available on CCL 1.2 and later."
                 (comm:attach-ssl raw-http-stream :ssl-side :client)
                 #-:lispworks
                 (setq http-stream (wrap-stream (make-ssl-stream raw-http-stream))))
-              (when-let (all-get-parameters
-                         (append (dissect-query (uri-query uri))
-                                 (and (not parameters-used-p) parameters)))
-                (setf (uri-query uri)
-                      (alist-to-url-encoded-string all-get-parameters external-format-out)))
+
+	      (when  (and (not parameters-used-p)
+			  parameters)
+		(when-let (all-get-parameters
+			   (append (dissect-query (uri-query uri))
+	                        (and (not parameters-used-p) parameters)))
+		  (setf (uri-query uri)
+			(alist-to-url-encoded-string all-get-parameters external-format-out))))
+
               (when (eq method :options*)
                 ;; special pseudo-method
                 (setf method :options
