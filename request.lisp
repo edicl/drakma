@@ -141,8 +141,8 @@ TEXTP is true, the body is assumed to be of content type `text' and
 will be returned as a string.  Otherwise an array of octets \(or NIL
 for an empty body) is returned.  Returns the optional `trailer' HTTP
 headers of the chunked stream \(if any) as a second value."
-  (let ((content-length (ignore-errors
-                           (parse-integer (header-value :content-length headers))))
+  (let ((content-length (when-let (value (header-value :content-length headers))
+                          (parse-integer value)))
         (element-type (if textp
                         #+:lispworks 'lw:simple-char #-:lispworks 'character
                         'octet))
