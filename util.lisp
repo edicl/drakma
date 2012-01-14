@@ -357,7 +357,7 @@ which are not meant as separators."
     (cl+ssl:make-ssl-client-stream
      (cl+ssl:stream-fd s)
      :close-callback (lambda () (close s))
-     :certificate certificate-password
+     :certificate certificate
      :key key
      :password certificate-password))
   #+:drakma-no-ssl
