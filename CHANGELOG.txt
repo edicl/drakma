@@ -1,3 +1,4 @@
+use :nodelay :if-supported (Anton Vodonosov)
 Allow specification of client certificate (all platforms)
 Add arguments that allow validation of server certificate
 

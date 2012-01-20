@@ -511,7 +511,7 @@ only available on CCL 1.2 and later."
                                                              :element-type 'octet
                                                              #+:openmcl :deadline
                                                              #+:openmcl deadline
-                                                             :nodelay t)))
+                                                             :nodelay :if-supported)))
                     raw-http-stream http-stream)
               #+:openmcl
               (when deadline
