@@ -363,10 +363,16 @@ which are not meant as separators."
   #+:drakma-no-ssl
   (error "SSL not supported. Remove :drakma-no-ssl from *features* to enable SSL"))
 
+(defun split-parameter-pair (parameter-pair)
+  "Splits a parameter pair, a string of the form k=v, into a list of the strings k and v."
+  (let ((p (position #\= parameter-pair)))
+    (if p (list (subseq parameter-pair 0 p) (subseq parameter-pair (1+ p)))
+	(list parameter-pair))))
+
 (defun dissect-query (query-string)
   "Accepts a query string as in PURI:URI-QUERY and returns a
 corresponding alist of name/value pairs."
   (when query-string
     (loop for parameter-pair in (split-string query-string "&")
-          for (name value) = (split-string parameter-pair "=")
+          for (name value) = (split-parameter-pair parameter-pair)
           collect (cons name value))))
