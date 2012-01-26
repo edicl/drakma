@@ -1,3 +1,5 @@
+use cl-ppcre:split instead of split-string to fix bug with GET
+parameter handling (thanks to Rob Blackwell)
 use :nodelay :if-supported (Anton Vodonosov)
 Allow specification of client certificate (all platforms)
 Add arguments that allow validation of server certificate
@@ -5,9 +7,9 @@ Add arguments that allow validation of server certificate
 Version 1.2.4
 2011-08-31
 Make sure GET parameters are always URL-encoded
-Add :RANGE keyword argument (Hans Hübner)
+Add :RANGE keyword argument (Hans Huebner)
 Better handling of optional filenames when uploading (Stas Boukarev)
-Don't funcall symbols that aren't FBOUNDP (Faré Rideau)
+Don't funcall symbols that aren't FBOUNDP (Fare Rideau)
 Allow disabling of SSL when building (Marko Kocic)
 
 Version 1.2.3
@@ -17,7 +19,7 @@ Fix typo in documentation HTML (Walter Rader)
 
 Version 1.2.2
 2010-07-10
-Make sure pathless URIs work (Hans Hübner, Manuel Odendahl)
+Make sure pathless URIs work (Hans Huebner, Manuel Odendahl)
 
 Version 1.2.1
 2010-05-19
@@ -49,8 +51,8 @@ Some performance improvements
 Be more lenient about content length (thanks to Zach Beane and "pix")
 Added *ALLOW-DOTLESS-COOKIE-DOMAINS-P* (thanks to Daniel Janus)
 Fix generation of user agent header (bug caught by Chaitanya Gupta)
-Added DEADLINE parameter for CCL (thanks to Hans Hübner)
-Fixed bug where READ-BODY returned NIL although TEXTP was true (thanks to Hans Hübner)
+Added DEADLINE parameter for CCL (thanks to Hans Huebner)
+Fixed bug where READ-BODY returned NIL although TEXTP was true (thanks to Hans Huebner)
 
 Version 0.11.5
 2008-03-21
@@ -95,7 +97,7 @@ Improved CL+SSL support (patch by David Lichteblau)
 
 Version 0.9.0
 2007-06-30
-Added reason phrase to return values (patch by Holger Dürer)
+Added reason phrase to return values (patch by Holger Duerer)
 
 Version 0.8.0
 2007-06-25
