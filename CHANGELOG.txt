@@ -1,3 +1,5 @@
+Fix incorrect range header syntax
+
 Version 1.2.5
 2012-01-30
 use cl-ppcre:split instead of split-string to fix bug with GET
