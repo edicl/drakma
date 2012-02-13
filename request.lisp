@@ -607,7 +607,7 @@ only available on CCL 1.2 and later."
               (when accept
                 (write-header "Accept" "~A" accept))
               (when range
-                (write-header "Range" "bytes ~A-~A" (first range) (second range)))
+                (write-header "Range" "bytes=~A-~A" (first range) (second range)))
               (when cookie-jar
                 ;; write all cookies in one fell swoop, so even Sun's
                 ;; web server has a chance to get it
