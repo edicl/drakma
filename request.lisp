@@ -211,6 +211,7 @@ headers of the chunked stream \(if any) as a second value."
                               force-binary
                               want-stream
                               stream
+                              preserve-uri
                               #+:lispworks (connection-timeout 20)
                               #+:lispworks (read-timeout 20)
                               #+(and :lispworks (not :lw-does-not-have-write-timeout))
@@ -428,7 +429,11 @@ DEADLINE, a time in the future, specifies the time until which the
 request should be finished.  The deadline is specified in internal
 time units.  If the server fails to respond until that time, a
 COMMUNICATION-DEADLINE-EXPIRED condition is signalled.  DEADLINE is
-only available on CCL 1.2 and later."
+only available on CCL 1.2 and later.
+
+PRESERVE-URI is a generalised boolean that indicates whether the
+given URI should be processed or not. Note that if this parameter
+is given, the PARAMETERS parameter will not be used."
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
   (setq uri (cond ((uri-p uri) (copy-uri uri))
@@ -570,8 +575,9 @@ only available on CCL 1.2 and later."
                 #-:lispworks
                 (setq http-stream (wrap-stream (make-ssl-stream raw-http-stream))))
               (when-let (all-get-parameters
-                         (append (dissect-query (uri-query uri))
-                                 (and (not parameters-used-p) parameters)))
+                         (and (not preserve-uri)
+                              (append (dissect-query (uri-query uri))
+                                      (and (not parameters-used-p) parameters))))
                 (setf (uri-query uri)
                       (alist-to-url-encoded-string all-get-parameters external-format-out)))
               (when (eq method :options*)
