@@ -431,9 +431,12 @@ time units.  If the server fails to respond until that time, a
 COMMUNICATION-DEADLINE-EXPIRED condition is signalled.  DEADLINE is
 only available on CCL 1.2 and later.
 
-PRESERVE-URI is a generalised boolean that indicates whether the
-given URI should be processed or not. Note that if this parameter
-is given, the PARAMETERS parameter will not be used."
+If PRESERVE-URI is not NIL, the given URI will not be processed. This
+means that the URI will be sent as-is to the remote server and it is
+the responsibility of the client to make sure that all parameters are
+encoded properly. Note that if this parameter is given, and the
+request is not a POST with a content-type of `multipart/form-data',
+PARAMETERS will not be used."
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
   (setq uri (cond ((uri-p uri) (copy-uri uri))
