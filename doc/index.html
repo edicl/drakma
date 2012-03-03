@@ -772,6 +772,7 @@ to <a href="http://livehttpheaders.mozdev.org/">LiveHTTPHeaders</a>.
           <a class=none href="#force-binary">force-binary</a>
           <a class=none href="#want-stream">want-stream</a>
           <a class=none href="#stream">stream</a>
+          <a class=none href="#preserve-uri">preserve-uri</a>
           <a class=none href="#connection-timeout">connection-timeout</a>
           <a class=none href="#read-timeout">read-timeout</a>
           <a class=none href="#write-timeout">write-timeout</a>
@@ -1122,6 +1123,15 @@ re-used instead.  <code><i>stream</i></code> <em>must</em> be a stream returned 
 must also be connected to the correct server and at the right position
 (i.e. the message body, if any, must have been read).  Drakma will
 <em>never</em> attach SSL to a stream provided as the <code><i>stream</i></code> argument.
+<p>
+If <a class=none name="preserve-uri"><code>preserve-uri</code></a> is
+not <code>NIL</code>, the given URI will not be processed. This means
+that the URI will be sent as-is to the remote server and it is the
+responsibility of the client to make sure that all parameters are
+encoded properly. Note that if this parameter is given, and the
+request is not a <code>POST</code> with a content-type
+of <code>multipart/form-data</code>, <code>parameters</code> will not
+be used.
 <p>
 <a class=none name="connection-timeout"><code><i>connection-timeout</i></code></a> is the time (in seconds) Drakma
 will wait until it considers an attempt to connect to a server as a
