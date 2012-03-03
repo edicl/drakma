@@ -95,7 +95,7 @@ PREFIX whereby the elements are compared using TEST."
 
 (defun url-encode (string external-format)
   "Returns a URL-encoded version of the string STRING using the
-LispWorks external format EXTERNAL-FORMAT."
+external format EXTERNAL-FORMAT."
   (with-output-to-string (out)
     (loop for octet across (string-to-octets (or string "")
                                              :external-format external-format)

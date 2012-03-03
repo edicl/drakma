@@ -32,40 +32,41 @@
 (defpackage :drakma
   (:use :cl :puri :flexi-streams :chunga)
   ;; the variable defined in the ASDF system definition
-  (:import-from :drakma-asd :*drakma-version-string*)
-  (:shadow :syntax-error :parameter-error)
-  (:export :*allow-dotless-cookie-domains-p*
-           :*body-format-function*
-           :*remove-duplicate-cookies-p*
-           :*drakma-default-external-format*
-           :*header-stream*
-           :*ignore-unparseable-cookie-dates-p*
-           :*text-content-types*
-           :cookie
-           :cookie-error
-           :cookie-error-cookie
-           :cookie-date-parse-error
-           :cookie-domain
-           :cookie-expires
-           :cookie-http-only-p
-           :cookie-jar
-           :cookie-jar-cookies
-           :cookie-name
-           :cookie-path
-           :cookie-securep
-           :cookie-value
-           :cookie=
-           :delete-old-cookies
-           :drakma-condition
-           :drakma-error
-           :drakma-warning
-           :get-content-type
-           :header-value
-           :http-request
-           :parameter-error
-           :parameter-present-p
-           :parameter-value
-           :parse-cookie-date
-           :read-tokens-and-parameters
-           :split-tokens
-           :syntax-error))
+  (:import-from :drakma-asd #:*drakma-version-string*)
+  (:shadow #:syntax-error #:parameter-error)
+  (:export #:*allow-dotless-cookie-domains-p*
+           #:*body-format-function*
+           #:*remove-duplicate-cookies-p*
+           #:*drakma-default-external-format*
+           #:*header-stream*
+           #:*ignore-unparseable-cookie-dates-p*
+           #:*text-content-types*
+           #:cookie
+           #:cookie-error
+           #:cookie-error-cookie
+           #:cookie-date-parse-error
+           #:cookie-domain
+           #:cookie-expires
+           #:cookie-http-only-p
+           #:cookie-jar
+           #:cookie-jar-cookies
+           #:cookie-name
+           #:cookie-path
+           #:cookie-securep
+           #:cookie-value
+           #:cookie=
+           #:delete-old-cookies
+           #:drakma-condition
+           #:drakma-error
+           #:drakma-warning
+           #:get-content-type
+           #:header-value
+           #:http-request
+           #:parameter-error
+           #:parameter-present-p
+           #:parameter-value
+           #:parse-cookie-date
+           #:read-tokens-and-parameters
+           #:split-tokens
+           #:syntax-error
+           #:url-encode))
