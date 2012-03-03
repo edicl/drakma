@@ -1,3 +1,4 @@
+Enable timeouts for more implementations (Francisco Vides Fernández)
 Export URL-ENCODE (suggested by Rob Blackwell)
 Fix incorrect range header syntax
 
