@@ -212,7 +212,8 @@ headers of the chunked stream \(if any) as a second value."
                               want-stream
                               stream
                               preserve-uri
-                              #+:lispworks (connection-timeout 20)
+                              #+(or abcl clisp lispworks mcl openmcl sbcl)
+                              (connection-timeout 20)
                               #+:lispworks (read-timeout 20)
                               #+(and :lispworks (not :lw-does-not-have-write-timeout))
                               (write-timeout 20 write-timeout-provided-p)
@@ -417,13 +418,14 @@ will NEVER attach SSL to a stream provided as the STREAM
 argument.
 
 CONNECTION-TIMEOUT is the time \(in seconds) Drakma will wait until it
-considers an attempt to connect to a server as a failure.
-READ-TIMEOUT and WRITE-TIMEOUT are the read and write timeouts \(in
-seconds) for the socket stream to the server.  All three timeout
-arguments can also be NIL \(meaning no timeout), and they don't apply
-if an existing stream is re-used.  All timeout keyword arguments are
-only available for LispWorks, WRITE-TIMEOUT is only available for
-LispWorks 5.0 or higher.
+considers an attempt to connect to a server as a failure. It is
+supported only on some platforms \(currently abcl, clisp, LispWorks,
+mcl, openmcl and sbcl). READ-TIMEOUT and WRITE-TIMEOUT are the read
+and write timeouts \(in seconds) for the socket stream to the server.
+All three timeout arguments can also be NIL \(meaning no timeout), and
+they don't apply if an existing stream is re-used.  READ-TIMEOUT
+argument is only available for LispWorks, WRITE-TIMEOUT is only
+available for LispWorks 5.0 or higher.
 
 DEADLINE, a time in the future, specifies the time until which the
 request should be finished.  The deadline is specified in internal
@@ -519,6 +521,10 @@ PARAMETERS will not be used."
                                                              :element-type 'octet
                                                              #+:openmcl :deadline
                                                              #+:openmcl deadline
+                                                             #+(or abcl clisp lispworks mcl openmcl sbcl)
+                                                             :timeout
+                                                             #+(or abcl clisp lispworks mcl openmcl sbcl)
+                                                             connection-timeout
                                                              :nodelay :if-supported)))
                     raw-http-stream http-stream)
               #+:openmcl
