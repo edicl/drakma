@@ -656,21 +656,17 @@ Connection: close</font>
 
 Drakma together with this documentation can be downloaded
 from <a href="http://weitz.de/files/drakma.tar.gz">http://weitz.de/files/drakma.tar.gz</a>.
-The current version is 1.2.4.  Drakma can be installed
-via <a href="http://www.cliki.net/asdf">ASDF</a> and depends on the
-open source
-libraries <a href="http://www.cliki.net/cl-base64">CL-BASE64</a> (use
-3.3.2 or higher to avoid an unneeded dependency
-on <a href="http://www.cliki.net/kmrcl">KMRCL</a>), <a href="http://www.cliki.net/Puri">Puri</a> (1.5.5 or higher), <a href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a>,
-and <a href="http://weitz.de/chunga/">Chunga</a> (1.1.0 or higher).
-If you're <em>not</em> using LispWorks, you'll also
-need <a href="http://www.cliki.net/usocket">usocket</a> (0.3.2 or
-newer) and (except
+The current version is 1.2.6.  Drakma and all its dependencies can be
+installed via <a href="http://www.quicklisp.org/">quicklisp</a>.  It
+depends on the open source
+libraries <a href="http://www.cliki.net/cl-base64">CL-BASE64</a>, <a href="http://www.cliki.net/Puri">Puri</a>, <a href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a>,
+<a href="http://weitz.de/cl-ppcre/">CL-PPCRE</a>,
+and <a href="http://weitz.de/chunga/">Chunga</a>.  If
+you're <em>not</em> using LispWorks, you'll also
+need <a href="http://www.cliki.net/usocket">usocket</a> and (except
 for <a href="http://franz.com/products/allegrocl/">AllegroCL</a>) <a href="http://common-lisp.net/project/cl-plus-ssl/">CL+SSL</a>.
-Try to use the <b>newest</b> versions of all these libraries - use the
-CVS versions if in doubt.  Installation
-via <a href="http://www.cliki.net/asdf-install">asdf-install</a>
-should also be possible, and there's a port
+Try to use the <b>newest</b> versions of all these libraries.  There's
+a port of Drakma
 for <a href="http://www.gentoo.org/proj/en/common-lisp/index.xml">Gentoo
 Linux</a> thanks to Matthew Kennedy.
 <p>
@@ -684,7 +680,7 @@ already unless you're on Windows. If you don't have required C libraries you can
 to <b>*features*</b> to avoid using CL+SSL for https support.
 <p>
 The current development version of Drakma can be found
-at <a href="http://bknr.net/trac/browser/trunk/thirdparty">http://bknr.net/trac/browser/trunk/thirdparty</a>.
+at <a href="https://github.com/edicl/drakma">https://github.com/edicl/drakma</a>.
 This is the one to send <a href="#mail">patches</a> against.  Use at
 your own risk.
 <p>
@@ -776,6 +772,7 @@ to <a href="http://livehttpheaders.mozdev.org/">LiveHTTPHeaders</a>.
           <a class=none href="#force-binary">force-binary</a>
           <a class=none href="#want-stream">want-stream</a>
           <a class=none href="#stream">stream</a>
+          <a class=none href="#preserve-uri">preserve-uri</a>
           <a class=none href="#connection-timeout">connection-timeout</a>
           <a class=none href="#read-timeout">read-timeout</a>
           <a class=none href="#write-timeout">write-timeout</a>
@@ -1126,6 +1123,15 @@ re-used instead.  <code><i>stream</i></code> <em>must</em> be a stream returned 
 must also be connected to the correct server and at the right position
 (i.e. the message body, if any, must have been read).  Drakma will
 <em>never</em> attach SSL to a stream provided as the <code><i>stream</i></code> argument.
+<p>
+If <a class=none name="preserve-uri"><code>preserve-uri</code></a> is
+not <code>NIL</code>, the given URI will not be processed. This means
+that the URI will be sent as-is to the remote server and it is the
+responsibility of the client to make sure that all parameters are
+encoded properly. Note that if this parameter is given, and the
+request is not a <code>POST</code> with a content-type
+of <code>multipart/form-data</code>, <code>parameters</code> will not
+be used.
 <p>
 <a class=none name="connection-timeout"><code><i>connection-timeout</i></code></a> is the time (in seconds) Drakma
 will wait until it considers an attempt to connect to a server as a

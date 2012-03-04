@@ -1,7 +1,7 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: DRAKMA; Base: 10 -*-
 ;;; $Header: /usr/local/cvsrep/drakma/util.lisp,v 1.36 2008/05/30 11:30:45 edi Exp $
 
-;;; Copyright (c) 2006-2011, Dr. Edmund Weitz.  All rights reserved.
+;;; Copyright (c) 2006-2012, Dr. Edmund Weitz.  All rights reserved.
 
 ;;; Redistribution and use in source and binary forms, with or without
 ;;; modification, are permitted provided that the following conditions
@@ -95,7 +95,7 @@ PREFIX whereby the elements are compared using TEST."
 
 (defun url-encode (string external-format)
   "Returns a URL-encoded version of the string STRING using the
-LispWorks external format EXTERNAL-FORMAT."
+external format EXTERNAL-FORMAT."
   (with-output-to-string (out)
     (loop for octet across (string-to-octets (or string "")
                                              :external-format external-format)
@@ -196,28 +196,6 @@ string will consist solely of decimal digits and ASCII letters."
                     ((2 3) (code-char (+ #.(char-code #\A) (random 26))))
                     ((4) (code-char (+ #.(char-code #\0) (random 10)))))
                   s))))
-
-(defun split-string (string &optional (separators " ,-"))
-  "Splits STRING into a list of substrings \(which is returned)
-separated by the characters in the sequence SEPARATORS.  Empty
-substrings aren't collected."
-  (flet ((make-collector ()
-           (make-array 0
-                       :adjustable t
-                       :fill-pointer t
-                       :element-type #+:lispworks 'lw:simple-char
-                                     #-:lispworks 'character)))                       
-    (loop with collector = (make-collector)
-          for char across string
-          for counter downfrom (1- (length string))
-          when (find char separators :test #'char=)
-          when (plusp (length collector))
-          collect collector
-          and do (setq collector (make-collector)) end
-          else
-          do (vector-push-extend char collector)
-          and when (zerop counter)
-          collect collector)))
 
 (defun safe-parse-integer (string)
   "Like PARSE-INTEGER, but returns NIL instead of signalling an error."
@@ -327,11 +305,20 @@ which are not meant as separators."
          (go next-cookie))))))
 
 #-:lispworks
-(defun make-ssl-stream (http-stream &key certificate key certificate-password verify (max-depth 10 max-depth-provided-p) ca-file ca-directory)
+(defun make-ssl-stream (http-stream &key certificate key certificate-password verify (max-depth 10) ca-file ca-directory)
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
 \(which will not be equal to HTTP-STREAM)."
-  (declare (ignorable max-depth-provided-p))
+  (declare (ignorable max-depth))
   (check-type verify (member nil :optional :required))
+  (when (and certificate
+             (not (probe-file certificate)))
+    (error "certificate file ~A not found" certificate))
+  (when (and key
+             (not (probe-file key)))
+    (error "key file ~A not found" key))
+  (when (and ca-file
+             (not (probe-file ca-file)))
+    (error "ca file ~A not found" ca-file))
   #+(and :allegro (not :drakma-no-ssl))
   (socket:make-ssl-client-stream http-stream
                                  :certificate certificate
@@ -343,12 +330,12 @@ which are not meant as separators."
                                  :ca-directory ca-directory)
   #+(and (not :allegro) (not :drakma-no-ssl))
   (let ((s http-stream))
-    (when (or verify max-depth-provided-p ca-file ca-directory)
+    (when (or verify ca-file ca-directory)
       (warn ":verify, :max-depth, :ca-file and :ca-directory arguments not available on this platform"))
     (cl+ssl:make-ssl-client-stream
      (cl+ssl:stream-fd s)
      :close-callback (lambda () (close s))
-     :certificate certificate-password
+     :certificate certificate
      :key key
      :password certificate-password))
   #+:drakma-no-ssl
@@ -358,6 +345,6 @@ which are not meant as separators."
   "Accepts a query string as in PURI:URI-QUERY and returns a
 corresponding alist of name/value pairs."
   (when query-string
-    (loop for parameter-pair in (split-string query-string "&")
-          for (name value) = (split-string parameter-pair "=")
+    (loop for parameter-pair in (cl-ppcre:split "&" query-string)
+          for (name value) = (cl-ppcre:split "=" parameter-pair :limit 2)
           collect (cons name value))))

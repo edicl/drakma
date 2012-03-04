@@ -1,7 +1,7 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER; Base: 10 -*-
 ;;; $Header: /usr/local/cvsrep/drakma/packages.lisp,v 1.22 2008/01/14 01:57:01 edi Exp $
 
-;;; Copyright (c) 2006-2011, Dr. Edmund Weitz.  All rights reserved.
+;;; Copyright (c) 2006-2012, Dr. Edmund Weitz.  All rights reserved.
 
 ;;; Redistribution and use in source and binary forms, with or without
 ;;; modification, are permitted provided that the following conditions
@@ -32,40 +32,41 @@
 (defpackage :drakma
   (:use :cl :puri :flexi-streams :chunga)
   ;; the variable defined in the ASDF system definition
-  (:import-from :drakma-asd :*drakma-version-string*)
-  (:shadow :syntax-error :parameter-error)
-  (:export :*allow-dotless-cookie-domains-p*
-           :*body-format-function*
-           :*remove-duplicate-cookies-p*
-           :*drakma-default-external-format*
-           :*header-stream*
-           :*ignore-unparseable-cookie-dates-p*
-           :*text-content-types*
-           :cookie
-           :cookie-error
-           :cookie-error-cookie
-           :cookie-date-parse-error
-           :cookie-domain
-           :cookie-expires
-           :cookie-http-only-p
-           :cookie-jar
-           :cookie-jar-cookies
-           :cookie-name
-           :cookie-path
-           :cookie-securep
-           :cookie-value
-           :cookie=
-           :delete-old-cookies
-           :drakma-condition
-           :drakma-error
-           :drakma-warning
-           :get-content-type
-           :header-value
-           :http-request
-           :parameter-error
-           :parameter-present-p
-           :parameter-value
-           :parse-cookie-date
-           :read-tokens-and-parameters
-           :split-tokens
-           :syntax-error))
+  (:import-from :drakma-asd #:*drakma-version-string*)
+  (:shadow #:syntax-error #:parameter-error)
+  (:export #:*allow-dotless-cookie-domains-p*
+           #:*body-format-function*
+           #:*remove-duplicate-cookies-p*
+           #:*drakma-default-external-format*
+           #:*header-stream*
+           #:*ignore-unparseable-cookie-dates-p*
+           #:*text-content-types*
+           #:cookie
+           #:cookie-error
+           #:cookie-error-cookie
+           #:cookie-date-parse-error
+           #:cookie-domain
+           #:cookie-expires
+           #:cookie-http-only-p
+           #:cookie-jar
+           #:cookie-jar-cookies
+           #:cookie-name
+           #:cookie-path
+           #:cookie-securep
+           #:cookie-value
+           #:cookie=
+           #:delete-old-cookies
+           #:drakma-condition
+           #:drakma-error
+           #:drakma-warning
+           #:get-content-type
+           #:header-value
+           #:http-request
+           #:parameter-error
+           #:parameter-present-p
+           #:parameter-value
+           #:parse-cookie-date
+           #:read-tokens-and-parameters
+           #:split-tokens
+           #:syntax-error
+           #:url-encode))

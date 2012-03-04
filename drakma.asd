@@ -1,7 +1,7 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER; Base: 10 -*-
 ;;; $Header: /usr/local/cvsrep/drakma/drakma.asd,v 1.49 2008/05/24 03:21:22 edi Exp $
 
-;;; Copyright (c) 2006-2011, Dr. Edmund Weitz.  All rights reserved.
+;;; Copyright (c) 2006-2012, Dr. Edmund Weitz.  All rights reserved.
 
 ;;; Redistribution and use in source and binary forms, with or without
 ;;; modification, are permitted provided that the following conditions
@@ -38,13 +38,14 @@
 
 (in-package :drakma-asd)
 
-(defvar *drakma-version-string* "1.2.4"
+(defvar *drakma-version-string* "1.2.6"
   "Drakma's version number as a string.")
 
 ;; we export its name so we can import it later
 (export '*drakma-version-string*)
 
 (defsystem :drakma
+  :description "Full-featured http/https client based on usocket"
   :serial t
   :version #.*drakma-version-string*
   :components ((:file "packages")
@@ -58,5 +59,6 @@
                :cl-base64
                :chunga
                :flexi-streams
+               :cl-ppcre
                #-:lispworks :usocket
                #-(or :lispworks :allegro :drakma-no-ssl) :cl+ssl))

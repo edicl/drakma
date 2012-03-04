@@ -1,7 +1,7 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: DRAKMA; Base: 10 -*-
 ;;; $Header: /usr/local/cvsrep/drakma/cookies.lisp,v 1.15 2008/01/14 01:57:01 edi Exp $
 
-;;; Copyright (c) 2006-2011, Dr. Edmund Weitz.  All rights reserved.
+;;; Copyright (c) 2006-2012, Dr. Edmund Weitz.  All rights reserved.
 
 ;;; Redistribution and use in source and binary forms, with or without
 ;;; modification, are permitted provided that the following conditions
@@ -214,7 +214,7 @@ offsets like \"GMT-01:30\" are also allowed."
              (time-zone-string (subseq string (1+ last-space-pos)))
              (time-zone (interpret-as-time-zone time-zone-string))
              second minute hour day month year)
-        (dolist (part (rest (split-string (subseq string 0 last-space-pos))))
+        (dolist (part (rest (cl-ppcre:split "[ ,-]" (subseq string 0 last-space-pos))))
           (when (and day month)
             (cond ((every #'digit-char-p part)
                    (when year
@@ -222,7 +222,7 @@ offsets like \"GMT-01:30\" are also allowed."
                                               string part))
                    (setq year (parse-integer part)))
                   ((= (count #\: part :test #'char=) 2)
-                   (let ((h-m-s (mapcar #'safe-parse-integer (split-string part ":"))))
+                   (let ((h-m-s (mapcar #'safe-parse-integer (cl-ppcre:split ":" part))))
                      (setq hour (first h-m-s)
                            minute (second h-m-s)
                            second (third h-m-s))))

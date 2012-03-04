@@ -1,7 +1,7 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: DRAKMA; Base: 10 -*-
 ;;; $Header: /usr/local/cvsrep/drakma/request.lisp,v 1.58 2008/05/30 11:30:45 edi Exp $
 
-;;; Copyright (c) 2006-2011, Dr. Edmund Weitz.  All rights reserved.
+;;; Copyright (c) 2006-2012, Dr. Edmund Weitz.  All rights reserved.
 
 ;;; Redistribution and use in source and binary forms, with or without
 ;;; modification, are permitted provided that the following conditions
@@ -211,7 +211,9 @@ headers of the chunked stream \(if any) as a second value."
                               force-binary
                               want-stream
                               stream
-                              #+:lispworks (connection-timeout 20)
+                              preserve-uri
+                              #+(or abcl clisp lispworks mcl openmcl sbcl)
+                              (connection-timeout 20)
                               #+:lispworks (read-timeout 20)
                               #+(and :lispworks (not :lw-does-not-have-write-timeout))
                               (write-timeout 20 write-timeout-provided-p)
@@ -416,19 +418,27 @@ will NEVER attach SSL to a stream provided as the STREAM
 argument.
 
 CONNECTION-TIMEOUT is the time \(in seconds) Drakma will wait until it
-considers an attempt to connect to a server as a failure.
-READ-TIMEOUT and WRITE-TIMEOUT are the read and write timeouts \(in
-seconds) for the socket stream to the server.  All three timeout
-arguments can also be NIL \(meaning no timeout), and they don't apply
-if an existing stream is re-used.  All timeout keyword arguments are
-only available for LispWorks, WRITE-TIMEOUT is only available for
-LispWorks 5.0 or higher.
+considers an attempt to connect to a server as a failure. It is
+supported only on some platforms \(currently abcl, clisp, LispWorks,
+mcl, openmcl and sbcl). READ-TIMEOUT and WRITE-TIMEOUT are the read
+and write timeouts \(in seconds) for the socket stream to the server.
+All three timeout arguments can also be NIL \(meaning no timeout), and
+they don't apply if an existing stream is re-used.  READ-TIMEOUT
+argument is only available for LispWorks, WRITE-TIMEOUT is only
+available for LispWorks 5.0 or higher.
 
 DEADLINE, a time in the future, specifies the time until which the
 request should be finished.  The deadline is specified in internal
 time units.  If the server fails to respond until that time, a
 COMMUNICATION-DEADLINE-EXPIRED condition is signalled.  DEADLINE is
-only available on CCL 1.2 and later."
+only available on CCL 1.2 and later.
+
+If PRESERVE-URI is not NIL, the given URI will not be processed. This
+means that the URI will be sent as-is to the remote server and it is
+the responsibility of the client to make sure that all parameters are
+encoded properly. Note that if this parameter is given, and the
+request is not a POST with a content-type of `multipart/form-data',
+PARAMETERS will not be used."
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
   (setq uri (cond ((uri-p uri) (copy-uri uri))
@@ -511,7 +521,11 @@ only available on CCL 1.2 and later."
                                                              :element-type 'octet
                                                              #+:openmcl :deadline
                                                              #+:openmcl deadline
-                                                             :nodelay t)))
+                                                             #+(or abcl clisp lispworks mcl openmcl sbcl)
+                                                             :timeout
+                                                             #+(or abcl clisp lispworks mcl openmcl sbcl)
+                                                             connection-timeout
+                                                             :nodelay :if-supported)))
                     raw-http-stream http-stream)
               #+:openmcl
               (when deadline
@@ -570,8 +584,9 @@ only available on CCL 1.2 and later."
                 #-:lispworks
                 (setq http-stream (wrap-stream (make-ssl-stream raw-http-stream))))
               (when-let (all-get-parameters
-                         (append (dissect-query (uri-query uri))
-                                 (and (not parameters-used-p) parameters)))
+                         (and (not preserve-uri)
+                              (append (dissect-query (uri-query uri))
+                                      (and (not parameters-used-p) parameters))))
                 (setf (uri-query uri)
                       (alist-to-url-encoded-string all-get-parameters external-format-out)))
               (when (eq method :options*)
@@ -607,7 +622,7 @@ only available on CCL 1.2 and later."
               (when accept
                 (write-header "Accept" "~A" accept))
               (when range
-                (write-header "Range" "bytes ~A-~A" (first range) (second range)))
+                (write-header "Range" "bytes=~A-~A" (first range) (second range)))
               (when cookie-jar
                 ;; write all cookies in one fell swoop, so even Sun's
                 ;; web server has a chance to get it
