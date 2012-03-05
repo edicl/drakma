@@ -56,6 +56,7 @@
                                    :propfind
                                    :proppatch
                                    :put
+                                   :report
                                    :trace
                                    :unlock)
   "The HTTP methods \(including WebDAV methods) Drakma knows.")
