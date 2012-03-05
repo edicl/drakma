@@ -449,7 +449,7 @@ PARAMETERS will not be used."
     (parameter-error "Don't know how to handle scheme ~S." (uri-scheme uri)))
   (when (and close keep-alive)
     (parameter-error "CLOSE and KEEP-ALIVE must not be both true."))
-  (when (and form-data (not (eq method :post)))
+  (when (and form-data (not (member method '(:post :report) :test #'eq)))
     (parameter-error "FORM-DATA makes only sense with POST requests."))
   (when range
     (unless (and (listp range)
