@@ -237,7 +237,8 @@ PROTOCOL is the HTTP protocol which is going to be used in the
 request line, it must be one of the keywords :HTTP/1.0 or
 :HTTP/1.1.  METHOD is the method used in the request line, a
 keyword \(like :GET or :HEAD) denoting a valid HTTP/1.1 or WebDAV
-request method.  Additionally, you can also use the pseudo
+request method, or :REPORT, as described in the Versioning 
+Extensions to WebDAV.  Additionally, you can also use the pseudo
 method :OPTIONS* which is like :OPTIONS but means that an
 \"OPTIONS *\" request line will be sent, i.e. the URI's path and
 query parts will be ignored.
@@ -449,7 +450,7 @@ PARAMETERS will not be used."
     (parameter-error "Don't know how to handle scheme ~S." (uri-scheme uri)))
   (when (and close keep-alive)
     (parameter-error "CLOSE and KEEP-ALIVE must not be both true."))
-  (when (and form-data (not (eq method :post)))
+  (when (and form-data (not (member method '(:post :report) :test #'eq)))
     (parameter-error "FORM-DATA makes only sense with POST requests."))
   (when range
     (unless (and (listp range)
