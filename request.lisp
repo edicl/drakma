@@ -237,7 +237,8 @@ PROTOCOL is the HTTP protocol which is going to be used in the
 request line, it must be one of the keywords :HTTP/1.0 or
 :HTTP/1.1.  METHOD is the method used in the request line, a
 keyword \(like :GET or :HEAD) denoting a valid HTTP/1.1 or WebDAV
-request method.  Additionally, you can also use the pseudo
+request method, or :REPORT, as described in the Versioning 
+Extensions to WebDAV.  Additionally, you can also use the pseudo
 method :OPTIONS* which is like :OPTIONS but means that an
 \"OPTIONS *\" request line will be sent, i.e. the URI's path and
 query parts will be ignored.
