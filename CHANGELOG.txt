@@ -1,3 +1,5 @@
+Support :REQUEST method (Cyrus Harmon)
+
 Version 1.2.6
 2012-03-03
 Enable timeouts for more implementations (Francisco Vides Fernández)
