@@ -177,6 +177,12 @@ headers of the chunked stream \(if any) as a second value."
                      result)))
             (chunked-input-stream-trailers (flexi-stream-stream stream)))))
 
+(defun trivial-uri-path (uri-string)
+  "If the PRESERVE-URI argument is used, the URI needs to be passed to
+  the server in unmodified form.  This function returns just the path
+  component of the URI with no URL encoding or other modifications done."
+  (cl-ppcre:regex-replace "[^/]+://[^/]*/?" uri-string "/"))
+
 (defun http-request (uri &rest args
                          &key (protocol :http/1.1)
                               (method :get)
@@ -218,7 +224,8 @@ headers of the chunked stream \(if any) as a second value."
                               #+(and :lispworks (not :lw-does-not-have-write-timeout))
                               (write-timeout 20 write-timeout-provided-p)
                               #+:openmcl
-                              deadline)
+                              deadline
+                              &aux (unparsed-uri (if (stringp uri) (copy-seq uri) (puri:copy-uri uri))))
   "Sends an HTTP request to a web server and returns its reply.  URI
 is where the request is sent to, and it is either a string denoting a
 uniform resource identifier or a PURI:URI object.  The scheme of URI
@@ -596,13 +603,19 @@ PARAMETERS will not be used."
                       (uri-query uri) nil))
               (write-http-line "~A ~A ~A"
                                (string-upcase method)
-                               (render-uri (cond ((and proxy
+                               (if (and preserve-uri
+                                        (stringp unparsed-uri))
+                                   (trivial-uri-path unparsed-uri)
+                                   (render-uri (cond
+                                                 ((and proxy
                                                        (null stream)
-                                                       (not proxying-https-p)) uri)
-                                                 (t (make-instance 'uri
-                                                                   :path (or (uri-path uri) "/")
-                                                                   :query (uri-query uri))))
-                                           nil)
+                                                       (not proxying-https-p))
+                                                  uri)
+                                                 (t
+                                                  (make-instance 'uri
+                                                                 :path (or (uri-path uri) "/")
+                                                                 :query (uri-query uri))))
+                                               nil))
                                (string-upcase protocol))
               (write-header "Host" "~A~@[:~A~]" (uri-host uri) (non-default-port uri))
               (when user-agent
