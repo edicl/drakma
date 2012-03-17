@@ -1,4 +1,5 @@
 Support :REQUEST method (Cyrus Harmon)
+Make PRESERVE-URI work better - PURI:URI mangles paths with encoded &'s.
 
 Version 1.2.6
 2012-03-03
