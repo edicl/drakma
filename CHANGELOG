@@ -1,4 +1,6 @@
-Support :REQUEST method (Cyrus Harmon)
+Version 1.2.7
+2012-08-16
+Support :REPORT method (Cyrus Harmon)
 Make PRESERVE-URI work better - PURI:URI mangles paths with encoded &'s.
 
 Version 1.2.6

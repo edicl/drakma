@@ -38,7 +38,7 @@
 
 (in-package :drakma-asd)
 
-(defvar *drakma-version-string* "1.2.6"
+(defvar *drakma-version-string* "1.2.7"
   "Drakma's version number as a string.")
 
 ;; we export its name so we can import it later
