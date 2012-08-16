@@ -769,6 +769,7 @@ PARAMETERS will not be used."
                                               :additional-headers additional-headers
                                               ;; don't send GET parameters again in redirect
                                               :parameters (and (not (eq method :get)) parameters)
+                                              :preserve-uri t
                                               args)))))
                                (let ((transfer-encodings (header-value :transfer-encoding headers)))
                                  (when transfer-encodings
