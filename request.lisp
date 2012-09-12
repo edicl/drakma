@@ -663,18 +663,17 @@ PARAMETERS will not be used."
                 (when (and content-length
                            (not (or (and (integerp content-length)
                                          (not (minusp content-length)))
-                                    (arrayp content)
-                                    (listp content)
+                                    (typep content '(or (vector octet) list))
                                     (eq content :continuation))))
                   ;; CONTENT-LENGTH forces us to compute request body
                   ;; in RAM
                   (setq content
                         (with-output-to-sequence (bin-out)
                           (let ((out (make-flexi-stream bin-out :external-format +latin-1+)))
-                            (send-content content out)))))
+                            (send-content content out external-format-out)))))
                 (when (and (or (not content-length-provided-p)
                                (eq content-length t))
-                           (or (arrayp content) (listp content)))
+                           (typep content '(or (vector octet) list)))
                   (setq content-length (length content)))
                 (cond (content-length
                        (write-header "Content-Length" "~D" content-length))
