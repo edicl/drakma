@@ -1,3 +1,5 @@
+fix the computation of request's Content-Length (Manabu Takayama)
+
 Version 1.2.7
 2012-08-16
 Support :REPORT method (Cyrus Harmon)
