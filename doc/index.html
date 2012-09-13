@@ -761,6 +761,7 @@ to <a href="http://livehttpheaders.mozdev.org/">LiveHTTPHeaders</a>.
           <a class=none href="#range">range</a>
           <a class=none href="#proxy">proxy</a>
           <a class=none href="#proxy-basic-authorization">proxy-basic-authorization</a>
+          <a class=none href="#real-host">real-host</a>
           <a class=none href="#additional-headers">additional-headers</a>
           <a class=none href="#redirect">redirect</a>
           <a class=none href="#redirect-methods">redirect-methods</a>
@@ -1034,6 +1035,11 @@ values - a string denoting the proxy server and an integer denoting
 the port to use (which will default to 80 otherwise).
 <a class=none name="proxy-basic-authorization"><code><i>proxy-basic-authorization</i></code></a> is used like <code><i>basic-authorization</i></code>, but for
 the proxy, and only if <code><i>proxy</i></code> is true.
+<p>
+If <a class=none name="real-host"><code><i>real-host</i></code></a> is
+not <code>NIL</code>, request is sent to the denoted host instead of
+the URI host.  When specified, <code><i>real-host</i></code>
+supersedes <code><i>proxy</i></code>.
 <p>
 <a class=none
 name="additional-headers"><code><i>additional-headers</i></code></a>
