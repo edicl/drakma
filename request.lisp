@@ -206,6 +206,7 @@ headers of the chunked stream \(if any) as a second value."
                               range
                               proxy
                               proxy-basic-authorization
+                              real-host
                               additional-headers
                               (redirect 5)
                               (redirect-methods '(:get :head))
@@ -372,6 +373,9 @@ otherwise).  PROXY-BASIC-AUTHORIZATION is used like
 BASIC-AUTHORIZATION, but for the proxy, and only if PROXY is
 true.
 
+If REAL-HOST is not NIL, request is sent to the denoted host instead
+of the URI host.  When specified, REAL-HOST supersedes PROXY.
+
 ADDITIONAL-HEADERS is a name/value alist of additional HTTP headers
 which should be sent with the request.  Unlike in PARAMETERS, the cdrs
 can not only be strings but also designators for unary functions
@@ -465,6 +469,9 @@ PARAMETERS will not be used."
                  (integerp (second range))
                  (<= (first range) (second range)))
       (parameter-error "RANGE parameter must be specified as list of two integers, with the second larger or equal to the first")))
+  ;; supersede PROXY with REAL-HOST
+  (when real-host
+    (setq proxy real-host))
   ;; convert PROXY argument to canonical form
   (when proxy
     (when (atom proxy)
@@ -610,7 +617,8 @@ PARAMETERS will not be used."
                                    (render-uri (cond
                                                  ((and proxy
                                                        (null stream)
-                                                       (not proxying-https-p))
+                                                       (not proxying-https-p)
+                                                       (not real-host))
                                                   uri)
                                                  (t
                                                   (make-instance 'uri
