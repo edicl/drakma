@@ -1,3 +1,5 @@
+Add REAL-HOST keyword argument (Orivej Desh)
+
 Version 1.2.8
 2012-09-12
 fix the computation of request's Content-Length (Manabu Takayama)
