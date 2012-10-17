@@ -668,11 +668,13 @@ PARAMETERS will not be used."
               (when content
                 (when content-type
                   (write-header "Content-Type" "~A" content-type))
-                (when (and content-length
-                           (not (or (and (integerp content-length)
-                                         (not (minusp content-length)))
-                                    (typep content '(or (vector octet) list))
-                                    (eq content :continuation))))
+                (when (or (and (not content-length-provided-p)
+                               (stringp content))
+                          (and content-length
+                               (not (or (and (integerp content-length)
+                                             (not (minusp content-length)))
+                                        (typep content '(or (vector octet) list))
+                                        (eq content :continuation)))))
                   ;; CONTENT-LENGTH forces us to compute request body
                   ;; in RAM
                   (setq content
