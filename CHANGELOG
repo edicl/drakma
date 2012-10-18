@@ -1,3 +1,6 @@
+Version 1.2.9
+2012-10-18
+Fix bug with Content-Length computation (Manabu Takayama)
 Add REAL-HOST keyword argument (Orivej Desh)
 
 Version 1.2.8
