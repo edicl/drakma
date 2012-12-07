@@ -1057,9 +1057,7 @@ or <code>T</code>.  If <code><i>redirect</i></code> is true, Drakma
 will follow redirects (return codes 301, 302, 303, or 307)
 unless <code><i>redirect</i></code> is <code>0</code>.
 If <code><i>redirect</i></code> is an integer, it will be decreased
-by&nbsp;<code>1</code> with each redirect.  Drakma will only follow
-redirects if <code><i>method</i></code> is a member of the list <a name="redirect-methods" class=none><code><i>redirect-methods</i></code></a> the
-initial value of which is <code>(:GET :HEAD)</code>.
+by&nbsp;<code>1</code> with each redirect.
 Furthermore, if <a name="auto-referer"><code><i>auto-referer</i></code></a> is true when following redirects,
 Drakma will populate the 'Referer' (sic!) header with the URI that
 triggered the redirection, overwriting an existing 'Referer'
