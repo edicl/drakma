@@ -195,7 +195,7 @@ headers of the chunked stream \(if any) as a second value."
                               ca-file
                               ca-directory
                               parameters
-                              url-encoder
+                              (url-encoder #'url-encode)
                               content
                               (content-type "application/x-www-form-urlencoded")
                               (content-length nil content-length-provided-p)
@@ -776,18 +776,16 @@ PARAMETERS will not be used."
                                        (ignore-errors (close http-stream)))
                                      (setq done t)
                                      (return-from http-request
-                                       (let ((new-method (cond ((member status-code +redirect-to-get-codes+) :get)
-                                                               (t method))))
-                                         (apply #'http-request new-uri
-                                                :method new-method
-                                                :redirect (cond ((integerp redirect) (1- redirect))
-                                                                (t redirect))
-                                                :stream (and re-use-stream http-stream)
-                                                :additional-headers additional-headers
-                                                ;; don't send GET parameters again in redirect
-                                                :parameters (and (not (eq new-method :get)) parameters)
-                                                :preserve-uri t
-                                                args))))))
+                                       (apply #'http-request new-uri
+                                              :method (cond ((member status-code +redirect-to-get-codes+) :get)
+                                                            (t method))
+                                              :redirect (cond ((integerp redirect) (1- redirect))
+                                                              (t redirect))
+                                              :stream (and re-use-stream http-stream)
+                                              :additional-headers additional-headers
+                                              :parameters parameters
+                                              :preserve-uri t
+                                              args)))))
                                (let ((transfer-encodings (header-value :transfer-encoding headers)))
                                  (when transfer-encodings
                                    (setq transfer-encodings (split-tokens transfer-encodings)))
