@@ -210,7 +210,6 @@ headers of the chunked stream \(if any) as a second value."
                               real-host
                               additional-headers
                               (redirect 5)
-                              (redirect-methods '(:get :head))
                               auto-referer
                               keep-alive
                               (close t)
@@ -736,8 +735,7 @@ PARAMETERS will not be used."
                                (when cookie-jar
                                  (update-cookies (get-cookies headers uri) cookie-jar))
                                (when (and redirect
-                                          (member status-code +redirect-codes+)
-                                          (member method redirect-methods))
+                                          (member status-code +redirect-codes+))
                                  (unless (or (eq redirect t)
                                              (and (integerp redirect)
                                                   (plusp redirect)))
@@ -779,6 +777,8 @@ PARAMETERS will not be used."
                                      (setq done t)
                                      (return-from http-request
                                        (apply #'http-request new-uri
+                                              :method (cond ((member status-code +redirect-to-get-codes+) :get)
+                                                            (t method))
                                               :redirect (cond ((integerp redirect) (1- redirect))
                                                               (t redirect))
                                               :stream (and re-use-stream http-stream)

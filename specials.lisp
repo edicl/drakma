@@ -41,6 +41,9 @@
 (define-constant +redirect-codes+ '(301 302 303 307)
   "A list of all HTTP return codes that redirect us to another URI.")
 
+(define-constant +redirect-to-get-codes+ '(302 303)
+  "A list of HTTP return codes that redirect using a GET method.")
+
 (define-constant +known-methods+ '(:copy
                                    :delete
                                    :delete
