@@ -109,7 +109,7 @@ external format EXTERNAL-FORMAT."
                      (write-char #\+ out))
                    (t (format out "%~2,'0x" (char-code char)))))))
 
-(defun alist-to-url-encoded-string (alist external-format)
+(defun alist-to-url-encoded-string (alist external-format url-encoder)
   "ALIST is supposed to be an alist of name/value pairs where both
 names and values are strings \(or, for values, NIL).  This function
 returns a string where this list is represented as for the content
@@ -122,9 +122,9 @@ value with a #\\= character.  If the value is NIL, no #\\= is used."
           for (name . value) in alist
           unless first do (write-char #\& out)
           do (format out "~A~:[~;=~A~]"
-                      (url-encode name external-format)
+                      (funcall url-encoder name external-format)
                       value
-                      (url-encode value external-format)))))
+                      (funcall url-encoder value external-format)))))
 
 (defun default-port (uri)
   "Returns the default port number for the \(PURI) URI URI.

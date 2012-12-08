@@ -195,6 +195,7 @@ headers of the chunked stream \(if any) as a second value."
                               ca-file
                               ca-directory
                               parameters
+                              url-encoder
                               content
                               (content-type "application/x-www-form-urlencoded")
                               (content-length nil content-length-provided-p)
@@ -297,6 +298,12 @@ treated as a plist which can be used to specify a content type and/or
 a filename for the file, i.e. such a value could look like, e.g.,
 \(#p\"/tmp/my_file.doc\" :content-type \"application/msword\"
 :filename \"upload.doc\").
+
+URL-ENCODER specifies a custom URL encoder function which will be used
+by drakma to URL-encode parameter names and values.  It needs to be a
+function of one argument.  The argument is the string to encode, the
+return value must be the URL-encoded string.  This can be used if
+specific encoding rules are required.
 
 CONTENT, if not NIL, is used as the request body - PARAMETERS is
 ignored in this case.  CONTENT can be a string, a sequence of
@@ -499,7 +506,7 @@ PARAMETERS will not be used."
                (unless (or file-parameters-p content-length-provided-p)
                  (setq content-length (or content-length t))))
               (t
-               (setq content (alist-to-url-encoded-string parameters external-format-out)
+               (setq content (alist-to-url-encoded-string parameters external-format-out url-encoder)
                      content-type "application/x-www-form-urlencoded")))))
     (let ((proxying-https-p (and proxy (not stream) (eq :https (puri:uri-scheme uri))))
            http-stream raw-http-stream must-close done)
@@ -603,7 +610,7 @@ PARAMETERS will not be used."
                               (append (dissect-query (uri-query uri))
                                       (and (not parameters-used-p) parameters))))
                 (setf (uri-query uri)
-                      (alist-to-url-encoded-string all-get-parameters external-format-out)))
+                      (alist-to-url-encoded-string all-get-parameters external-format-out url-encoder)))
               (when (eq method :options*)
                 ;; special pseudo-method
                 (setf method :options
