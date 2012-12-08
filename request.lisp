@@ -195,7 +195,7 @@ headers of the chunked stream \(if any) as a second value."
                               ca-file
                               ca-directory
                               parameters
-                              url-encoder
+                              (url-encoder #'url-encode)
                               content
                               (content-type "application/x-www-form-urlencoded")
                               (content-length nil content-length-provided-p)
