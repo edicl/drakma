@@ -45,7 +45,7 @@
       body { margin-left: 2em; }
       p, blockquote { max-width: 45em; }
       pre { margin-left: 3em; margin-right: 3em; word-wrap: break-word; overflow-x: auto; background: #eee; }
-      .arglist-spacer { margin-left: 6em; }
+      .arglist-spacer { margin-left: 6em; max-width: 45em; }
       .repl-output { color: black; }
       .repl-input { font-weight: bold; }
       .headers-out { color: SteelBlue; }
@@ -637,56 +637,55 @@ T</span>
       </p>
 
       <clix:function name="http-request">
-        <clix:lambda-list>uri<br/>
-        <div class="arglist-spacer">&amp;rest args</div>
-        <div class="arglist-spacer">&amp;key
-          <a href="#arg-protocol">protocol</a>
-          <a href="#arg-method">method</a>
-          <a href="#arg-force-ssl">force-ssl</a>
-          <a href="#arg-certificate">certificate</a>
-          <a href="#arg-key">key</a>
-          <a href="#arg-certificate-password">certificate-password</a>
-          <a href="#arg-verify">verify</a>
-          <a href="#arg-max-depth">max-depth</a>
-          <a href="#arg-ca-file">ca-file</a>
-          <a href="#arg-ca-directory">ca-directory</a>
-          <a href="#arg-parameters">parameters</a>
-          <a href="#arg-url-encoder">url-encoder</a>
-          <a href="#arg-content">content</a>
-          <a href="#arg-content-type">content-type</a>
-          <a href="#arg-content-length">content-length</a>
-          <a href="#arg-form-data">form-data</a>
-          <a href="#arg-cookie-jar">cookie-jar</a>
-          <a href="#arg-basic-authorization">basic-authorization</a>
-          <a href="#arg-user-agent">user-agent</a>
-          <a href="#arg-accept">accept</a>
-          <a href="#arg-range">range</a>
-          <a href="#arg-proxy">proxy</a>
-          <a href="#arg-proxy-basic-authorization">proxy-basic-authorization</a>
-          <a href="#arg-real-host">real-host</a>
-          <a href="#arg-additional-headers">additional-headers</a>
-          <a href="#arg-redirect">redirect</a>
-          <a href="#arg-auto-referer">auto-referer</a>
-          <a href="#arg-keep-alive">keep-alive</a>
-          <a href="#arg-close">close</a>
-          <a href="#arg-external-format-out">external-format-out</a>
-          <a href="#arg-external-format-in">external-format-in</a>
-          <a href="#arg-force-binary">force-binary</a>
-          <a href="#arg-want-stream">want-stream</a>
-          <a href="#arg-stream">stream</a>
-          <a href="#arg-preserve-uri">preserve-uri</a>
-          <a href="#arg-connection-timeout">connection-timeout</a>
-          <a href="#arg-deadline">deadline</a>
+        <clix:special-definition>
+          [Function]<br/>
+          <b>http-request</b> <i>uri</i><div class="arglist-spacer">&amp;rest args</div>
+          <div class="arglist-spacer">&amp;key
+            <a href="#arg-protocol">protocol</a>
+            <a href="#arg-method">method</a>
+            <a href="#arg-force-ssl">force-ssl</a>
+            <a href="#arg-certificate">certificate</a>
+            <a href="#arg-key">key</a>
+            <a href="#arg-certificate-password">certificate-password</a>
+            <a href="#arg-verify">verify</a>
+            <a href="#arg-max-depth">max-depth</a>
+            <a href="#arg-ca-file">ca-file</a>
+            <a href="#arg-ca-directory">ca-directory</a>
+            <a href="#arg-parameters">parameters</a>
+            <a href="#arg-url-encoder">url-encoder</a>
+            <a href="#arg-content">content</a>
+            <a href="#arg-content-type">content-type</a>
+            <a href="#arg-content-length">content-length</a>
+            <a href="#arg-form-data">form-data</a>
+            <a href="#arg-cookie-jar">cookie-jar</a>
+            <a href="#arg-basic-authorization">basic-authorization</a>
+            <a href="#arg-user-agent">user-agent</a>
+            <a href="#arg-accept">accept</a>
+            <a href="#arg-range">range</a>
+            <a href="#arg-proxy">proxy</a>
+            <a href="#arg-proxy-basic-authorization">proxy-basic-authorization</a>
+            <a href="#arg-real-host">real-host</a>
+            <a href="#arg-additional-headers">additional-headers</a>
+            <a href="#arg-redirect">redirect</a>
+            <a href="#arg-auto-referer">auto-referer</a>
+            <a href="#arg-keep-alive">keep-alive</a>
+            <a href="#arg-close">close</a>
+            <a href="#arg-external-format-out">external-format-out</a>
+            <a href="#arg-external-format-in">external-format-in</a>
+            <a href="#arg-force-binary">force-binary</a>
+            <a href="#arg-want-stream">want-stream</a>
+            <a href="#arg-stream">stream</a>
+            <a href="#arg-preserve-uri">preserve-uri</a>
+            <a href="#arg-connection-timeout">connection-timeout</a>
+            <a href="#arg-deadline">deadline</a>
           </div>
-          <clix:special-returns>
-            <div class="arglist-spacer">
-              =&gt; body-or-stream<sup>0</sup>, status-code<sup>1</sup>,
-              headers<sup>2</sup>, uri<sup>3</sup>, stream<sup>4</sup>,
-              <a href="#arg-want-stream">must-close<sup>5</sup></a>,
-              reason-phrase<sup>6</sup>
-            </div>
-          </clix:special-returns>
-        </clix:lambda-list>
+          <div class="arglist-spacer">
+            =&gt; body-or-stream<sup>0</sup>, status-code<sup>1</sup>,
+            headers<sup>2</sup>, uri<sup>3</sup>, stream<sup>4</sup>,
+            <a href="#arg-want-stream">must-close<sup>5</sup></a>,
+            reason-phrase<sup>6</sup>
+          </div>
+        </clix:special-definition>
         <clix:description>
           <p>
             Sends an <a

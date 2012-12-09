@@ -79,15 +79,22 @@
   <xsl:template match="clix:function">
     <p>
       <xsl:call-template name="make-anchor"/>
-      [<xsl:call-template name="nice-entry-type-name"/>]
-      <br/>
-      <xsl:call-template name="render-title"/>
-      <xsl:value-of select="' '"/>
-      <i><xsl:apply-templates select="clix:lambda-list"/></i>
-      <xsl:if test="clix:returns">
-        =&gt;
-        <i><xsl:apply-templates select="clix:returns"/></i>
-      </xsl:if>
+      <xsl:choose>
+        <xsl:when test="clix:special-definition">
+          <xsl:apply-templates select="clix:special-definition"/>
+        </xsl:when>
+        <xsl:otherwise>
+          [<xsl:call-template name="nice-entry-type-name"/>]
+          <br/>
+          <xsl:call-template name="render-title"/>
+          <xsl:value-of select="' '"/>
+          <i><xsl:apply-templates select="clix:lambda-list"/></i>
+          <xsl:if test="clix:returns">
+            =&gt;
+            <i><xsl:apply-templates select="clix:returns"/></i>
+          </xsl:if>
+        </xsl:otherwise>
+      </xsl:choose>
       <blockquote>
         <xsl:apply-templates select="clix:description"/>
       </blockquote>
