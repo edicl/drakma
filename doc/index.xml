@@ -238,7 +238,7 @@ T
 ; Loading "cl-ppcre"
 
 (:CL-PPCRE)
-? </span><span class="repl-input">(ppcre:scan-to-strings "(?s)You have.*your data."
+? </span><span class="repl-input">(cl-ppcre:scan-to-strings "(?s)You have.*your data."
                                        (drakma:http-request "https://www.fortify.net/cgi/ssl_2.pl"))</span>
 <span class="headers-out">GET /cgi/ssl_2.pl HTTP/1.1
 Host: www.fortify.net
@@ -502,7 +502,7 @@ or &lt;a href="http://blog.quicklisp.org/"&gt;the Quicklisp blog&lt;/a&gt;.
                          :if-exists :supersede)
       (write-string "p" out))
     (funcall continuation temp-file t)
-    (ppcre:scan-to-strings "zappzerapp" (funcall continuation "zerapp")))</span>
+    (cl-ppcre:scan-to-strings "zappzerapp" (funcall continuation "zerapp")))</span>
 <span class="headers-out">POST /hunchentoot/test/parameter_latin1_post.html HTTP/1.1
 Host: localhost:4242
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -532,7 +532,7 @@ Content-Type: text/html; charset=ISO-8859-1
         <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35">Partial
         transfers</a> of resources are possible.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(ppcre:regex-replace-all
+      <pre><span class="repl-output">? </span><span class="repl-input">(cl-ppcre:regex-replace-all
    "&lt;.*?&gt;"
    (format nil "~A~%~A"
            (drakma:http-request "http://members.shaw.ca/mitb/hunchentoot.html"
