@@ -86,7 +86,7 @@
       <i><xsl:apply-templates select="clix:lambda-list"/></i>
       <xsl:if test="clix:returns">
         =&gt;
-        <i><xsl:value-of select="clix:returns"/></i>
+        <i><xsl:apply-templates select="clix:returns"/></i>
       </xsl:if>
       <blockquote>
         <xsl:apply-templates select="clix:description"/>
@@ -104,7 +104,7 @@
       <i><xsl:apply-templates select="clix:lambda-list"/></i>
       <xsl:if test="clix:returns">
         =&gt;
-        <i><xsl:value-of select="clix:returns"/></i>
+        <i><xsl:apply-templates select="clix:returns"/></i>
       </xsl:if>
       <blockquote>
         <xsl:apply-templates select="clix:description"/>
@@ -119,7 +119,7 @@
       <i><xsl:apply-templates select="clix:lambda-list"/></i>
       <xsl:if test="clix:returns">
         =&gt;
-        <i><xsl:value-of select="clix:returns"/></i>
+        <i><xsl:apply-templates select="clix:returns"/></i>
       </xsl:if>
     <br/>
   </xsl:template>
@@ -134,7 +134,7 @@
       <i><xsl:apply-templates select="clix:lambda-list"/></i><tt>) <i>new-value</i>)</tt>
       <xsl:if test="clix:returns">
         =&gt;
-        <i><xsl:value-of select="clix:returns"/></i>
+        <i><xsl:apply-templates select="clix:returns"/></i>
       </xsl:if>
       <blockquote>
         <xsl:apply-templates select="clix:description"/>
@@ -151,7 +151,7 @@
       <xsl:value-of select="' '"/>
       <i><xsl:apply-templates select="clix:lambda-list"/></i>
       =&gt;
-      <i><xsl:value-of select="clix:returns"/></i>
+      <i><xsl:apply-templates select="clix:returns"/></i>
       <br/>
       <tt>(setf (</tt><b><xsl:value-of select="@name"/></b>
       <xsl:value-of select="' '"/>
@@ -168,7 +168,7 @@
       <xsl:value-of select="' '"/>
       <i><xsl:apply-templates select="clix:lambda-list"/></i>
       =&gt;
-      <i><xsl:value-of select="clix:returns"/></i>
+      <i><xsl:apply-templates select="clix:returns"/></i>
       <br/>
       <tt>(setf (</tt><b><xsl:value-of select="@name"/></b>
       <xsl:value-of select="' '"/>

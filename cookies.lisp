@@ -64,7 +64,16 @@ accessible from Javascript.
 
 This is a Microsoft extension that has been implemented in Firefox as
 well. See <http://msdn2.microsoft.com/en-us/library/ms533046.aspx>."))
-  (:documentation "Elements of this class represent HTTP cookies."))
+  (:documentation "Instances of this class represent HTTP cookies.  If
+you need to create your own cookies, you should use MAKE-INSTANCE with
+the initargs :NAME, :DOMAIN, :VALUE, :PATH, :EXPIRES,
+:SECUREP, and :HTTP-ONLY-P all of which are optional except for the
+first two.  The meaning of these initargs and the corresponding
+accessors should be pretty clear if one looks at the <a
+href="http://wp.netscape.com/newsref/std/cookie_spec.html">original
+cookie specification</a> (and at <a
+href="http://msdn2.microsoft.com/en-us/library/ms533046.aspx">this
+page</a> for the <code>HttpOnly</code> extension)."))
 
 (defun render-cookie-date (time)
   "Returns a string representation of the universal time TIME
@@ -181,7 +190,11 @@ equal."
             :initform nil
             :accessor cookie-jar-cookies
             :documentation "A list of the cookies in this cookie jar."))
-  (:documentation "A COOKIE-JAR object is a collection of cookies."))
+  (:documentation "An object of this class encapsulates a
+  collection (a list, actually) of COOKIE objects. You create a new
+  cookie jar with (MAKE-INSTANCE 'COOKIE-JAR) where you can optionally
+  provide a list of COOKIE objects with the :COOKIES initarg. The
+  cookies in a cookie jar are accessed with COOKIE-JAR-COOKIES."))
 
 (defmethod print-object ((cookie-jar cookie-jar) stream)
   "Print a cookie jar, showing the number of cookies it contains."
@@ -199,7 +212,12 @@ time.  Currently understands the following formats:
   \"Wed, 07-02-2017 10:34:45 GMT\"
 
 Instead of \"GMT\" time zone abbreviations like \"CEST\" and UTC
-offsets like \"GMT-01:30\" are also allowed."
+offsets like \"GMT-01:30\" are also allowed.
+
+While this function has \"cookie\" in its name, it might come in
+handy in other situations as well and it is thus exported as a
+convenience function.
+"
   ;; it seems like everybody and their sister invents their own format
   ;; for this, so (as there's no real standard for it) we'll have to
   ;; make this function more flexible once we come across something

@@ -2,8 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta><title>DRAKMA - A Common Lisp HTTP client</title><meta name="description" content="
     Drakma is a full-featured HTTP client implemented in Common Lisp.
     It knows how to handle HTTP/1.1 chunking,
-    persistent connections, re-usable sockets, SSL, continuable
-    uploads, file uploads, cookies, and more.
+    persistent connections, re-usable sockets, SSL, continuable uploads, file uploads, cookies, and more.
   "></meta><style type="text/css">
   body { background-color: #ffffff }
   pre { padding:5px; background-color:#e0e0e0 }
@@ -31,20 +30,16 @@
   <blockquote>
     <h3 xmlns=""><a class="none" name="abstract">Abstract</a></h3>
       <p>
-        Drakma is a full-featured HTTP client implemented in Common Lisp.
-        It knows how to handle <a href="#chunked">HTTP/1.1 chunking</a>,
-        <a href="#keep-alive">persistent connections</a>, <a href="#re-use">re-usable sockets</a>, <a href="#force-ssl">SSL</a>, <a href="#cont">continuable
-        uploads</a>, <a href="#form-data">file uploads</a>, <a href="#cookie-jar-param">cookies</a>, and more.
+        Drakma is a full-featured HTTP client implemented in Common
+        Lisp.  It knows how to handle <a href="#chunked">HTTP/1.1
+        chunking</a>, <a href="#arg-keep-alive">persistent
+        connections</a>, <a href="#ex-reuse-connection">re-usable
+        sockets</a>, <a href="#ex-chunked-https">SSL</a>, <a href="#ex-assemble-request-content">continuable uploads</a>,
+        <a href="#arg-parameters">file uploads</a>, <a href="#arg-cookie-jar">cookies</a>, and more.
       </p>
       <p>
         The code comes with a <a href="http://www.opensource.org/licenses/bsd-license.php">BSD-style
         license</a> so you can basically do with it whatever you want.
-      </p>
-      <p>
-        The preferred method to download, compile and load Drakma is
-        via <a href="http://www.quicklisp.org/">Quicklisp</a>.  That
-        way, all libraries that Drakma uses are automatically
-        downloaded.
       </p>
     
   </blockquote>
@@ -70,11 +65,24 @@
 <li><a href="#ex-partial-transfers">Partial transfers</a></li>
 </ol>
 </li>
+<li><a href="#install">Download and Installation</a></li>
+<li><a href="#patches">Development and patches</a></li>
+<li>
+<a href="#dictionary">The Drakma dictionary</a><ol>
+<li><a href="#dict-request">Requests</a></li>
+<li><a href="#headers">Headers</a></li>
+<li><a href="#cookies">Cookies</a></li>
+<li><a href="#conditions">Conditions</a></li>
+</ol>
+</li>
+<li><a href="#index">Symbol index</a></li>
 </ol>
     
   <h3 xmlns=""><a class="none" name="examples">Examples</a></h3>
 
     <style type="text/css">
+      body { margin-left: 2em; }
+      p { max-width: 50em; }
       pre { margin-left: 3em; margin-right: 3em; word-wrap: break-word; overflow-x: auto; background: #eee; }
       .repl-output { color: black; }
       .repl-input { font-weight: bold; }
@@ -100,58 +108,7 @@ To load "cl+ssl":
   Install 8 Quicklisp releases:
     alexandria babel bordeaux-threads cffi cl+ssl
     trivial-features trivial-garbage trivial-gray-streams
-; Loading "cl+ssl"
-[package trivial-garbage].........................
-[package alexandria.0.dev]........................
-..................................................
-..................................................
-[package bordeaux-threads]........................
-[package trivial-gray-streams]....................
-[package babel-encodings].........................
-[package babel]...................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-..................................................
-[package cffi-sys]................................
-[package cffi-callbacks]..........................
-[package cffi]....................................
-..................................................
-..................................................
-[package cffi-features]...........................
-[package cl+ssl].............
-; Loading "drakma"
-To load "usocket":
-  Install 1 Quicklisp release:
-    usocket
-; Loading "usocket"
-[package usocket]...............
-; Loading "drakma"
-To load "cl-base64":
-  Install 1 Quicklisp release:
-    cl-base64
-; Loading "cl-base64"
-[package cl-base64]...........................
-; Loading "drakma"
-To load "puri":
-  Install 1 Quicklisp release:
-    puri
-; Loading "puri"
-[package puri]..............
+...
 ; Loading "drakma"
 
 (:DRAKMA)
@@ -303,7 +260,7 @@ T
     <h4 xmlns=""><a name="ex-chunked-https">Chunked transfers and HTTPS</a></h4>
 
       Request a page using the HTTPS protocol.  Also note that the
-      server uses <a name="chunked" href="http://www.rfc.net/rfc2616.html#s3.6.1">chunked transfer
+      server uses <a name="chunked" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1">chunked transfer
       encoding</a> for its reply
 
       <pre><span class="repl-output">? </span><span class="repl-input">(ql:quickload :cl-ppcre)</span>
@@ -575,7 +532,7 @@ or &lt;a href="http://blog.quicklisp.org/"&gt;the Quicklisp blog&lt;/a&gt;.
     
     <h4 xmlns=""><a name="ex-assemble-request-content">Piecemeal assembly of request contents</a></h4>
 
-      Request contents can be assembled from various source, and
+      Request contents can be assembled from various sources, and
       chunked encoding can be used by request bodies.  Many servers do
       not support chunked encoding for request bodies, though.
 
@@ -620,7 +577,7 @@ Content-Type: text/html; charset=ISO-8859-1
     
     <h4 xmlns=""><a name="ex-partial-transfers">Partial transfers</a></h4>
 
-      <a href="http://www.rfc.net/rfc2616.html#s14.35">Partial
+      <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35">Partial
       transfers</a> of resources are possible.
 
       <pre><span class="repl-output">? </span><span class="repl-input">(ppcre:regex-replace-all
@@ -671,6 +628,1013 @@ HUNCHENTOOT (The Giant Spider)"
 T</span>
 </pre>
     
-
   
+
+  <h3 xmlns=""><a class="none" name="install">Download and Installation</a></h3>
+    <p>
+      Drakma depends on a number of open source libraries, so the
+      preferred method to download, compile and load it is via <a href="http://www.quicklisp.org/">Quicklisp</a>.
+    </p>
+    <p>
+      The canonical location for the latest version of Drakma is <a href="http://weitz.de/files/drakma.tar.gz">http://weitz.de/files/drakma.tar.gz</a>.
+    </p>
+  
+
+  <h3 xmlns=""><a class="none" name="patches">Development and patches</a></h3>
+    <p>
+      For discussions and questions regarding Drakma please use the <a href="http://common-lisp.net/mailman/listinfo/drakma-devel">drakma-devel
+      mailing list</a>. If you want to be notified about future
+      releases subscribe to the <a href="http://common-lisp.net/mailman/listinfo/drakma-announce">drakma-announce
+      mailing list</a>. These mailing lists were made available thanks
+      to the services of <a href="http://common-lisp.net/">common-lisp.net</a>.
+    </p>
+    <p>
+      The development version of Drakma can be found <a href="https://github.com/edicl/drakma" target="_new">on
+      github</a>.  Please use the github issue tracking system to
+      submit bug reports.  Patches are welcome, github pull requests
+      are preferred to mailed patches.  If you want to send patches,
+      please <a href="http://weitz.de/patches.html" target="_new">read this
+      first</a>.
+    </p>
+  
+
+  <h3 xmlns=""><a class="none" name="dictionary">The Drakma dictionary</a></h3>
+
+    <h4 xmlns=""><a name="dict-request">Requests</a></h4>
+
+      <p>
+        The <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code> function is the heart of
+        Drakma.  It is used to send requests to web servers and will
+        either return the message body of the server's reply or (if
+        the user so wishes) a stream one can read from.  The wealth of
+        keyword parameters might look a bit intimidating first, but
+        you will rarely need more than two or three of them - the
+        default behavior of Drakma is (hopefully) designed to do The
+        Right Thing[TM] in most cases.
+      </p>
+      <p>
+        You can use the <code xmlns=""><a href="#*header-stream*">*HEADER-STREAM*</a></code> variable
+        to debug requests handled by Drakma in a way similar to <a href="http://livehttpheaders.mozdev.org/">LiveHTTPHeaders</a>.
+      </p>
+
+      <p xmlns=""><a class="none" name="http-request"></a>
+      [Function]
+      <br><b>http-request</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">uri &amp;rest args &amp;key
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-protocol">protocol</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-method">method</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-force-ssl">force-ssl</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-certificate">certificate</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-key">key</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-certificate-password">certificate-password</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-verify">verify</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-max-depth">max-depth</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-ca-file">ca-file</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-ca-directory">ca-directory</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-parameters">parameters</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-url-encoder">url-encoder</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-content">content</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-content-type">content-type</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-content-length">content-length</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-form-data">form-data</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-cookie-jar">cookie-jar</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-basic-authorization">basic-authorization</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-user-agent">user-agent</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-accept">accept</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-range">range</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-proxy">proxy</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-proxy-basic-authorization">proxy-basic-authorization</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-real-host">real-host</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-additional-headers">additional-headers</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-redirect">redirect</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-auto-referer">auto-referer</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-keep-alive">keep-alive</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-close">close</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-external-format-out">external-format-out</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-external-format-in">external-format-in</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-force-binary">force-binary</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-want-stream">want-stream</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-stream">stream</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-preserve-uri">preserve-uri</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-connection-timeout">connection-timeout</a>
+          <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-deadline">deadline</a>
+        </clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">body-or-stream<sup xmlns="http://www.w3.org/1999/xhtml">0</sup>, status-code<sup xmlns="http://www.w3.org/1999/xhtml">1</sup>, headers<sup xmlns="http://www.w3.org/1999/xhtml">2</sup>, uri<sup xmlns="http://www.w3.org/1999/xhtml">3</sup>, stream<sup xmlns="http://www.w3.org/1999/xhtml">4</sup>, <a xmlns="http://www.w3.org/1999/xhtml" href="#arg-want-stream">must-close<sup>5</sup></a>, reason-phrase<sup xmlns="http://www.w3.org/1999/xhtml">6</sup></clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Sends an <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">HTTP</a>
+            request to a web server and returns its reply.
+            <code xmlns=""><i>uri</i></code> is where the request is sent to,
+            and it is either a string denoting a uniform resource
+            identifier or a PURI:<code xmlns=""><i>uri</i></code> object.  The
+            scheme of <code xmlns=""><i>uri</i></code> must be `http' or
+            `https'.  The function returns SEVEN values - the body of
+            the reply (but see below), the status code as an integer,
+            an alist of the headers sent by the server where for each
+            element the car (the name of the header) is a keyword and
+            the cdr (the value of the header) is a string, the
+            <code xmlns=""><i>uri</i></code> the reply comes from (which might
+            be different from the <code xmlns=""><i>uri</i></code> the request
+            was sent to in case of redirects), the stream the reply
+            was read from, a generalized boolean which denotes whether
+            the stream should be closed (and which you can usually
+            ignore), and finally the reason phrase from the status
+            line as a string.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-protocol"></a>
+            <code xmlns=""><i>protocol</i></code> is the HTTP protocol version
+            which is going to be used in the request line.  It must be
+            one of the keywords <code>:HTTP/1.0</code> or
+            <code>:HTTP/1.1</code>.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-method"></a>
+            <code xmlns=""><i>method</i></code> is the method used in the
+            request line, a keyword (like <code>:GET</code> or
+            <code>:HEAD</code>) denoting a valid HTTP/1.1 or WebDAV
+            request method, or <code>:REPORT</code>, as described in
+            the Versioning Extensions to WebDAV.  Additionally, you
+            can also use the pseudo method <code>:OPTIONS*</code>
+            which is like <code>:OPTIONS</code> but means that an
+            "OPTIONS *" request line will be sent, i.e. the
+            <code xmlns=""><i>uri</i></code>'s path and query parts will be
+            ignored.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml"><a name="arg-force-ssl"></a>
+            If <code xmlns=""><i>force-ssl</i></code> is true, SSL will be
+            attached to the socket stream which connects Drakma with
+            the web server.  Usually, you don't have to provide this
+            argument, as SSL will be attached anyway if the scheme of
+            <code xmlns=""><i>uri</i></code> is `https'.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml"><a name="arg-certificate"></a><a name="arg-certificate-password"></a><a name="arg-key"></a>
+            <code xmlns=""><i>certificate</i></code> is the file name of the
+            PEM encoded client certificate to present to the server
+            when making a SSL connection.  <code xmlns=""><i>key</i></code>
+            specifies the file name of the PEM encoded private key
+            matching the certificate.
+            <code xmlns=""><i>certificate-password</i></code> specifies the
+            pass phrase to use to decrypt the private key.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-verify"></a>
+            <code xmlns=""><i>verify</i></code> can be specified to force
+            verification of the certificate that is presented by the
+            server in an SSL connection.  It can be specified either
+            as <code>NIL</code> if no check should be performed, <code>:OPTIONAL</code> to
+            verify the server's certificate if it presented one or
+            <code>:REQUIRED</code> to verify the server's certificate and fail if
+            an invalid or no certificate was presented.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-max-depth"></a>
+            <code xmlns=""><i>max-depth</i></code> can be specified to change
+            the maximum allowed certificate signing depth that is
+            accepted.  The default is 10.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-ca-file"></a>
+            <a name="arg-ca-directory"></a>
+            <code xmlns=""><i>ca-file</i></code> and
+            <code xmlns=""><i>ca-directory</i></code> can be specified to set
+            the certificate authority bundle file or directory to use
+            for certificate validation.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            The <code xmlns=""><i>certificate</i></code>,
+            <code xmlns=""><i>key</i></code>,
+            <code xmlns=""><i>certificate-password</i></code>,
+            <code xmlns=""><i>verify</i></code>,
+            <code xmlns=""><i>max-depth</i></code>,
+            <code xmlns=""><i>ca-file</i></code> and
+            <code xmlns=""><i>ca-directory</i></code> parameters are ignored
+            for non-SSL requests.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-parameters"></a>
+            <a name="arg-form-data"></a>
+            <code xmlns=""><i>parameters</i></code> is an alist of name/value
+            pairs (the car and the cdr each being a string) which
+            denotes the parameters which are added to the query part
+            of the URL or (in the case of a POST request) comprise the
+            body of the request.  (But see
+            <code xmlns=""><i>content</i></code> below.)  The values can also
+            be <code>NIL</code> in which case only the name (without
+            an equal sign) is used in the query string.  The
+            name/value pairs are URL-encoded using the FLEXI-STREAMS
+            external format <code xmlns=""><i>external-format-out</i></code>
+            before they are sent to the server unless
+            <code xmlns=""><i>form-data</i></code> is true in which case the
+            POST request body is sent as `multipart/form-data' using
+            <code xmlns=""><i>external-format-out</i></code>.  The values of
+            the <code xmlns=""><i>parameters</i></code> alist can also be
+            pathnames, open binary input streams, unary functions, or
+            lists where the first element is of one of the former
+            types.  These values denote files which should be sent as
+            part of the request body.  If files are present in
+            <code xmlns=""><i>parameters</i></code>, the content type of the
+            request is always `multipart/form-data'.  If the value is
+            a list, the part of the list behind the first element is
+            treated as a plist which can be used to specify a content
+            type and/or a filename for the file, i.e. such a value
+            could look like, e.g., <tt>(#p"/tmp/my_file.doc"
+            :content-type "application/msword" :filename
+            "upload.doc")</tt>.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-url-encoder"></a>
+            <code xmlns=""><i>url-encoder</i></code> specifies a custom URL
+            encoder function which will be used by drakma to
+            URL-encode parameter names and values.  It needs to be a
+            function of one argument.  The argument is the string to
+            encode, the return value must be the URL-encoded string.
+            This can be used if specific encoding rules are required.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-content"></a>
+            <a name="arg-external-format-out"></a>
+            <code xmlns=""><i>content</i></code>, if not <code>NIL</code>, is used as the
+            request body - <code xmlns=""><i>parameters</i></code> is ignored
+            in this case.  <code xmlns=""><i>content</i></code> can be a
+            string, a sequence of octets, a pathname, an open binary
+            input stream, or a function designator.  If
+            <code xmlns=""><i>content</i></code> is a sequence, it will be
+            directly sent to the server (using
+            <code xmlns=""><i>external-format-out</i></code> in the case of
+            strings).  If <code xmlns=""><i>content</i></code> is a pathname,
+            the binary contents of the corresponding file will be sent
+            to the server.  If <code xmlns=""><i>content</i></code> is a
+            stream, everything that can be read from the stream until
+            EOF will be sent to the server.  If
+            <code xmlns=""><i>content</i></code> is a function designator, the
+            corresponding function will be called with one argument,
+            the stream to the server, to which it should send data.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Finally, <code xmlns=""><i>content</i></code> can also be the
+            keyword <code>:CONTINUATION</code> in which case <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code> returns
+            only one value - a `continuation' function.  This function
+            has one required argument and one optional argument.  The
+            first argument will be interpreted like
+            <code xmlns=""><i>content</i></code> above (but it cannot be a
+            keyword), i.e. it will be sent to the server according to
+            its type.  If the second argument is true, the
+            continuation function can be called again to send more
+            content, if it is <code>NIL</code> the continuation function returns
+            what <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code> would have returned.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            If <code xmlns=""><i>content</i></code> is a sequence, Drakma will
+            use LENGTH to determine its length and will use the result
+            for the `Content-Length' header sent to the server.  You
+            can overwrite this with the
+            <code xmlns=""><i>content-length</i></code> parameter (a
+            non-negative integer) which you can also use for the cases
+            where Drakma can't or won't determine the content length
+            itself.  You can also explicitly provide a
+            <code xmlns=""><i>content-length</i></code> argument of <code>NIL</code> which
+            will imply that no `Content-Length' header will be sent in
+            any case.  If no `Content-Length' header is sent, Drakma
+            will use chunked encoding to send the content body.  Note
+            that this will not work with older web servers.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-content-length"></a>
+            Providing a true <code xmlns=""><i>content-length</i></code>
+            argument which is not a non-negative integer means that
+            Drakma /must/ build the request body in RAM and compute
+            the content length even if it would have otherwise used
+            chunked encoding, for example in the case of file uploads.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-content-type"></a>
+            <code xmlns=""><i>content-type</i></code> is the corresponding
+            `Content-Type' header to be sent and will be ignored
+            unless <code xmlns=""><i>content</i></code> is provided as well.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Note that a query already contained in
+            <code xmlns=""><i>uri</i></code> will always be sent with the
+            request line anyway in addition to other parameters sent
+            by Drakma.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-cookie-jar"></a>
+            <code xmlns=""><i>cookie-jar</i></code> is a cookie jar containing
+            cookies which will potentially be sent to the server (if
+            the domain matches, if they haven't expired, etc.) - this
+            cookie jar will be modified according to the `Set-Cookie'
+            header(s) sent back by the server.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-basic-authorization"></a>
+            <code xmlns=""><i>basic-authorization</i></code>, if not <code>NIL</code>,
+            should be a list of two strings (username and password)
+            which will be sent to the server for basic authorization.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-user-agent"></a>
+            <code xmlns=""><i>user-agent</i></code>, if not <code>NIL</code>, denotes which
+            `User-Agent' header will be sent with the request.  It can
+            be one of the keywords <code>:DRAKMA</code>, <code>:FIREFOX</code>, <code>:EXPLORER</code>,
+            <code>:OPERA</code>, or <code>:SAFARI</code> which denote the current version of
+            Drakma or, in the latter four cases, a fixed string
+            corresponding to a more or less recent (as of August 2006)
+            version of the corresponding browser.  Or it can be a
+            string which is used directly.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-accept"></a>
+            <code xmlns=""><i>accept</i></code>, if not <code>NIL</code>, specifies the
+            contents of the `Accept' header sent.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-range"></a>
+            <code xmlns=""><i>range</i></code> optionally specifies a subrange
+            of the resource to be requested.  It must be specified as
+            a list of two integers which indicate the start and
+            (inclusive) end offset of the requested range, in bytes
+            (i.e. octets).
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-proxy"></a>
+            <a name="arg-proxy-basic-authorization"></a>
+            If <code xmlns=""><i>proxy</i></code> is not <code>NIL</code>, it should be a
+            string denoting a proxy server through which the request
+            should be sent.  Or it can be a list of two values - a
+            string denoting the proxy server and an integer denoting
+            the port to use (which will default to 80 otherwise).
+            <code xmlns=""><i>proxy-basic-authorization</i></code> is used
+            like <code xmlns=""><i>basic-authorization</i></code>, but for the
+            proxy, and only if <code xmlns=""><i>proxy</i></code> is true.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-real-host"></a>
+            If <code xmlns=""><i>real-host</i></code> is not <code>NIL</code>, request is
+            sent to the denoted host instead of the
+            <code xmlns=""><i>uri</i></code> host.  When specified,
+            <code xmlns=""><i>real-host</i></code> supersedes
+            <code xmlns=""><i>proxy</i></code>.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-additional-headers"></a>
+            <code xmlns=""><i>additional-headers</i></code> is a name/value
+            alist of additional HTTP headers which should be sent with
+            the request.  Unlike in <code xmlns=""><i>parameters</i></code>,
+            the cdrs can not only be strings but also designators for
+            unary functions (which should in turn return a string) in
+            which case the function is called each time the header is
+            written.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-redirect"></a>
+            <a name="arg-auto-referer"></a>
+            If <code xmlns=""><i>redirect</i></code> is not <code>NIL</code>, it must be a
+            non-negative integer or T.  If
+            <code xmlns=""><i>redirect</i></code> is true, Drakma will follow
+            redirects (return codes 301, 302, 303, or 307) unless
+            <code xmlns=""><i>redirect</i></code> is 0.  If
+            <code xmlns=""><i>redirect</i></code> is an integer, it will be
+            decreased by 1 with each redirect.  Furthermore, if
+            <code xmlns=""><i>auto-referer</i></code> is true when following
+            redirects, Drakma will populate the `Referer' header with
+            the <code xmlns=""><i>uri</i></code> that triggered the
+            redirection, overwriting an existing `Referer' header (in
+            <code xmlns=""><i>additional-headers</i></code>) if necessary.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-keep-alive"></a>
+            <a name="arg-close"></a>
+            If <code xmlns=""><i>keep-alive</i></code> is T, the server will
+            be asked to keep the connection alive, i.e. not to close
+            it after the reply has been sent.  (Note that this not
+            necessary if both the client and the server use HTTP 1.1.)
+            If <code xmlns=""><i>close</i></code> is T, the server is
+            explicitly asked to close the connection after the reply
+            has been sent.  <code xmlns=""><i>keep-alive</i></code> and
+            <code xmlns=""><i>close</i></code> are obviously mutually
+            exclusive.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-external-format-in"></a>
+            <a name="arg-force-binary"></a>
+            If the message body sent by the server has a text content
+            type, Drakma will try to return it as a Lisp string.
+            It'll first check if the `Content-Type' header denotes an
+            encoding to be used, or otherwise it will use the
+            <code xmlns=""><i>external-format-in</i></code> argument.  The
+            body is decoded using FLEXI-STREAMS.  If FLEXI-STREAMS
+            doesn't know the external format, the body is returned as
+            an array of octets.  If the body is empty, Drakma will
+            return <code>NIL</code>.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            If the message body doesn't have a text content type or if
+            <code xmlns=""><i>force-binary</i></code> is true, the body is
+            always returned as an array of octets.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-want-stream"></a>
+            If <code xmlns=""><i>want-stream</i></code> is true, the message
+            body is NOT read and instead the (open) socket stream is
+            returned as the first return value.  If the sixth value of
+            <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code> is true, the stream
+            should be closed (and not be re-used) after the body has
+            been read.  The stream returned is a <a href="http://weitz.de/flexi-streams/">flexi-stream</a>
+            with a <a href="http://weitz.de/chunga/">chunked stream</a>
+            as its underlying stream.  If you want to read binary data
+            from this stream, read from the underlying stream which
+            you can get with FLEXI-STREAM-STREAM.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-stream"></a>
+            Drakma will usually create a new socket connection for
+            each HTTP request.  However, you can use the
+            <code xmlns=""><i>stream</i></code> argument to provide an open
+            socket stream which should be re-used.
+            <code xmlns=""><i>stream</i></code> MUST be a stream returned by a
+            previous invocation of <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code>
+            where the sixth return value wasn't true.  Obviously, it
+            must also be connected to the correct server and at the
+            right position (i.e. the message body, if any, must have
+            been read).  Drakma will NEVER attach SSL to a stream
+            provided as the <code xmlns=""><i>stream</i></code> argument.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-connection-timeout"></a>
+            <code xmlns=""><i>connection-timeout</i></code> is the time (in
+            seconds) Drakma will wait until it considers an attempt to
+            connect to a server as a failure. It is supported only on
+            some platforms (currently abcl, clisp, LispWorks, mcl,
+            openmcl and sbcl). READ-TIMEOUT and WRITE-TIMEOUT are the
+            read and write timeouts (in seconds) for the socket stream
+            to the server.  All three timeout arguments can also be
+            <code>NIL</code> (meaning no timeout), and they don't
+            apply if an existing stream is re-used.  READ-TIMEOUT
+            argument is only available for LispWorks, WRITE-TIMEOUT is
+            only available for LispWorks 5.0 or higher.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-deadline"></a>
+            <code xmlns=""><i>deadline</i></code>, a time in the future,
+            specifies the time until which the request should be
+            finished.  The deadline is specified in internal time
+            units.  If the server fails to respond until that time, a
+            COMMUNICATION-DEADLINE-EXPIRED condition is signalled.
+            <code xmlns=""><i>deadline</i></code> is only available on CCL 1.2
+            and later.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-preserve-uri"></a>
+            If <code xmlns=""><i>preserve-uri</i></code> is not
+            <code>NIL</code>, the given <code xmlns=""><i>uri</i></code> will
+            not be processed. This means that the
+            <code xmlns=""><i>uri</i></code> will be sent as-is to the remote
+            server and it is the responsibility of the client to make
+            sure that all parameters are encoded properly. Note that
+            if this parameter is given, and the request is not a POST
+            with a content-type of `multipart/form-data',
+            <code xmlns=""><i>parameters</i></code> will not be used.
+          </p>
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="parameter-present-p"></a>
+      [Function]
+      <br><b>parameter-present-p</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">name parameters</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">boolean</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          If <code><i>parameters</i></code> is an alist of parameters as returned by, for
+          example, READ-TOKENS-AND-PARAMETERS and <code><i>name</i></code> is a string naming a
+          parameter, this function returns the full parameter (name and
+          value) - or <code xmlns="http://www.w3.org/1999/xhtml">NIL</code> if it's not in <code><i>parameters</i></code>.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="parameter-value"></a>
+      [Function]
+      <br><b>parameter-value</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">name parameters</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">(or string null)</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          If <code><i>parameters</i></code> is an alist of parameters as returned by, for
+          example, READ-TOKENS-AND-PARAMETERS and <code><i>name</i></code> is a string naming a
+          parameter, this function returns the value of this parameter - or
+          <code xmlns="http://www.w3.org/1999/xhtml">NIL</code> if it's not in <code><i>parameters</i></code>.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="url-encode"></a>
+      [Function]
+      <br><b>url-encode</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">string external-format</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">string</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Returns a URL-encoded version of the string <code><i>string</i></code> using the
+          external format <code><i>external-format</i></code>.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="*body-format-function*"></a>
+      [Special variable]
+      <br><b>*body-format-function*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            A function which determines whether the content body
+            returned by the server is text and should be treated as
+            such or not.  The function is called after the request
+            <code xmlns=""><a href="#headers">headers</a></code> have been read and it must
+            accept two arguments, <code><i>headers</i></code> and
+            <code><i>external-format-in</i></code>, where
+            <code><i>headers</i></code> is like the third return value
+            of <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code> while
+            <code><i>external-format-in</i></code> is the
+            <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code> argument of the same
+            name.  It should return <code>NIL</code> if the body
+            should be regarded as binary content, or a <a href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a>
+            external format (which will be used to read the body)
+            otherwise.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            This function will only be called if the <a href="#arg-force-binary"><code><i>force-binary</i></code></a>
+            argument to <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code> is
+            <code>NIL</code>.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            The initial value of this variable is a function which
+            uses <code xmlns=""><a href="#*text-content-types*">*TEXT-CONTENT-TYPES*</a></code> to
+            determine whether the body is text and then proceeds as
+            described in the <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code>
+            documentation entry.
+          </p>
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="*drakma-default-external-format*"></a>
+      [Special variable]
+      <br><b>*drakma-default-external-format*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          The default value for the external format keyword arguments
+          of <code><a href="#http-request">HTTP-REQUEST</a></code>.  The value of this
+          variable will be interpreted by <a xmlns="http://www.w3.org/1999/xhtml" href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a>.
+          The initial value is the keyword <code xmlns="http://www.w3.org/1999/xhtml">:LATIN-1</code>.
+          (Note that Drakma binds <a xmlns="http://www.w3.org/1999/xhtml" href="http://weitz.de/flexi-streams/#*default-eol-style*"><code>*DEFAULT-EOL-STYLE*</code></a>
+          to <code xmlns="http://www.w3.org/1999/xhtml">:LF</code>).
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="*header-stream*"></a>
+      [Special variable]
+      <br><b>*header-stream*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          If this variable is not <code xmlns="http://www.w3.org/1999/xhtml">NIL</code>, it should be bound to a stream to
+          which incoming and outgoing headers will be written for debugging
+          purposes.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="*text-content-types*"></a>
+      [Special variable]
+      <br><b>*text-content-types*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            A list of conses which are used by the default value of
+            <code xmlns=""><a href="#*body-format-function*">*BODY-FORMAT-FUNCTION*</a></code> to decide
+            whether a 'Content-Type' header denotes text content.  The
+            car and cdr of each cons should each be a string or
+            <code>NIL</code>.  A content type matches one of these
+            entries (and thus denotes text) if the type part is <a href="http://www.lispworks.com/documentation/HyperSpec/Body/f_stgeq_.htm"><code>STRING-EQUAL</code></a>
+            to the car or if the car is <code>NIL</code> and if the
+            subtype part is <a href="http://www.lispworks.com/documentation/HyperSpec/Body/f_stgeq_.htm"><code>STRING-EQUAL</code></a>
+            to the cdr or if the cdr is <code>NIL</code>.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            The initial value of this variable is the list
+            <pre>(("text" . nil))</pre> which means that every content
+            type that starts with "text/" is regarded as text, no
+            matter what the subtype is.
+          </p>
+        </clix:description></blockquote></p>
+
+    
+
+    <h4 xmlns=""><a name="headers">Headers</a></h4>
+      <p>
+        This section assembles a couple of convenience functions which
+        can be used to access information returned as the third value
+        (<code><i>headers</i></code>) of
+        <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code>.
+      </p>
+      <p>
+        Note that if the server sends <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2">multiple headers
+        with the same name</a>, these are comprised into one entry by
+        <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code>.  The values are separated
+        by commas.
+      </p>
+
+      <p xmlns=""><a class="none" name="get-content-type"></a>
+      [Function]
+      <br><b>get-content-type</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">headers</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">list</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Reads and parses a `Content-Type' header and returns it as
+          three values - the type, the subtype, and an alist (possibly
+          empty) of name/value pairs for the optional parameters.
+          <code><i>headers</i></code> is supposed to be an alist of
+          headers as returned by <code><a href="#http-request">HTTP-REQUEST</a></code>.
+          Returns <code xmlns="http://www.w3.org/1999/xhtml">NIL</code> if there is no such header amongst
+          <code><i>headers</i></code>.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="header-value"></a>
+      [Function]
+      <br><b>header-value</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">name headers</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">(or string null)</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          If <code><i>headers</i></code> is an alist of headers as
+          returned by <code><a href="#http-request">HTTP-REQUEST</a></code> and
+          <code><i>name</i></code> is a keyword naming a header, this
+          function returns the corresponding value of this header (or
+          <code xmlns="http://www.w3.org/1999/xhtml">NIL</code> if it's not in
+          <code><i>headers</i></code>).
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="read-tokens-and-parameters"></a>
+      [Function]
+      <br><b>read-tokens-and-parameters</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">string &amp;key value-required-p</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">list</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Reads a comma-separated list of tokens from the string
+          <code><i>string</i></code>.  Each token can be followed by
+          an optional, semicolon-separated list of attribute/value
+          pairs where the attributes are tokens followed by a #\=
+          character and a token or a quoted string.  Returned is a
+          list where each element is either a string (for a simple
+          token) or a cons of a string (the token) and an alist (the
+          attribute/value pairs).  If
+          <code><i>value-required-p</i></code> is <code xmlns="http://www.w3.org/1999/xhtml">NIL</code>,
+          the value part (including the #\= character) of each
+          attribute/value pair is optional.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="split-tokens"></a>
+      [Function]
+      <br><b>split-tokens</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">string</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">list</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Splits the string <code><i>string</i></code> into a list of
+          substrings separated by commas and optional whitespace.
+          Empty substrings are ignored.
+        </clix:description></blockquote></p>
+
+    
+
+    <h4 xmlns=""><a name="cookies">Cookies</a></h4>
+      <p>
+        <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code> can deal with <a href="http://en.wikipedia.org/wiki/HTTP_cookie">HTTP
+        cookies</a> if it gets a <a href="#cookie-jar">cookie jar</a>,
+        a collection of <code xmlns=""><a href="#cookie">COOKIE</a></code> objects, as its <a href="#arg-cookie-jar">cookie-jar</a> argument.  Cookies sent
+        by the web server will be added to the cookie jar (or updated)
+        if appropriate and cookies already in the cookie jar will be
+        sent to the server together with the request.
+      </p>
+      <p>
+        Drakma will never remove cookies from a cookie jar
+        automatically.  You have to do it manually using
+        <code xmlns=""><a href="#delete-old-cookies">DELETE-OLD-COOKIES</a></code>.
+      </p>
+
+      <p xmlns=""><a class="none" name="cookie"></a>
+      [Standard class]
+      <br><b>cookie</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Instances of this class represent <a href="http://en.wikipedia.org/wiki/HTTP_cookie">HTTP
+            cookies</a>.  If you need to create your own cookies, you
+            should use <a href="http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_ins.htm"><code>MAKE-INSTANCE</code></a>
+            with the initargs <code>:NAME</code>, <code>:DOMAIN</code>,
+            <code>:VALUE</code>, <code>:PATH</code>,
+            <code>:EXPIRES</code>, <code>:SECUREP</code>, and
+            <code>:HTTP-ONLY-P</code> all of which are optional except
+            for the first two.  The meaning of these initargs and <a href="#cookie-name">the corresponding accessors</a> should
+            be pretty clear if one looks at the <a href="http://curl.haxx.se/rfc/cookie_spec.html">original
+            cookie specification</a> (and at <a href="http://msdn2.microsoft.com/en-us/library/ms533046.aspx">this
+            page</a> for the <code>HttpOnly</code> extension).
+          </p>
+          <pre xmlns="http://www.w3.org/1999/xhtml"><span class="repl-output">? </span><span class="repl-input">(make-instance 'drakma:cookie
+                 :name "Foo" 
+                 :value "Bar"
+                 :expires (+ (get-universal-time) 3600)
+                 :domain ".weitz.de")</span>
+<span class="repl-output">#&lt;COOKIE Foo=Bar; expires=Sun, 09-12-2012 20:37:42 GMT; path=/; domain=.weitz.de&gt;</span>
+</pre>
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="parse-cookie-date"></a>
+      [Function]
+      <br><b>parse-cookie-date</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">string</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">universal-time</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Parses a cookie expiry date and returns it as a Lisp <a href="http://www.lispworks.com/documentation/HyperSpec/Body/25_adb.htm">universal
+            time</a>.  Currently understands the following formats:
+          </p>
+          <pre xmlns="http://www.w3.org/1999/xhtml">"Wed, 06-Feb-2008 21:01:38 GMT"
+          "Wed, 06-Feb-08 21:01:38 GMT"
+          "Tue Feb 13 08:00:00 2007 GMT"
+          "Wednesday, 07-February-2027 08:55:23 GMT"
+          "Wed, 07-02-2017 10:34:45 GMT"
+          </pre>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Instead of "GMT" time zone abbreviations like "CEST" and UTC
+            offsets like "GMT-01:30" are also allowed.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            While this function has "cookie" in its name, it might
+            come in handy in other situations as well and it is thus
+            exported as a convenience function.
+          </p>
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="cookie="></a>
+      [Function]
+      <br><b>cookie=</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie1 cookie2</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">boolean</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Returns a true value if the cookies
+          <code><i>cookie1</i></code> and
+          <code><i>cookie2</i></code> are equal.  Two cookies are
+          considered to be equal if name and path are equal.
+        </clix:description></blockquote></p>
+
+      <p xmlns="">
+      [Generic accessors]<br><a class="none" name="cookie-name"></a><b>cookie-name</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i>
+      =&gt;
+      <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">string</clix:returns></i><br><tt>(setf (</tt><b>cookie-name</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i><tt>) <i>new-value</i>)</tt><br><a class="none" name="cookie-value"></a><b>cookie-value</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i>
+      =&gt;
+      <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">(or string null)</clix:returns></i><br><tt>(setf (</tt><b>cookie-value</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i><tt>) <i>new-value</i>)</tt><br><a class="none" name="cookie-domain"></a><b>cookie-domain</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i>
+      =&gt;
+      <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">string</clix:returns></i><br><tt>(setf (</tt><b>cookie-domain</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i><tt>) <i>new-value</i>)</tt><br><a class="none" name="cookie-path"></a><b>cookie-path</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i>
+      =&gt;
+      <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">(or string null)</clix:returns></i><br><tt>(setf (</tt><b>cookie-path</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i><tt>) <i>new-value</i>)</tt><br><a class="none" name="cookie-expires"></a><b>cookie-expires</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i>
+      =&gt;
+      <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">(or integer null)</clix:returns></i><br><tt>(setf (</tt><b>cookie-expires</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i><tt>) <i>new-value</i>)</tt><br><a class="none" name="cookie-http-only-p"></a><b>cookie-http-only-p</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i>
+      =&gt;
+      <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">boolean</clix:returns></i><br><tt>(setf (</tt><b>cookie-http-only-p</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i><tt>) <i>new-value</i>)</tt><br><a class="none" name="cookie-securep"></a><b>cookie-securep</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i>
+      =&gt;
+      <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">boolean</clix:returns></i><br><tt>(setf (</tt><b>cookie-securep</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie</clix:lambda-list></i><tt>) <i>new-value</i>)</tt><br><blockquote></blockquote></p>
+
+      <p xmlns=""><a class="none" name="cookie-jar"></a>
+      [Standard class]
+      <br><b>cookie-jar</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          An object of this class encapsulates a collection (a list,
+          actually) of <code xmlns="http://www.w3.org/1999/xhtml">COOKIE</code> objects. You create a new
+          cookie jar with <code xmlns="http://www.w3.org/1999/xhtml">(MAKE-INSTANCE 'COOKIE-JAR)</code>
+          where you can optionally provide a list of
+          <code><a href="#cookie">COOKIE</a></code> objects with the
+          <code xmlns="http://www.w3.org/1999/xhtml">:COOKIES</code> initarg. The cookies in a cookie jar
+          are accessed with <code><a href="#cookie-jar-cookies">COOKIE-JAR-COOKIES</a></code>.
+        </clix:description></blockquote></p>
+
+      <p xmlns="">
+      [Generic accessors]<br><a class="none" name="cookie-jar-cookies"></a><b>cookie-jar-cookies</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie-jar</clix:lambda-list></i>
+      =&gt;
+      <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">list</clix:returns></i><br><tt>(setf (</tt><b>cookie-jar-cookies</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie-jar</clix:lambda-list></i><tt>) <i>new-value</i>)</tt><br><blockquote></blockquote></p>
+
+      <p xmlns=""><a class="none" name="delete-old-cookies"></a>
+      [Function]
+      <br><b>delete-old-cookies</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie-jar</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">cookie-jar</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Removes all cookies from <code><i>cookie-jar</i></code> which have either expired
+          or which don't have an expiry date.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="*allow-dotless-cookie-domains-p*"></a>
+      [Special variable]
+      <br><b>*allow-dotless-cookie-domains-p*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          When this variable is not <code xmlns="http://www.w3.org/1999/xhtml">NIL</code>, cookie domains containing no
+          dots are considered valid.  The default is <code xmlns="http://www.w3.org/1999/xhtml">NIL</code>, meaning to
+          disallow such domains except for "localhost".
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="*ignore-unparseable-cookie-dates-p*"></a>
+      [Special variable]
+      <br><b>*ignore-unparseable-cookie-dates-p*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Whether Drakma is allowed to treat `Expires' dates in cookie
+          headers as non-existent if it can't parse them.  If the value of this
+          variable is <code xmlns="http://www.w3.org/1999/xhtml">NIL</code> (which is the default), an error will be signalled
+          instead.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="*remove-duplicate-cookies-p*"></a>
+      [Special variable]
+      <br><b>*remove-duplicate-cookies-p*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Determines how duplicate cookies in the response are
+            handled, defaults to <code>T</code>.  Cookies are
+            considered duplicate using <a href="#cookie="><code>COOKIE=</code></a>.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Valid values are:
+            <ul>
+              <li><code>NIL</code> - duplicates will not be removed,</li>
+              <li><code>T</code> or <code>:KEEP-LAST</code> - for duplicates, only the last cookie 
+              value will be kept, based on the order of the response header,</li>
+              <li><code>:KEEP-FIRST</code> - for duplicates, only the first cookie 
+              value will be kept, based on the order of the response header.</li>
+            </ul>
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Misbehaving servers may send duplicate cookies back in the
+            same <code>Set-Cookie</code> header:
+<pre>HTTP/1.1 200  OK
+Server: My-hand-rolled-server
+Date: Wed, 07 Apr 2010 15:12:30 GMT
+Connection: Close
+Content-Type: text/html
+Content-Length: 82
+Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
+</pre>
+            In this case Drakma has to choose whether cookie "a" has
+            the value "1" or "2".  By default, Drakma will choose the
+            last value specified, in this case "2".
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            By default, Drakma conforms to <a href="http://www.w3.org/Protocols/rfc2109/rfc2109">RFC2109
+            HTTP State Management Mechanism</a>, section 4.3.3 Cookie
+            Management:
+
+            <blockquote>
+              <em>
+                If a user agent receives a Set-Cookie response header
+                whose NAME is the same as a pre-existing cookie, and
+                whose Domain and Path attribute values exactly
+                (string) match those of a pre-existing cookie, the new
+                cookie supersedes the old.
+              </em>
+            </blockquote>
+          </p>
+        </clix:description></blockquote></p>
+    
+
+    <h4 xmlns=""><a name="conditions">Conditions</a></h4>
+      <p>
+        This section lists all the condition types that are defined by Drakma.
+      </p>
+
+      <p xmlns=""><a class="none" name="cookie-date-parse-error"></a>
+      [Condition type]
+      <br><b>cookie-date-parse-error</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Signalled if Drakma tries to parse the date of an
+          incoming cookie header and can't interpret it.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="cookie-error"></a>
+      [Condition type]
+      <br><b>cookie-error</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Signalled if someone tries to create a COOKIE object that's not valid.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="cookie-error-cookie"></a>
+      [Generic function]
+      <br><b>cookie-error-cookie</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">cookie-error</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">(or cookie null)</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">The <code xmlns="http://www.w3.org/1999/xhtml">COOKIE</code> object that caused
+        this error.  Can be <code xmlns="http://www.w3.org/1999/xhtml">NIL</code> in case such an object
+        couldn't be initialized.</clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="parameter-error"></a>
+      [Condition type]
+      <br><b>parameter-error</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Signalled if a function was called with inconsistent or
+          illegal parameters.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="syntax-error"></a>
+      [Condition type]
+      <br><b>syntax-error</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Signalled if Drakma encounters wrong or unknown
+          syntax when reading the reply from the server.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="drakma-condition"></a>
+      [Condition type]
+      <br><b>drakma-condition</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Superclass for all conditions related to Drakma.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="drakma-error"></a>
+      [Condition type]
+      <br><b>drakma-error</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Superclass for all errors related to Drakma.
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="drakma-warning"></a>
+      [Condition type]
+      <br><b>drakma-warning</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Superclass for all warnings related to Drakma.
+        </clix:description></blockquote></p>
+    
+  
+
+  <h3 xmlns=""><a class="none" name="index">Symbol index</a></h3>
+    <ul xmlns="">
+<li>
+<code><a href="#*allow-dotless-cookie-domains-p*">*allow-dotless-cookie-domains-p*</a></code><span class="entry-type">Special variable</span>
+</li>
+<li>
+<code><a href="#*body-format-function*">*body-format-function*</a></code><span class="entry-type">Special variable</span>
+</li>
+<li>
+<code><a href="#*drakma-default-external-format*">*drakma-default-external-format*</a></code><span class="entry-type">Special variable</span>
+</li>
+<li>
+<code><a href="#*header-stream*">*header-stream*</a></code><span class="entry-type">Special variable</span>
+</li>
+<li>
+<code><a href="#*ignore-unparseable-cookie-dates-p*">*ignore-unparseable-cookie-dates-p*</a></code><span class="entry-type">Special variable</span>
+</li>
+<li>
+<code><a href="#*remove-duplicate-cookies-p*">*remove-duplicate-cookies-p*</a></code><span class="entry-type">Special variable</span>
+</li>
+<li>
+<code><a href="#*text-content-types*">*text-content-types*</a></code><span class="entry-type">Special variable</span>
+</li>
+<li>
+<code><a href="#cookie">cookie</a></code><span class="entry-type">Standard class</span>
+</li>
+<li>
+<code><a href="#cookie-date-parse-error">cookie-date-parse-error</a></code><span class="entry-type">Condition type</span>
+</li>
+<li>
+<code><a href="#cookie-domain">cookie-domain</a></code><span class="entry-type">Generic accessor</span>
+</li>
+<li>
+<code><a href="#cookie-error">cookie-error</a></code><span class="entry-type">Condition type</span>
+</li>
+<li>
+<code><a href="#cookie-error-cookie">cookie-error-cookie</a></code><span class="entry-type">Generic function</span>
+</li>
+<li>
+<code><a href="#cookie-expires">cookie-expires</a></code><span class="entry-type">Generic accessor</span>
+</li>
+<li>
+<code><a href="#cookie-http-only-p">cookie-http-only-p</a></code><span class="entry-type">Generic accessor</span>
+</li>
+<li>
+<code><a href="#cookie-jar">cookie-jar</a></code><span class="entry-type">Standard class</span>
+</li>
+<li>
+<code><a href="#cookie-jar-cookies">cookie-jar-cookies</a></code><span class="entry-type">Generic accessor</span>
+</li>
+<li>
+<code><a href="#cookie-name">cookie-name</a></code><span class="entry-type">Generic accessor</span>
+</li>
+<li>
+<code><a href="#cookie-path">cookie-path</a></code><span class="entry-type">Generic accessor</span>
+</li>
+<li>
+<code><a href="#cookie-securep">cookie-securep</a></code><span class="entry-type">Generic accessor</span>
+</li>
+<li>
+<code><a href="#cookie-value">cookie-value</a></code><span class="entry-type">Generic accessor</span>
+</li>
+<li>
+<code><a href="#cookie=">cookie=</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#delete-old-cookies">delete-old-cookies</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#drakma-condition">drakma-condition</a></code><span class="entry-type">Condition type</span>
+</li>
+<li>
+<code><a href="#drakma-error">drakma-error</a></code><span class="entry-type">Condition type</span>
+</li>
+<li>
+<code><a href="#drakma-warning">drakma-warning</a></code><span class="entry-type">Condition type</span>
+</li>
+<li>
+<code><a href="#get-content-type">get-content-type</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#header-value">header-value</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#http-request">http-request</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#parameter-error">parameter-error</a></code><span class="entry-type">Condition type</span>
+</li>
+<li>
+<code><a href="#parameter-present-p">parameter-present-p</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#parameter-value">parameter-value</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#parse-cookie-date">parse-cookie-date</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#read-tokens-and-parameters">read-tokens-and-parameters</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#split-tokens">split-tokens</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#syntax-error">syntax-error</a></code><span class="entry-type">Condition type</span>
+</li>
+<li>
+<code><a href="#url-encode">url-encode</a></code><span class="entry-type">Function</span>
+</li>
+</ul>
+  
+
 </body></html>

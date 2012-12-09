@@ -68,7 +68,9 @@
 
 (defvar *drakma-default-external-format* ':latin-1
   "The default value for the external format keyword arguments of
-HTTP-REQUEST.")
+HTTP-REQUEST.  The value of this variable will be interpreted by
+FLEXI-STREAMS.  The initial value is the keyword :LATIN-1.
+(Note that Drakma binds *DEFAULT-EOL-STYLE* to :LF).")
 
 (defvar *header-stream* nil
   "If this variable is not NIL, it should be bound to a stream to
@@ -87,32 +89,70 @@ variable is NIL \(which is the default), an error will be signalled
 instead.")
 
 (defvar *remove-duplicate-cookies-p* t
-  "Determines how duplicate cookies are handled.  Valid values are NIL
-\(duplicates will not be removed), :KEEP-LAST or T \(for duplicates,
-only the last cookie value will be kept based on the order of the
-response header), or :KEEP-FIRST (only the first value will be
-kept).")
+  "Determines how duplicate cookies in the response are handled,
+defaults to T.  Cookies are considered duplicate using COOKIE=.  Valid
+values are:
+
+ NIL - duplicates will not be removed,
+ T or :KEEP-LAST - for duplicates, only the last cookie value will be kept, based on the
+ order of the response header,
+ :KEEP-FIRST - for duplicates, only the first cookie value will be kept, based on the order of the response
+ header.
+
+Misbehaving servers may send duplicate cookies back in the
+ same Set-Cookie header:
+
+HTTP/1.1 200 OK
+Server: My-hand-rolled-server
+Date: Wed, 07 Apr 2010 15:12:30 GMT
+Connection: Close
+Content-Type: text/html
+Content-Length: 82
+Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
+
+In this case Drakma has to choose whether cookie "a" has the value "1"
+or "2".  By default, Drakma will choose the last value specified, in
+this case "2".  By default, Drakma conforms to RFC2109 HTTP State
+Management Mechanism, section 4.3.3 Cookie Management:
+
+    If a user agent receives a Set-Cookie response header whose NAME
+    is the same as a pre-existing cookie, and whose Domain and Path
+    attribute values exactly \(string) match those of a pre-existing
+    cookie, the new cookie supersedes the old.")
 
 (defvar *text-content-types* '(("text" . nil))
-  "A list of conses which are used by DETERMINE-BODY-FORMAT to decide
-whether a `Content-Type' header denotes text content.  The car and cdr
-of each cons should each be a string or NIL.  A content type matches
-one of these entries \(and thus denotes text) if the type part is
-STRING-EQUAL to the car or if the car is NIL and if the subtype part
-is STRING-EQUAL to the cdr or if the cdr is NIL.")
+  "A list of conses which are used by the default value of
+*BODY-FORMAT-FUNCTION* to decide whether a 'Content-Type' header
+denotes text content.  The car and cdr of each cons should each be a
+string or NIL.  A content type matches one of these
+entries (and thus denotes text) if the type part is STRING-EQUAL
+to the car or if the car is NIL and if the subtype part
+is STRING-EQUAL
+to the cdr or if the cdr is NIL.
+
+The initial value of this variable is the list
+
+\((\"text\" . nil))
+
+which means that every content type that starts with \"text/\" is
+regarded as text, no matter what the subtype is.")
 
 (defvar *body-format-function* 'determine-body-format
   "A function which determines whether the content body returned by
 the server is text and should be treated as such or not.  The function
 is called after the request headers have been read and it must accept
-two arguments, HEADERS and EXTERNAL-FORMAT-IN where HEADERS is like
-the third return value of HTTP-REQUEST while EXTERNAL-FORMAT-IN is the
+two arguments, headers and external-format-in, where headers is like
+the third return value of HTTP-REQUEST while external-format-in is the
 HTTP-REQUEST argument of the same name.  It should return NIL if the
 body should be regarded as binary content, or a FLEXI-STREAMS external
 format \(which will be used to read the body) otherwise.
 
-This function will only be called if the FORCE-BINARY argument to
-HTTP-REQUEST was NIL.")
+This function will only be called if the force-binary argument to
+HTTP-REQUEST is NIL.
+
+The initial value of this variable is a function which uses
+*TEXT-CONTENT-TYPES* to determine whether the body is text and then
+proceeds as described in the HTTP-REQUEST documentation entry.")
 
 (defvar *time-zone-map*
   ;; list taken from

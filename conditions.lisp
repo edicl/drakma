@@ -84,7 +84,7 @@ format control and arguments."
   ((cookie :initarg :cookie
            :initform nil
            :reader cookie-error-cookie
-           :documentation "The COOKIE object that provoked this error.
+           :documentation "The COOKIE object that caused this error.
 Can be NIL in case such an object couldn't be initialized."))
   (:documentation "Signalled if someone tries to create a COOKIE object that's not valid."))
 
