@@ -43,8 +43,9 @@
 
     <style type="text/css">
       body { margin-left: 2em; }
-      p { max-width: 50em; }
+      p, blockquote { max-width: 45em; }
       pre { margin-left: 3em; margin-right: 3em; word-wrap: break-word; overflow-x: auto; background: #eee; }
+      .arglist-spacer { margin-left: 6em; }
       .repl-output { color: black; }
       .repl-input { font-weight: bold; }
       .headers-out { color: SteelBlue; }
@@ -142,7 +143,8 @@ LAST-MODIFIED: Wed, 26 Oct 2011 02:26:26 GMT
 &lt;/HTML&gt;
 "
 200
-((:DATE . "Sun, 09 Dec 2012 08:01:56 GMT") (:CONNECTION . "Close") (:SERVER . "AllegroServe/1.2.65") (:CONTENT-TYPE . "text/html") (:CONTENT-LENGTH . "459") (:LAST-MODIFIED . "Wed, 26 Oct 2011 02:26:26 GMT"))
+((:DATE . "Sun, 09 Dec 2012 08:01:56 GMT") (:CONNECTION . "Close") (:SERVER . "AllegroServe/1.2.65")
+ (:CONTENT-TYPE . "text/html") (:CONTENT-LENGTH . "459") (:LAST-MODIFIED . "Wed, 26 Oct 2011 02:26:26 GMT"))
 #&lt;URI http://lisp.org/index.html&gt;
 #&lt;FLEXI-STREAMS:FLEXI-IO-STREAM #x30200155DB1D&gt;
 T
@@ -635,7 +637,9 @@ T</span>
       </p>
 
       <clix:function name="http-request">
-        <clix:lambda-list>uri &amp;rest args &amp;key
+        <clix:lambda-list>uri<br/>
+        <div class="arglist-spacer">&amp;rest args</div>
+        <div class="arglist-spacer">&amp;key
           <a href="#arg-protocol">protocol</a>
           <a href="#arg-method">method</a>
           <a href="#arg-force-ssl">force-ssl</a>
@@ -673,13 +677,16 @@ T</span>
           <a href="#arg-preserve-uri">preserve-uri</a>
           <a href="#arg-connection-timeout">connection-timeout</a>
           <a href="#arg-deadline">deadline</a>
+          </div>
+          <clix:special-returns>
+            <div class="arglist-spacer">
+              =&gt; body-or-stream<sup>0</sup>, status-code<sup>1</sup>,
+              headers<sup>2</sup>, uri<sup>3</sup>, stream<sup>4</sup>,
+              <a href="#arg-want-stream">must-close<sup>5</sup></a>,
+              reason-phrase<sup>6</sup>
+            </div>
+          </clix:special-returns>
         </clix:lambda-list>
-        <clix:returns>
-          body-or-stream<sup>0</sup>, status-code<sup>1</sup>,
-          headers<sup>2</sup>, uri<sup>3</sup>, stream<sup>4</sup>, <a
-          href="#arg-want-stream">must-close<sup>5</sup></a>,
-          reason-phrase<sup>6</sup>
-        </clix:returns>
         <clix:description>
           <p>
             Sends an <a
@@ -687,7 +694,7 @@ T</span>
             request to a web server and returns its reply.
             <clix:arg>uri</clix:arg> is where the request is sent to,
             and it is either a string denoting a uniform resource
-            identifier or a PURI:<clix:arg>uri</clix:arg> object.  The
+            identifier or a <code>PURI:URI</code> object.  The
             scheme of <clix:arg>uri</clix:arg> must be `http' or
             `https'.  The function returns SEVEN values - the body of
             the reply (but see below), the status code as an integer,
@@ -1073,10 +1080,14 @@ T</span>
         <clix:lambda-list>name parameters</clix:lambda-list>
         <clix:returns>boolean</clix:returns>
         <clix:description>
-          If <clix:arg>parameters</clix:arg> is an alist of parameters as returned by, for
-          example, READ-TOKENS-AND-PARAMETERS and <clix:arg>name</clix:arg> is a string naming a
-          parameter, this function returns the full parameter (name and
-          value) - or <code>NIL</code> if it's not in <clix:arg>parameters</clix:arg>.
+          <p>
+            If <clix:arg>parameters</clix:arg> is an alist of
+            parameters as returned by, for example,
+            READ-TOKENS-AND-PARAMETERS and <clix:arg>name</clix:arg>
+            is a string naming a parameter, this function returns the
+            full parameter (name and value) - or <code>NIL</code> if
+            it's not in <clix:arg>parameters</clix:arg>.
+          </p>
         </clix:description>
       </clix:function>
 
@@ -1084,10 +1095,14 @@ T</span>
         <clix:lambda-list>name parameters</clix:lambda-list>
         <clix:returns>(or string null)</clix:returns>
         <clix:description>
-          If <clix:arg>parameters</clix:arg> is an alist of parameters as returned by, for
-          example, READ-TOKENS-AND-PARAMETERS and <clix:arg>name</clix:arg> is a string naming a
-          parameter, this function returns the value of this parameter - or
-          <code>NIL</code> if it's not in <clix:arg>parameters</clix:arg>.
+          <p>
+            If <clix:arg>parameters</clix:arg> is an alist of
+            parameters as returned by, for example,
+            READ-TOKENS-AND-PARAMETERS and <clix:arg>name</clix:arg>
+            is a string naming a parameter, this function returns the
+            value of this parameter - or <code>NIL</code> if it's not
+            in <clix:arg>parameters</clix:arg>.
+          </p>
         </clix:description>
       </clix:function>
 
@@ -1095,8 +1110,11 @@ T</span>
         <clix:lambda-list>string external-format</clix:lambda-list>
         <clix:returns>string</clix:returns>
         <clix:description>
-          Returns a URL-encoded version of the string <clix:arg>string</clix:arg> using the
-          external format <clix:arg>external-format</clix:arg>.
+          <p>
+            Returns a URL-encoded version of the string
+            <clix:arg>string</clix:arg> using the external format
+            <clix:arg>external-format</clix:arg>.
+          </p>
         </clix:description>
       </clix:function>
 
@@ -1137,22 +1155,26 @@ T</span>
 
       <clix:special-variable name="*drakma-default-external-format*">
         <clix:description>
-          The default value for the external format keyword arguments
-          of <clix:ref>HTTP-REQUEST</clix:ref>.  The value of this
-          variable will be interpreted by <a
-          href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a>.
-          The initial value is the keyword <code>:LATIN-1</code>.
-          (Note that Drakma binds <a
-          href="http://weitz.de/flexi-streams/#*default-eol-style*"><code>*DEFAULT-EOL-STYLE*</code></a>
-          to <code>:LF</code>).
+          <p>
+            The default value for the external format keyword
+            arguments of <clix:ref>HTTP-REQUEST</clix:ref>.  The value
+            of this variable will be interpreted by <a
+            href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a>.
+            The initial value is the keyword <code>:LATIN-1</code>.
+            (Note that Drakma binds <a
+            href="http://weitz.de/flexi-streams/#*default-eol-style*"><code>*DEFAULT-EOL-STYLE*</code></a>
+            to <code>:LF</code>).
+          </p>
         </clix:description>
       </clix:special-variable>
 
       <clix:special-variable name="*header-stream*">
         <clix:description>
-          If this variable is not <code>NIL</code>, it should be bound
-          to a stream to which incoming and outgoing headers will be
-          written for debugging purposes.
+          <p>
+            If this variable is not <code>NIL</code>, it should be
+            bound to a stream to which incoming and outgoing headers
+            will be written for debugging purposes.
+          </p>
         </clix:description>
       </clix:special-variable>
 
@@ -1201,13 +1223,16 @@ T</span>
         <clix:lambda-list>headers</clix:lambda-list>
         <clix:returns>list</clix:returns>
         <clix:description>
-          Reads and parses a `Content-Type' header and returns it as
-          three values - the type, the subtype, and an alist (possibly
-          empty) of name/value pairs for the optional parameters.
-          <clix:arg>headers</clix:arg> is supposed to be an alist of
-          headers as returned by <clix:ref>HTTP-REQUEST</clix:ref>.
-          Returns <code>NIL</code> if there is no such header amongst
-          <clix:arg>headers</clix:arg>.
+          <p>
+            Reads and parses a `Content-Type' header and returns it as
+            three values - the type, the subtype, and an alist
+            (possibly empty) of name/value pairs for the optional
+            parameters.  <clix:arg>headers</clix:arg> is supposed to
+            be an alist of headers as returned by
+            <clix:ref>HTTP-REQUEST</clix:ref>.  Returns
+            <code>NIL</code> if there is no such header amongst
+            <clix:arg>headers</clix:arg>.
+          </p>
         </clix:description>
       </clix:function>
 
@@ -1215,12 +1240,14 @@ T</span>
         <clix:lambda-list>name headers</clix:lambda-list>
         <clix:returns>(or string null)</clix:returns>
         <clix:description>
-          If <clix:arg>headers</clix:arg> is an alist of headers as
-          returned by <clix:ref>HTTP-REQUEST</clix:ref> and
-          <clix:arg>name</clix:arg> is a keyword naming a header, this
-          function returns the corresponding value of this header (or
-          <code>NIL</code> if it's not in
-          <clix:arg>headers</clix:arg>).
+          <p>
+            If <clix:arg>headers</clix:arg> is an alist of headers as
+            returned by <clix:ref>HTTP-REQUEST</clix:ref> and
+            <clix:arg>name</clix:arg> is a keyword naming a header,
+            this function returns the corresponding value of this
+            header (or <code>NIL</code> if it's not in
+            <clix:arg>headers</clix:arg>).
+          </p>
         </clix:description>
       </clix:function>
 
@@ -1228,17 +1255,19 @@ T</span>
         <clix:lambda-list>string &amp;key value-required-p</clix:lambda-list>
         <clix:returns>list</clix:returns>
         <clix:description>
-          Reads a comma-separated list of tokens from the string
-          <clix:arg>string</clix:arg>.  Each token can be followed by
-          an optional, semicolon-separated list of attribute/value
-          pairs where the attributes are tokens followed by a #\=
-          character and a token or a quoted string.  Returned is a
-          list where each element is either a string (for a simple
-          token) or a cons of a string (the token) and an alist (the
-          attribute/value pairs).  If
-          <clix:arg>value-required-p</clix:arg> is <code>NIL</code>,
-          the value part (including the #\= character) of each
-          attribute/value pair is optional.
+          <p>
+            Reads a comma-separated list of tokens from the string
+            <clix:arg>string</clix:arg>.  Each token can be followed
+            by an optional, semicolon-separated list of
+            attribute/value pairs where the attributes are tokens
+            followed by a #\= character and a token or a quoted
+            string.  Returned is a list where each element is either a
+            string (for a simple token) or a cons of a string (the
+            token) and an alist (the attribute/value pairs).  If
+            <clix:arg>value-required-p</clix:arg> is <code>NIL</code>,
+            the value part (including the #\= character) of each
+            attribute/value pair is optional.
+          </p>
         </clix:description>
       </clix:function>
 
@@ -1246,9 +1275,11 @@ T</span>
         <clix:lambda-list>string</clix:lambda-list>
         <clix:returns>list</clix:returns>
         <clix:description>
-          Splits the string <clix:arg>string</clix:arg> into a list of
-          substrings separated by commas and optional whitespace.
-          Empty substrings are ignored.
+          <p>
+            Splits the string <clix:arg>string</clix:arg> into a list
+            of substrings separated by commas and optional whitespace.
+            Empty substrings are ignored.
+          </p>
         </clix:description>
       </clix:function>
 
@@ -1372,13 +1403,15 @@ T</span>
 
       <clix:class name="cookie-jar">
         <clix:description>
-          An object of this class encapsulates a collection (a list,
-          actually) of <code>COOKIE</code> objects. You create a new
-          cookie jar with <code>(MAKE-INSTANCE 'COOKIE-JAR)</code>
-          where you can optionally provide a list of
-          <clix:ref>COOKIE</clix:ref> objects with the
-          <code>:COOKIES</code> initarg. The cookies in a cookie jar
-          are accessed with <clix:ref>COOKIE-JAR-COOKIES</clix:ref>.
+          <p>
+            An object of this class encapsulates a collection (a list,
+            actually) of <code>COOKIE</code> objects. You create a new
+            cookie jar with <code>(MAKE-INSTANCE 'COOKIE-JAR)</code>
+            where you can optionally provide a list of
+            <clix:ref>COOKIE</clix:ref> objects with the
+            <code>:COOKIES</code> initarg. The cookies in a cookie jar
+            are accessed with <clix:ref>COOKIE-JAR-COOKIES</clix:ref>.
+          </p>
         </clix:description>
       </clix:class>
 
@@ -1393,27 +1426,33 @@ T</span>
         <clix:lambda-list>cookie-jar</clix:lambda-list>
         <clix:returns>cookie-jar</clix:returns>
         <clix:description>
-          Removes all cookies from <clix:arg>cookie-jar</clix:arg>
-          which have either expired or which don't have an expiry
-          date.
+          <p>
+            Removes all cookies from <clix:arg>cookie-jar</clix:arg>
+            which have either expired or which don't have an expiry
+            date.
+          </p>
         </clix:description>
       </clix:function>
 
       <clix:special-variable name="*allow-dotless-cookie-domains-p*">
         <clix:description>
-          When this variable is not <code>NIL</code>, cookie domains
-          containing no dots are considered valid.  The default is
-          <code>NIL</code>, meaning to disallow such domains except
-          for "localhost".
+          <p>
+            When this variable is not <code>NIL</code>, cookie domains
+            containing no dots are considered valid.  The default is
+            <code>NIL</code>, meaning to disallow such domains except
+            for "localhost".
+          </p>
         </clix:description>
       </clix:special-variable>
 
       <clix:special-variable name="*ignore-unparseable-cookie-dates-p*">
         <clix:description>
-          Whether Drakma is allowed to treat `Expires' dates in cookie
-          headers as non-existent if it can't parse them.  If the
-          value of this variable is <code>NIL</code> (which is the
-          default), an error will be signalled instead.
+          <p>
+            Whether Drakma is allowed to treat `Expires' dates in
+            cookie headers as non-existent if it can't parse them.  If
+            the value of this variable is <code>NIL</code> (which is
+            the default), an error will be signalled instead.
+          </p>
         </clix:description>
       </clix:special-variable>
 
@@ -1441,6 +1480,7 @@ T</span>
           <p>
             Misbehaving servers may send duplicate cookies back in the
             same <code>Set-Cookie</code> header:
+          </p>
 <pre>HTTP/1.1 200  OK
 Server: My-hand-rolled-server
 Date: Wed, 07 Apr 2010 15:12:30 GMT
@@ -1449,6 +1489,7 @@ Content-Type: text/html
 Content-Length: 82
 Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 </pre>
+          <p>
             In this case Drakma has to choose whether cookie "a" has
             the value "1" or "2".  By default, Drakma will choose the
             last value specified, in this case "2".
@@ -1481,55 +1522,73 @@ Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 
       <clix:condition name="cookie-date-parse-error">
         <clix:description>
-          Signalled if Drakma tries to parse the date of an
-          incoming cookie header and can't interpret it.
+          <p>
+            Signalled if Drakma tries to parse the date of an incoming
+            cookie header and can't interpret it.
+          </p>
         </clix:description>
       </clix:condition>
 
       <clix:condition name="cookie-error">
         <clix:description>
-          Signalled if someone tries to create a COOKIE object that's
-          not valid.
+          <p>
+            Signalled if someone tries to create a COOKIE object
+            that's not valid.
+          </p>
         </clix:description>
       </clix:condition>
 
       <clix:function name="cookie-error-cookie" generic="true">
         <clix:lambda-list>cookie-error</clix:lambda-list>
         <clix:returns>(or cookie null)</clix:returns>
-        <clix:description>The <code>COOKIE</code> object that caused
-        this error.  Can be <code>NIL</code> in case such an object
-        couldn't be initialized.</clix:description>
+        <clix:description>
+          <p>
+            The <code>COOKIE</code> object that caused this error.
+            Can be <code>NIL</code> in case such an object couldn't be
+            initialized.
+          </p>
+        </clix:description>
       </clix:function>
 
       <clix:condition name="parameter-error">
         <clix:description>
-          Signalled if a function was called with inconsistent or
-          illegal parameters.
+          <p>
+            Signalled if a function was called with inconsistent or
+            illegal parameters.
+          </p>
         </clix:description>
       </clix:condition>
 
       <clix:condition name="syntax-error">
         <clix:description>
-          Signalled if Drakma encounters wrong or unknown
-          syntax when reading the reply from the server.
+          <p>
+            Signalled if Drakma encounters wrong or unknown syntax
+            when reading the reply from the server.
+          </p>
         </clix:description>
       </clix:condition>
 
       <clix:condition name="drakma-condition">
         <clix:description>
-          Superclass for all conditions related to Drakma.
+          <p>
+            Superclass for all conditions related to Drakma.
+          </p>
         </clix:description>
       </clix:condition>
 
       <clix:condition name="drakma-error">
         <clix:description>
-          Superclass for all errors related to Drakma.
+          <p>
+            Superclass for all errors related to Drakma.
+          </p>
         </clix:description>
       </clix:condition>
 
       <clix:condition name="drakma-warning">
         <clix:description>
-          Superclass for all warnings related to Drakma.
+          <p>
+            Superclass for all warnings related to Drakma.
+          </p>
         </clix:description>
       </clix:condition>
     </clix:subchapter>
