@@ -227,7 +227,7 @@ headers of the chunked stream \(if any) as a second value."
                               #+:openmcl
                               deadline
                               &aux (unparsed-uri (if (stringp uri) (copy-seq uri) (puri:copy-uri uri))))
-  "Sends an HTTP request to a web server and returns its reply.  URI
+  "Sends a HTTP request to a web server and returns its reply.  URI
 is where the request is sent to, and it is either a string denoting a
 uniform resource identifier or a PURI:URI object.  The scheme of URI
 must be `http' or `https'.  The function returns SEVEN values - the
