@@ -49,19 +49,32 @@
     
   <clix:chapter name='examples' title='Examples'>
 
+    <style type="text/css">
+      pre { margin-left: 3em; margin-right: 3em; word-wrap: break-word; overflow-x: auto; background: #eee; }
+      .repl-output { color: black; }
+      .repl-input { font-weight: bold; }
+      .headers-out { color: SteelBlue; }
+      .headers-in { color: SeaGreen; }
+    </style>
+
     <p>
       Here is a collection of example uses of Drakma to which
-      demonstrate some of its features.
+      demonstrate some of its features.  In the examples, text is
+      color coded to indicate where it comes from (<span
+      class="repl-input">REPL input</span>, <span
+      class="repl-output">REPL output</span>, <span
+      class="headers-out">HTTP headers sent</span> and <span
+      class="headers-in">HTTP headers received</span>).
     </p>
 
     <clix:subchapter name='ex-loading' title='Loading Drakma with Quicklisp'>
-      <pre>? (ql:quickload :drakma)
-To load "drakma":
+      <pre><span class="repl-output">? </span><span class="repl-input">(ql:quickload :drakma)</span>
+<span class="repl-output">To load "drakma":
   Load 1 ASDF system:
     drakma
 ; Loading "drakma"
 
-(:DRAKMA)
+(:DRAKMA)</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-logging' title='Log headers to the REPL output stream'>
@@ -70,8 +83,8 @@ To load "drakma":
       and the HTTP server should be shown, for illustration purposes.
       This can be achieved like so:
 
-      <pre>? (setf *header-stream* *standard-output*)
-#&lt;SYNONYM-STREAM to *TERMINAL-IO* #x3020006AC7DD&gt;
+      <pre><span class="repl-output">? </span><span class="repl-input">(setf drakma:*header-stream* *standard-output*)</span>
+<span class="repl-output">#&lt;SYNONYM-STREAM to *TERMINAL-IO* #x3020006AC7DD&gt;</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-request-redirect' title='Requesting a page with redirection'>
@@ -80,35 +93,35 @@ To load "drakma":
       redirect and how the fourth return value shows the <em>new</em>
       URI.
 
-<pre>? (drakma:http-request "http://lisp.org/")
-GET / HTTP/1.1
+<pre><span class="repl-output">? </span><span class="repl-input">(drakma:http-request "http://lisp.org/")</span>
+<span class="headers-out">GET / HTTP/1.1
 Host: lisp.org
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
-
-HTTP/1.1 307  Temporary Redirect
+</span>
+<span class="headers-in">HTTP/1.1 307  Temporary Redirect
 Date: Sun, 09 Dec 2012 08:01:56 GMT
 Connection: Close
 Server: AllegroServe/1.2.65
 Transfer-Encoding: chunked
 LOCATION: http://lisp.org/index.html
-
-GET /index.html HTTP/1.1
+</span>
+<span class="headers-out">GET /index.html HTTP/1.1
 Host: lisp.org
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
-
-HTTP/1.1 200  OK
+</span>
+<span class="headers-in">HTTP/1.1 200  OK
 Date: Sun, 09 Dec 2012 08:01:56 GMT
 Connection: Close
 Server: AllegroServe/1.2.65
 Content-Type: text/html
 Content-Length: 459
 LAST-MODIFIED: Wed, 26 Oct 2011 02:26:26 GMT
-
-"&lt;HTML&gt;
+</span>
+<span class="repl-output">"&lt;HTML&gt;
 &lt;HEAD&gt;
   &lt;title&gt;John McCarthy, 1927-2011&lt;/title&gt;
   &lt;STYLE type=\"text/css\"&gt;
@@ -130,20 +143,20 @@ LAST-MODIFIED: Wed, 26 Oct 2011 02:26:26 GMT
 #&lt;URI http://lisp.org/index.html&gt;
 #&lt;FLEXI-STREAMS:FLEXI-IO-STREAM #x30200155DB1D&gt;
 T
-" OK"
+" OK"</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-charsets' title='Requesting a page containing non-ASCII characters'>
       Drakma automatically interprets the 'charset=utf-8' part correctly.
 
-      <pre>? (subseq (drakma:http-request "http://www.cl.cam.ac.uk/~mgk25/ucs/examples/digraphs.txt") 0 298)
-GET /~mgk25/ucs/examples/digraphs.txt HTTP/1.1
+      <pre><span class="repl-output">? </span><span class="repl-input">(subseq (drakma:http-request "http://www.cl.cam.ac.uk/~mgk25/ucs/examples/digraphs.txt") 0 298)</span>
+<span class="headers-out">GET /~mgk25/ucs/examples/digraphs.txt HTTP/1.1
 Host: www.cl.cam.ac.uk
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
-
-HTTP/1.1 200 OK
+</span>
+<span class="headers-in">HTTP/1.1 200 OK
 Date: Sun, 09 Dec 2012 08:15:04 GMT
 Server: Apache/2.2.3 (CentOS)
 Last-Modified: Mon, 06 Apr 2009 18:13:43 GMT
@@ -153,8 +166,8 @@ Content-Length: 664
 X-UA-Compatible: IE=edge
 Connection: close
 Content-Type: text/plain; charset=utf-8
-
-"Latin Digraphs and Ligatures in ISO10646-1
+</span>
+<span class="repl-output">"Latin Digraphs and Ligatures in ISO10646-1
 
 A short table of ligatures and digraphs follows. Some of these may not be
 ligatures/digraphs in the technical sense, (for example, æ is a seperate
@@ -163,21 +176,21 @@ letter in English), but visually they behave that way.
 AÆE : U+00C6
 aæe : U+00E6
 ſßs : U+00DF
-IĲJ : U+0132"
+IĲJ : U+0132"</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-binary-data' title='Requesting binary data'>
 
       For non-textual content types, a vector of octets is returned.
 
-      <pre>? (drakma:http-request "http://zappa.com/favicon.ico")
-GET /favicon.ico HTTP/1.1
+      <pre><span class="repl-output">? </span><span class="repl-input">(drakma:http-request "http://zappa.com/favicon.ico")</span>
+<span class="headers-out">GET /favicon.ico HTTP/1.1
 Host: zappa.com
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
-
-HTTP/1.1 200 OK
+</span>
+<span class="headers-in">HTTP/1.1 200 OK
 Date: Sun, 09 Dec 2012 08:15:14 GMT
 Server: Apache/2
 Last-Modified: Sun, 01 Apr 2007 15:44:59 GMT
@@ -187,8 +200,8 @@ Content-Length: 182
 Vary: Accept-Encoding,User-Agent
 Connection: close
 Content-Type: image/x-icon
-
-#(71 73 70 56 57 97 17 0 17 0 179 1 0 150 151 153 255 255 255 37 37 36 112 114 115 201 202 204
+</span>
+<span class="repl-output">#(71 73 70 56 57 97 17 0 17 0 179 1 0 150 151 153 255 255 255 37 37 36 112 114 115 201 202 204
   0 0 0 80 83 84 26 28 26 230 231 231 249 249 249 12 13 14 219 221 222 18 21 22 239 240 241 52
   52 54 64 66 66 33 249 4 1 0 0 1 0 44 0 0 0 0 17 0 17 0 0 4 99 48 200 73 107 109 54 172 101
   129 120 196 180 12 12 51 80 64 161 42 3 48 28 170 106 72 141 16 223 120 113 166 121 95 0 14
@@ -203,7 +216,7 @@ Content-Type: image/x-icon
 #&lt;URI http://zappa.com/favicon.ico&gt;
 #&lt;FLEXI-STREAMS:FLEXI-IO-STREAM #x30200154D83D&gt;
 T
-"OK"
+"OK"</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-chunked-https' title='Chunked transfers and HTTPS'>
@@ -213,29 +226,29 @@ T
       href="http://www.rfc.net/rfc2616.html#s3.6.1">chunked transfer
       encoding</a> for its reply
 
-      <pre>? (ql:quickload :cl-ppcre)
-To load "cl-ppcre":
+      <pre><span class="repl-output">? </span><span class="repl-input">(ql:quickload :cl-ppcre)</span>
+<span class="repl-output">To load "cl-ppcre":
   Load 1 ASDF system:
     cl-ppcre
 ; Loading "cl-ppcre"
 
 (:CL-PPCRE)
-? (ppcre:scan-to-strings "(?s)You have.*your data."
-                                       (drakma:http-request "https://www.fortify.net/cgi/ssl_2.pl"))
-GET /cgi/ssl_2.pl HTTP/1.1
+? </span><span class="repl-input">(ppcre:scan-to-strings "(?s)You have.*your data."
+                                       (drakma:http-request "https://www.fortify.net/cgi/ssl_2.pl"))</span>
+<span class="headers-out">GET /cgi/ssl_2.pl HTTP/1.1
 Host: www.fortify.net
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
-
-HTTP/1.1 200 OK
+</span>
+<span class="headers-in">HTTP/1.1 200 OK
 Date: Sun, 09 Dec 2012 08:15:31 GMT
 Server: Apache
 Connection: close
 Transfer-Encoding: chunked
 Content-Type: text/html
-
-"You have connected to this web server using the RC4-SHA encryption cipher
+</span>
+<span class="repl-output">"You have connected to this web server using the RC4-SHA encryption cipher
  with a key length of 128 bits.
  &lt;p&gt;
  This is a high-grade encryption connection, regarded by most experts as being suitable
@@ -245,7 +258,7 @@ Content-Type: text/html
  In a crude analogy, using this cipher is similar to sending or storing your data inside
  a high quality safe - compared to an export-grade cipher which is similar to using
  a paper envelope to protect your data."
-#()
+#()</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-fake-ua' title='Faking a user agent header'>
@@ -253,23 +266,23 @@ Content-Type: text/html
       Some servers adapt their behavior according to the Browser that
       is used.  Drakma can claim to be, i.e. MS Internet Explorer.
 
-      <pre>? (cl-ppcre:scan-to-strings "&lt;h4&gt;.*" (drakma:http-request "http://whatsmyuseragent.com/" :user-agent :explorer))
-GET / HTTP/1.1
+      <pre><span class="repl-output">? </span><span class="repl-input">(cl-ppcre:scan-to-strings "&lt;h4&gt;.*" (drakma:http-request "http://whatsmyuseragent.com/" :user-agent :explorer))</span>
+<span class="headers-out">GET / HTTP/1.1
 Host: whatsmyuseragent.com
 User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)
 Accept: */*
 Connection: close
-
-HTTP/1.1 200 OK
+</span>
+<span class="headers-in">HTTP/1.1 200 OK
 Date: Sun, 09 Dec 2012 08:23:50 GMT
 Server: Apache
 X-Powered-By: PHP/5.2.17
 Connection: close
 Transfer-Encoding: chunked
 Content-Type: text/html
-
-"&lt;h4&gt;Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)&lt;/h4&gt;"
-#()
+</span>
+<span class="repl-output">"&lt;h4&gt;Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)&lt;/h4&gt;"
+#()</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-post-and-cookie' title='Posting data and using cookies'>
@@ -277,7 +290,7 @@ Content-Type: text/html
       deal with <a href="#cookie">cookies</a>.  Note how Drakma sends
       the cookie back in the second request.
 
-      <pre>? (let ((cookie-jar (make-instance 'drakma:cookie-jar)))
+      <pre><span class="repl-output">? </span><span class="repl-input">(let ((cookie-jar (make-instance 'drakma:cookie-jar)))
     (drakma:http-request "http://www.phpsecurepages.com/test/test.php"
                          :method :post
                          :parameters '(("entered_login" . "test")
@@ -285,16 +298,16 @@ Content-Type: text/html
                          :cookie-jar cookie-jar)
     (drakma:http-request "http://www.phpsecurepages.com/test/test2.php"
                          :cookie-jar cookie-jar)
-    (drakma:cookie-jar-cookies cookie-jar))
-POST /test/test.php HTTP/1.1
+    (drakma:cookie-jar-cookies cookie-jar))</span>
+<span class="headers-out">POST /test/test.php HTTP/1.1
 Host: www.phpsecurepages.com
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 Content-Type: application/x-www-form-urlencoded
 Content-Length: 40
-
-HTTP/1.1 200 OK
+</span>
+<span class="headers-in">HTTP/1.1 200 OK
 Date: Sun, 09 Dec 2012 08:25:13 GMT
 Server:  
 X-Powered-By: PHP/5.2.17
@@ -306,15 +319,15 @@ X-Powered-By: PleskLin
 Content-Length: 4479
 Connection: close
 Content-Type: text/html
-
-GET /test/test2.php HTTP/1.1
+</span>
+<span class="headers-out">GET /test/test2.php HTTP/1.1
 Host: www.phpsecurepages.com
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Cookie: PHPSESSID=vijk3706eojs7n8u5cdpi3ju05
 Connection: close
-
-HTTP/1.1 200 OK
+</span>
+<span class="headers-in">HTTP/1.1 200 OK
 Date: Sun, 09 Dec 2012 08:25:16 GMT
 Server:  
 X-Powered-By: PHP/5.2.17
@@ -325,23 +338,23 @@ X-Powered-By: PleskLin
 Content-Length: 4479
 Connection: close
 Content-Type: text/html
-
-(#&lt;COOKIE PHPSESSID=vijk3706eojs7n8u5cdpi3ju05; path=/; domain=www.phpsecurepages.com&gt;)
+</span>
+<span class="repl-output">(#&lt;COOKIE PHPSESSID=vijk3706eojs7n8u5cdpi3ju05; path=/; domain=www.phpsecurepages.com&gt;)</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-reuse-connection' title='Reusing a connection to a server'>
 
       Drakma can <a name="re-use">use</a> a connection to a server for multiple requests.
 
-      <pre>? (let ((stream (nth-value 4 (drakma:http-request "http://www.lispworks.com/" :close nil))))
+      <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (nth-value 4 (drakma:http-request "http://www.lispworks.com/" :close nil))))
     (nth-value 2 (drakma:http-request "http://www.lispworks.com/success-stories/index.html"
-                                      :stream stream)))
-GET / HTTP/1.1
+                                      :stream stream)))</span>
+<span class="headers-out">GET / HTTP/1.1
 Host: www.lispworks.com
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
-
-HTTP/1.1 200 OK
+</span>
+<span class="headers-in">HTTP/1.1 200 OK
 Date: Sun, 09 Dec 2012 08:25:56 GMT
 Server: Apache/2.2.22 (Unix) mod_ssl/2.2.22 OpenSSL/1.0.1c mod_apreq2-20051231/2.6.0 mod_perl/2.0.5 Perl/v5.8.9
 Last-Modified: Tue, 20 Nov 2012 12:27:40 GMT
@@ -349,14 +362,14 @@ ETag: "336280-28eb-4ceec5c1f4700"
 Accept-Ranges: bytes
 Content-Length: 10475
 Content-Type: text/html
-
-GET /success-stories/index.html HTTP/1.1
+</span>
+<span class="headers-out">GET /success-stories/index.html HTTP/1.1
 Host: www.lispworks.com
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
-
-HTTP/1.1 200 OK
+</span>
+<span class="headers-in">HTTP/1.1 200 OK
 Date: Sun, 09 Dec 2012 08:25:56 GMT
 Server: Apache/2.2.22 (Unix) mod_ssl/2.2.22 OpenSSL/1.0.1c mod_apreq2-20051231/2.6.0 mod_perl/2.0.5 Perl/v5.8.9
 Last-Modified: Tue, 20 Nov 2012 12:28:52 GMT
@@ -365,11 +378,11 @@ Accept-Ranges: bytes
 Content-Length: 10560
 Connection: close
 Content-Type: text/html
-
-((:DATE . "Sun, 09 Dec 2012 08:25:56 GMT")
+</span>
+<span class="repl-output">((:DATE . "Sun, 09 Dec 2012 08:25:56 GMT")
  (:SERVER . "Apache/2.2.22 (Unix) mod_ssl/2.2.22 OpenSSL/1.0.1c mod_apreq2-20051231/2.6.0 mod_perl/2.0.5 Perl/v5.8.9")
  (:LAST-MODIFIED . "Tue, 20 Nov 2012 12:28:52 GMT") (:ETAG . "\"336386-2940-4ceec6069e900\"") (:ACCEPT-RANGES . "bytes")
- (:CONTENT-LENGTH . "10560") (:CONNECTION . "close") (:CONTENT-TYPE . "text/html"))
+ (:CONTENT-LENGTH . "10560") (:CONNECTION . "close") (:CONTENT-TYPE . "text/html"))</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-basic-auth' title='Basic Authorization'>
@@ -378,8 +391,8 @@ Content-Type: text/html
       locally running <a
       href="http://weitz.de/hunchentoot">Hunchentoot</a> server.
 
-      <pre>? (ql:quickload :hunchentoot-test)
-To load "hunchentoot-test":
+      <pre><span class="repl-output">? </span><span class="repl-input">(ql:quickload :hunchentoot-test)</span>
+<span class="repl-output">To load "hunchentoot-test":
   Load 4 ASDF systems:
     cl-ppcre cl-who drakma hunchentoot
   Install 1 Quicklisp release:
@@ -399,65 +412,65 @@ To load "hunchentoot-test":
 [package hunchentoot-test-user]...................
 ..................
 (:HUNCHENTOOT-TEST)
-? (hunchentoot:start (make-instance 'hunchentoot:easy-acceptor :port 4242))
-#&lt;EASY-ACCEPTOR (host *, port 4242)&gt;
-? (nth-value 1 (drakma:http-request "http://localhost:4242/hunchentoot/test/authorization.html"))
-GET /hunchentoot/test/authorization.html HTTP/1.1
+? </span><span class="repl-input">(hunchentoot:start (make-instance 'hunchentoot:easy-acceptor :port 4242))</span>
+<span class="repl-output">#&lt;EASY-ACCEPTOR (host *, port 4242)&gt;
+? </span><span class="repl-input">(nth-value 1 (drakma:http-request "http://localhost:4242/hunchentoot/test/authorization.html"))</span>
+<span class="headers-out">GET /hunchentoot/test/authorization.html HTTP/1.1
 Host: localhost:4242
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
-
-127.0.0.1 - [2012-12-09 09:27:40] "GET /hunchentoot/test/authorization.html HTTP/1.1" 401 543 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"
-HTTP/1.1 401 Authorization Required
+</span>
+<span class="repl-output">127.0.0.1 - [2012-12-09 09:27:40] "GET /hunchentoot/test/authorization.html HTTP/1.1" 401 543 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"</span>
+<span class="headers-in">HTTP/1.1 401 Authorization Required
 Content-Length: 543
 Date: Sun, 09 Dec 2012 08:27:40 GMT
 Server: Hunchentoot 1.2.5
 Connection: Close
 Www-Authenticate: Basic realm="Hunchentoot"
 Content-Type: text/html; charset=iso-8859-1
-
-401
-? (nth-value 1 (drakma:http-request "http://localhost:4242/hunchentoot/test/authorization.html"
-                                            :basic-authorization '("nanook" "igloo")))
-GET /hunchentoot/test/authorization.html HTTP/1.1
+</span>
+<span class="repl-output">401
+? </span><span class="repl-input">(nth-value 1 (drakma:http-request "http://localhost:4242/hunchentoot/test/authorization.html"
+                                            :basic-authorization '("nanook" "igloo")))</span>
+<span class="headers-out">GET /hunchentoot/test/authorization.html HTTP/1.1
 Host: localhost:4242
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Authorization: Basic bmFub29rOmlnbG9v
 Accept: */*
 Connection: close
-
-127.0.0.1 nanook [2012-12-09 09:28:15] "GET /hunchentoot/test/authorization.html HTTP/1.1" 200 907 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"
-HTTP/1.1 200 OK
+</span>
+<span class="repl-output">127.0.0.1 nanook [2012-12-09 09:28:15] "GET /hunchentoot/test/authorization.html HTTP/1.1" 200 907 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"</span>
+<span class="headers-in">HTTP/1.1 200 OK
 Content-Length: 907
 Date: Sun, 09 Dec 2012 08:28:15 GMT
 Server: Hunchentoot 1.2.5
 Connection: Close
 Content-Type: text/html; charset=utf-8
-
-200
+</span>
+<span class="repl-output">200</span>
 </pre>
     </clix:subchapter>
-    <clix:subchapter name=' title='>
+    <clix:subchapter name='ex-response-stream' title='Reading the response from a stream'>
 
       Drakma can return a stream to the application so that the reply
       is not completely buffered in memory first.
 
-      <pre>? (let ((stream (drakma:http-request "http://www.quicklisp.org"
+      <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (drakma:http-request "http://www.quicklisp.org"
                                      :want-stream t)))
                    (loop for i below 41
                          for line = (read-line stream)
                          when (&gt; i 35)
                          do (write-line line))
                    (close stream)
-                   (values))
-GET / HTTP/1.1
+                   (values))</span>
+<span class="headers-out">GET / HTTP/1.1
 Host: www.quicklisp.org
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
-
-HTTP/1.1 200 OK
+</span>
+<span class="headers-in">HTTP/1.1 200 OK
 Server: nginx/1.1.17
 Date: Sun, 09 Dec 2012 08:29:45 GMT
 Content-Type: text/html
@@ -465,12 +478,12 @@ Content-Length: 1993
 Last-Modified: Wed, 04 Jan 2012 14:42:40 GMT
 Connection: close
 Accept-Ranges: bytes
-
-
+</span>
+<span class="repl-output">
 &lt;p&gt;For the latest Quicklisp news,
 see &lt;a href="http://twitter.com/quicklisp"&gt;@quicklisp&lt;/a&gt; on twitter
 or &lt;a href="http://blog.quicklisp.org/"&gt;the Quicklisp blog&lt;/a&gt;.
-
+</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-assemble-request-content' title='Piecemeal assembly of request contents'>
@@ -479,7 +492,7 @@ or &lt;a href="http://blog.quicklisp.org/"&gt;the Quicklisp blog&lt;/a&gt;.
       chunked encoding can be used by request bodies.  Many servers do
       not support chunked encoding for request bodies, though.
 
-      <pre>? (let ((temp-file (ensure-directories-exist #p"/tmp/quux.txt"))
+      <pre><span class="repl-output">? </span><span class="repl-input">(let ((temp-file (ensure-directories-exist #p"/tmp/quux.txt"))
         (continuation (drakma:http-request "http://localhost:4242/hunchentoot/test/parameter_latin1_post.html"
                                            :method :post
                                            :content :continuation)))
@@ -493,17 +506,17 @@ or &lt;a href="http://blog.quicklisp.org/"&gt;the Quicklisp blog&lt;/a&gt;.
                          :if-exists :supersede)
       (write-string "p" out))
     (funcall continuation temp-file t)
-    (ppcre:scan-to-strings "zappzerapp" (funcall continuation "zerapp")))
-POST /hunchentoot/test/parameter_latin1_post.html HTTP/1.1
+    (ppcre:scan-to-strings "zappzerapp" (funcall continuation "zerapp")))</span>
+<span class="headers-out">POST /hunchentoot/test/parameter_latin1_post.html HTTP/1.1
 Host: localhost:4242
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 Content-Type: application/x-www-form-urlencoded
 Transfer-Encoding: chunked
-
-127.0.0.1 - [2012-12-09 10:06:44] "POST /hunchentoot/test/parameter_latin1_post.html HTTP/1.1" 200 1312 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"
-HTTP/1.1 200 OK
+</span>
+<span class="repl-output">127.0.0.1 - [2012-12-09 10:06:44] "POST /hunchentoot/test/parameter_latin1_post.html HTTP/1.1" 200 1312 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"</span>
+<span class="headers-in">HTTP/1.1 200 OK
 Content-Length: 1312
 Date: Sun, 09 Dec 2012 09:06:44 GMT
 Server: Hunchentoot 1.2.5
@@ -513,9 +526,9 @@ Pragma: no-cache
 Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
 Expires: Mon, 26 Jul 1997 05:00:00 GMT
 Content-Type: text/html; charset=ISO-8859-1
-
-"zappzerapp"
-#()
+</span>
+<span class="repl-output">"zappzerapp"
+#()</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-partial-transfers' title='Partial transfers'>
@@ -523,22 +536,22 @@ Content-Type: text/html; charset=ISO-8859-1
       <a href="http://www.rfc.net/rfc2616.html#s14.35">Partial
       transfers</a> of resources are possible.
 
-      <pre>? (ppcre:regex-replace-all
+      <pre><span class="repl-output">? </span><span class="repl-input">(ppcre:regex-replace-all
    "&lt;.*?&gt;"
    (format nil "~A~%~A"
            (drakma:http-request "http://members.shaw.ca/mitb/hunchentoot.html"
                                 :additional-headers '(("Range" . "bytes=998-1034")))
            (drakma:http-request "http://members.shaw.ca/mitb/hunchentoot.html"
                                 :additional-headers '(("Range" . "bytes=1213-1249"))))
-   "")
-GET /mitb/hunchentoot.html HTTP/1.1
+   "")</span>
+<span class="headers-out">GET /mitb/hunchentoot.html HTTP/1.1
 Host: members.shaw.ca
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 Range: bytes=998-1034
-
-HTTP/1.1 206 Partial Content
+</span>
+<span class="headers-in">HTTP/1.1 206 Partial Content
 Date: Sun, 09 Dec 2012 09:16:16 GMT
 Server: Apache/2.2.20 (Unix) mod_ldap_userdir/1.1.17
 Last-Modified: Wed, 14 Mar 2012 23:22:04 GMT
@@ -548,15 +561,15 @@ Content-Length: 37
 Content-Range: bytes 998-1034/12856
 Content-Type: text/html
 Connection: close
-
-GET /mitb/hunchentoot.html HTTP/1.1
+</span>
+<span class="headers-out">GET /mitb/hunchentoot.html HTTP/1.1
 Host: members.shaw.ca
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 Range: bytes=1213-1249
-
-HTTP/1.1 206 Partial Content
+</span>
+<span class="headers-in">HTTP/1.1 206 Partial Content
 Date: Sun, 09 Dec 2012 09:16:16 GMT
 Server: Apache/2.2.20 (Unix) mod_ldap_userdir/1.1.17
 Last-Modified: Wed, 14 Mar 2012 23:22:04 GMT
@@ -565,10 +578,10 @@ Accept-Ranges: bytes
 Content-Length: 37
 Content-Range: bytes 1213-1249/12856
 Content-Type: text/html
-
-"DRAKMA (Queen of Cosmic Greed)
+</span>
+<span class="repl-output">"DRAKMA (Queen of Cosmic Greed)
 HUNCHENTOOT (The Giant Spider)"
-T
+T</span>
 </pre>
     </clix:subchapter>
 
