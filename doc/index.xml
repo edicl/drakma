@@ -32,14 +32,10 @@
         license</a> so you can basically do with it whatever you want.
       </p>
       <p>
-        The preferred method to compile and load Drakma is via <a
-        href="http://www.cliki.net/asdf">ASDF</a>.  If you want to
-        avoid downloading and installing all the dependencies
-        manually, give Zach Beane's excellent <a
-        href="http://www.quicklisp.org/">Quicklisp</a> system a try.
-      </p>
-      <p>
-        <font color='red'>Download shortcut:</font> <a href="http://weitz.de/files/drakma.tar.gz">http://weitz.de/files/drakma.tar.gz</a>.
+        The preferred method to download, compile and load Drakma is
+        via <a href="http://www.quicklisp.org/">Quicklisp</a>.  That
+        way, all libraries that Drakma uses are automatically
+        downloaded.
       </p>
     </clix:chapter>
   </blockquote>
@@ -264,7 +260,7 @@ Content-Type: text/html
     <clix:subchapter name='ex-fake-ua' title='Faking a user agent header'>
 
       Some servers adapt their behavior according to the Browser that
-      is used.  Drakma can claim to be, i.e. MS Internet Explorer.
+      is used.  Drakma can claim to be i.e. MS Internet Explorer.
 
       <pre><span class="repl-output">? </span><span class="repl-input">(cl-ppcre:scan-to-strings "&lt;h4&gt;.*" (drakma:http-request "http://whatsmyuseragent.com/" :user-agent :explorer))</span>
 <span class="headers-out">GET / HTTP/1.1
