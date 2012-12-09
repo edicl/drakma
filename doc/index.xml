@@ -454,9 +454,9 @@ Content-Type: text/html; charset=utf-8
       </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (drakma:http-request "http://www.quicklisp.org"
                                      :want-stream t)))
-                   (loop for i below 41
+                   (loop for i below 40
                          for line = (read-line stream)
-                         when (&gt; i 35)
+                         when (&gt; i 36)
                          do (write-line line))
                    (close stream)
                    (values))</span>
@@ -475,11 +475,9 @@ Last-Modified: Wed, 04 Jan 2012 14:42:40 GMT
 Connection: close
 Accept-Ranges: bytes
 </span>
-<span class="repl-output">
-&lt;p&gt;For the latest Quicklisp news,
+<span class="repl-output">&lt;p&gt;For the latest Quicklisp news,
 see &lt;a href="http://twitter.com/quicklisp"&gt;@quicklisp&lt;/a&gt; on twitter
-or &lt;a href="http://blog.quicklisp.org/"&gt;the Quicklisp blog&lt;/a&gt;.
-</span>
+or &lt;a href="http://blog.quicklisp.org/"&gt;the Quicklisp blog&lt;/a&gt;.</span>
 </pre>
     </clix:subchapter>
     <clix:subchapter name='ex-assemble-request-content' title='Piecemeal assembly of request contents'>
@@ -676,7 +674,12 @@ T</span>
           <a href="#arg-connection-timeout">connection-timeout</a>
           <a href="#arg-deadline">deadline</a>
         </clix:lambda-list>
-        <clix:returns>body-or-stream<sup>0</sup>, status-code<sup>1</sup>, headers<sup>2</sup>, uri<sup>3</sup>, stream<sup>4</sup>, <a href="#arg-want-stream">must-close<sup>5</sup></a>, reason-phrase<sup>6</sup></clix:returns>
+        <clix:returns>
+          body-or-stream<sup>0</sup>, status-code<sup>1</sup>,
+          headers<sup>2</sup>, uri<sup>3</sup>, stream<sup>4</sup>, <a
+          href="#arg-want-stream">must-close<sup>5</sup></a>,
+          reason-phrase<sup>6</sup>
+        </clix:returns>
         <clix:description>
           <p>
             Sends an <a
@@ -726,24 +729,25 @@ T</span>
             argument, as SSL will be attached anyway if the scheme of
             <clix:arg>uri</clix:arg> is `https'.
           </p>
-          <p><a name="arg-certificate"/><a name="arg-certificate-password"/><a name="arg-key"/>
-            <clix:arg>certificate</clix:arg> is the file name of the
-            PEM encoded client certificate to present to the server
-            when making a SSL connection.  <clix:arg>key</clix:arg>
-            specifies the file name of the PEM encoded private key
-            matching the certificate.
-            <clix:arg>certificate-password</clix:arg> specifies the
-            pass phrase to use to decrypt the private key.
+          <p><a name="arg-certificate"/><a
+          name="arg-certificate-password"/><a name="arg-key"/>
+          <clix:arg>certificate</clix:arg> is the file name of the PEM
+          encoded client certificate to present to the server when
+          making a SSL connection.  <clix:arg>key</clix:arg> specifies
+          the file name of the PEM encoded private key matching the
+          certificate.  <clix:arg>certificate-password</clix:arg>
+          specifies the pass phrase to use to decrypt the private key.
           </p>
           <p>
             <a name="arg-verify"/>
             <clix:arg>verify</clix:arg> can be specified to force
             verification of the certificate that is presented by the
             server in an SSL connection.  It can be specified either
-            as <code>NIL</code> if no check should be performed, <code>:OPTIONAL</code> to
-            verify the server's certificate if it presented one or
-            <code>:REQUIRED</code> to verify the server's certificate and fail if
-            an invalid or no certificate was presented.
+            as <code>NIL</code> if no check should be performed,
+            <code>:OPTIONAL</code> to verify the server's certificate
+            if it presented one or <code>:REQUIRED</code> to verify
+            the server's certificate and fail if an invalid or no
+            certificate was presented.
           </p>
           <p>
             <a name="arg-max-depth"/>
@@ -812,11 +816,11 @@ T</span>
           <p>
             <a name="arg-content"/>
             <a name="arg-external-format-out"/>
-            <clix:arg>content</clix:arg>, if not <code>NIL</code>, is used as the
-            request body - <clix:arg>parameters</clix:arg> is ignored
-            in this case.  <clix:arg>content</clix:arg> can be a
-            string, a sequence of octets, a pathname, an open binary
-            input stream, or a function designator.  If
+            <clix:arg>content</clix:arg>, if not <code>NIL</code>, is
+            used as the request body - <clix:arg>parameters</clix:arg>
+            is ignored in this case.  <clix:arg>content</clix:arg> can
+            be a string, a sequence of octets, a pathname, an open
+            binary input stream, or a function designator.  If
             <clix:arg>content</clix:arg> is a sequence, it will be
             directly sent to the server (using
             <clix:arg>external-format-out</clix:arg> in the case of
@@ -831,16 +835,17 @@ T</span>
           </p>
           <p>
             Finally, <clix:arg>content</clix:arg> can also be the
-            keyword <code>:CONTINUATION</code> in which case <clix:ref>HTTP-REQUEST</clix:ref> returns
-            only one value - a `continuation' function.  This function
-            has one required argument and one optional argument.  The
-            first argument will be interpreted like
-            <clix:arg>content</clix:arg> above (but it cannot be a
-            keyword), i.e. it will be sent to the server according to
-            its type.  If the second argument is true, the
-            continuation function can be called again to send more
-            content, if it is <code>NIL</code> the continuation function returns
-            what <clix:ref>HTTP-REQUEST</clix:ref> would have returned.
+            keyword <code>:CONTINUATION</code> in which case
+            <clix:ref>HTTP-REQUEST</clix:ref> returns only one value -
+            a `continuation' function.  This function has one required
+            argument and one optional argument.  The first argument
+            will be interpreted like <clix:arg>content</clix:arg>
+            above (but it cannot be a keyword), i.e. it will be sent
+            to the server according to its type.  If the second
+            argument is true, the continuation function can be called
+            again to send more content, if it is <code>NIL</code> the
+            continuation function returns what
+            <clix:ref>HTTP-REQUEST</clix:ref> would have returned.
           </p>
           <p>
             If <clix:arg>content</clix:arg> is a sequence, Drakma will
@@ -851,11 +856,12 @@ T</span>
             non-negative integer) which you can also use for the cases
             where Drakma can't or won't determine the content length
             itself.  You can also explicitly provide a
-            <clix:arg>content-length</clix:arg> argument of <code>NIL</code> which
-            will imply that no `Content-Length' header will be sent in
-            any case.  If no `Content-Length' header is sent, Drakma
-            will use chunked encoding to send the content body.  Note
-            that this will not work with older web servers.
+            <clix:arg>content-length</clix:arg> argument of
+            <code>NIL</code> which will imply that no `Content-Length'
+            header will be sent in any case.  If no `Content-Length'
+            header is sent, Drakma will use chunked encoding to send
+            the content body.  Note that this will not work with older
+            web servers.
           </p>
           <p>
             <a name="arg-content-length"/>
@@ -887,16 +893,19 @@ T</span>
           </p>
           <p>
             <a name="arg-basic-authorization"/>
-            <clix:arg>basic-authorization</clix:arg>, if not <code>NIL</code>,
-            should be a list of two strings (username and password)
-            which will be sent to the server for basic authorization.
+            <clix:arg>basic-authorization</clix:arg>, if not
+            <code>NIL</code>, should be a list of two strings
+            (username and password) which will be sent to the server
+            for basic authorization.
           </p>
           <p>
             <a name="arg-user-agent"/>
-            <clix:arg>user-agent</clix:arg>, if not <code>NIL</code>, denotes which
-            `User-Agent' header will be sent with the request.  It can
-            be one of the keywords <code>:DRAKMA</code>, <code>:FIREFOX</code>, <code>:EXPLORER</code>,
-            <code>:OPERA</code>, or <code>:SAFARI</code> which denote the current version of
+            <clix:arg>user-agent</clix:arg>, if not <code>NIL</code>,
+            denotes which `User-Agent' header will be sent with the
+            request.  It can be one of the keywords
+            <code>:DRAKMA</code>, <code>:FIREFOX</code>,
+            <code>:EXPLORER</code>, <code>:OPERA</code>, or
+            <code>:SAFARI</code> which denote the current version of
             Drakma or, in the latter four cases, a fixed string
             corresponding to a more or less recent (as of August 2006)
             version of the corresponding browser.  Or it can be a
@@ -904,8 +913,8 @@ T</span>
           </p>
           <p>
             <a name="arg-accept"/>
-            <clix:arg>accept</clix:arg>, if not <code>NIL</code>, specifies the
-            contents of the `Accept' header sent.
+            <clix:arg>accept</clix:arg>, if not <code>NIL</code>,
+            specifies the contents of the `Accept' header sent.
           </p>
           <p>
             <a name="arg-range"/>
@@ -918,19 +927,20 @@ T</span>
           <p>
             <a name="arg-proxy"/>
             <a name="arg-proxy-basic-authorization"/>
-            If <clix:arg>proxy</clix:arg> is not <code>NIL</code>, it should be a
-            string denoting a proxy server through which the request
-            should be sent.  Or it can be a list of two values - a
-            string denoting the proxy server and an integer denoting
-            the port to use (which will default to 80 otherwise).
+            If <clix:arg>proxy</clix:arg> is not <code>NIL</code>, it
+            should be a string denoting a proxy server through which
+            the request should be sent.  Or it can be a list of two
+            values - a string denoting the proxy server and an integer
+            denoting the port to use (which will default to 80
+            otherwise).
             <clix:arg>proxy-basic-authorization</clix:arg> is used
             like <clix:arg>basic-authorization</clix:arg>, but for the
             proxy, and only if <clix:arg>proxy</clix:arg> is true.
           </p>
           <p>
             <a name="arg-real-host"/>
-            If <clix:arg>real-host</clix:arg> is not <code>NIL</code>, request is
-            sent to the denoted host instead of the
+            If <clix:arg>real-host</clix:arg> is not <code>NIL</code>,
+            request is sent to the denoted host instead of the
             <clix:arg>uri</clix:arg> host.  When specified,
             <clix:arg>real-host</clix:arg> supersedes
             <clix:arg>proxy</clix:arg>.
@@ -948,8 +958,8 @@ T</span>
           <p>
             <a name="arg-redirect"/>
             <a name="arg-auto-referer"/>
-            If <clix:arg>redirect</clix:arg> is not <code>NIL</code>, it must be a
-            non-negative integer or T.  If
+            If <clix:arg>redirect</clix:arg> is not <code>NIL</code>,
+            it must be a non-negative integer or T.  If
             <clix:arg>redirect</clix:arg> is true, Drakma will follow
             redirects (return codes 301, 302, 303, or 307) unless
             <clix:arg>redirect</clix:arg> is 0.  If
@@ -1140,9 +1150,9 @@ T</span>
 
       <clix:special-variable name="*header-stream*">
         <clix:description>
-          If this variable is not <code>NIL</code>, it should be bound to a stream to
-          which incoming and outgoing headers will be written for debugging
-          purposes.
+          If this variable is not <code>NIL</code>, it should be bound
+          to a stream to which incoming and outgoing headers will be
+          written for debugging purposes.
         </clix:description>
       </clix:special-variable>
 
@@ -1181,10 +1191,10 @@ T</span>
       </p>
       <p>
         Note that if the server sends <a
-        href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2">multiple headers
-        with the same name</a>, these are comprised into one entry by
-        <clix:ref>HTTP-REQUEST</clix:ref>.  The values are separated
-        by commas.
+        href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2">multiple
+        headers with the same name</a>, these are comprised into one
+        entry by <clix:ref>HTTP-REQUEST</clix:ref>.  The values are
+        separated by commas.
       </p>
 
       <clix:function name="get-content-type">
@@ -1383,25 +1393,27 @@ T</span>
         <clix:lambda-list>cookie-jar</clix:lambda-list>
         <clix:returns>cookie-jar</clix:returns>
         <clix:description>
-          Removes all cookies from <clix:arg>cookie-jar</clix:arg> which have either expired
-          or which don't have an expiry date.
+          Removes all cookies from <clix:arg>cookie-jar</clix:arg>
+          which have either expired or which don't have an expiry
+          date.
         </clix:description>
       </clix:function>
 
       <clix:special-variable name="*allow-dotless-cookie-domains-p*">
         <clix:description>
-          When this variable is not <code>NIL</code>, cookie domains containing no
-          dots are considered valid.  The default is <code>NIL</code>, meaning to
-          disallow such domains except for "localhost".
+          When this variable is not <code>NIL</code>, cookie domains
+          containing no dots are considered valid.  The default is
+          <code>NIL</code>, meaning to disallow such domains except
+          for "localhost".
         </clix:description>
       </clix:special-variable>
 
       <clix:special-variable name="*ignore-unparseable-cookie-dates-p*">
         <clix:description>
           Whether Drakma is allowed to treat `Expires' dates in cookie
-          headers as non-existent if it can't parse them.  If the value of this
-          variable is <code>NIL</code> (which is the default), an error will be signalled
-          instead.
+          headers as non-existent if it can't parse them.  If the
+          value of this variable is <code>NIL</code> (which is the
+          default), an error will be signalled instead.
         </clix:description>
       </clix:special-variable>
 
@@ -1416,11 +1428,14 @@ T</span>
           <p>
             Valid values are:
             <ul>
-              <li><code>NIL</code> - duplicates will not be removed,</li>
-              <li><code>T</code> or <code>:KEEP-LAST</code> - for duplicates, only the last cookie 
-              value will be kept, based on the order of the response header,</li>
-              <li><code>:KEEP-FIRST</code> - for duplicates, only the first cookie 
-              value will be kept, based on the order of the response header.</li>
+              <li><code>NIL</code> - duplicates will not be
+              removed,</li>
+              <li><code>T</code> or <code>:KEEP-LAST</code> - for
+              duplicates, only the last cookie value will be kept,
+              based on the order of the response header,</li>
+              <li><code>:KEEP-FIRST</code> - for duplicates, only the
+              first cookie value will be kept, based on the order of
+              the response header.</li>
             </ul>
           </p>
           <p>
@@ -1460,7 +1475,8 @@ Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 
     <clix:subchapter name="conditions" title="Conditions">
       <p>
-        This section lists all the condition types that are defined by Drakma.
+        This section lists all the condition types that are defined by
+        Drakma.
       </p>
 
       <clix:condition name="cookie-date-parse-error">
@@ -1472,7 +1488,8 @@ Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 
       <clix:condition name="cookie-error">
         <clix:description>
-          Signalled if someone tries to create a COOKIE object that's not valid.
+          Signalled if someone tries to create a COOKIE object that's
+          not valid.
         </clix:description>
       </clix:condition>
 
