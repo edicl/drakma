@@ -1,0 +1,1731 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="clixdoc.xsl" ?>
+
+<clix:documentation xmlns='http://www.w3.org/1999/xhtml' xmlns:clix='http://bknr.net/clixdoc'>
+  <clix:title>DRAKMA - A Common Lisp HTTP client</clix:title>
+  <clix:short-description>
+    Drakma is a full-featured HTTP client implemented in Common Lisp.
+    It knows how to handle <a href="#chunked">HTTP/1.1 chunking</a>,
+    <a href="#keep-alive">persistent connections</a>, <a
+    href="#re-use">re-usable sockets</a>, <a
+    href="#force-ssl">SSL</a>, <a href="#cont">continuable
+    uploads</a>, <a href="#form-data">file uploads</a>, <a
+    href="#cookie-jar-param">cookies</a>, and more.
+  </clix:short-description>
+
+  <h2>DRAKMA - A Common Lisp HTTP client</h2>
+
+  <blockquote>
+    <clix:chapter name='abstract' title='Abstract'>
+      <p>
+        Drakma is a full-featured HTTP client implemented in Common Lisp.
+        It knows how to handle <a href="#chunked">HTTP/1.1 chunking</a>,
+        <a href="#keep-alive">persistent connections</a>, <a
+        href="#re-use">re-usable sockets</a>, <a
+        href="#force-ssl">SSL</a>, <a href="#cont">continuable
+        uploads</a>, <a href="#form-data">file uploads</a>, <a
+        href="#cookie-jar-param">cookies</a>, and more.
+      </p>
+      <p>
+        The code comes with a <a
+        href="http://www.opensource.org/licenses/bsd-license.php">BSD-style
+        license</a> so you can basically do with it whatever you want.
+      </p>
+      <p>
+        The preferred method to compile and load Drakma is via <a
+        href="http://www.cliki.net/asdf">ASDF</a>.  If you want to
+        avoid downloading and installing all the dependencies
+        manually, give Zach Beane's excellent <a
+        href="http://www.quicklisp.org/">Quicklisp</a> system a try.
+      </p>
+      <p>
+        <font color='red'>Download shortcut:</font> <a href="http://weitz.de/files/drakma.tar.gz">http://weitz.de/files/drakma.tar.gz</a>.
+      </p>
+    </clix:chapter>
+  </blockquote>
+
+  <clix:chapter name='contents' title='Contents'></clix:chapter>
+  <clix:contents></clix:contents>
+    
+  <clix:chapter name='examples' title='Examples'>
+
+    <p>
+      Here is a collection of example uses of Drakma to which
+      demonstrate some of its features.
+    </p>
+
+    <clix:subchapter name='ex-loading' title='Loading Drakma with Quicklisp'>
+      <pre>? (ql:quickload :drakma)
+To load "drakma":
+  Load 1 ASDF system:
+    drakma
+; Loading "drakma"
+
+(:DRAKMA)
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name='ex-logging' title='Log headers to the REPL output stream'>
+
+      In the following examples, the headers exchanged between Drakma
+      and the HTTP server should be shown, for illustration purposes.
+      This can be achieved like so:
+
+      <pre>? (setf *header-stream* *standard-output*)
+#&lt;SYNONYM-STREAM to *TERMINAL-IO* #x3020006AC7DD&gt;
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name='ex-request-redirect' title='Requesting a page with redirection'>
+
+      Request a page.  Note how Drakma automatically follows the 301
+      redirect and how the fourth return value shows the <em>new</em>
+      URI.
+
+<pre>? (drakma:http-request "http://lisp.org/")
+GET / HTTP/1.1
+Host: lisp.org
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+
+HTTP/1.1 307  Temporary Redirect
+Date: Sun, 09 Dec 2012 08:01:56 GMT
+Connection: Close
+Server: AllegroServe/1.2.65
+Transfer-Encoding: chunked
+LOCATION: http://lisp.org/index.html
+
+GET /index.html HTTP/1.1
+Host: lisp.org
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+
+HTTP/1.1 200  OK
+Date: Sun, 09 Dec 2012 08:01:56 GMT
+Connection: Close
+Server: AllegroServe/1.2.65
+Content-Type: text/html
+Content-Length: 459
+LAST-MODIFIED: Wed, 26 Oct 2011 02:26:26 GMT
+
+"&lt;HTML&gt;
+&lt;HEAD&gt;
+  &lt;title&gt;John McCarthy, 1927-2011&lt;/title&gt;
+  &lt;STYLE type=\"text/css\"&gt;
+    BODY {text-align: center}
+  &lt;/STYLE&gt;
+&lt;/HEAD&gt;
+&lt;BODY&gt;
+&lt;h1&gt;John McCarthy&lt;/h1&gt;
+&lt;img src=\"jmccolor.jpg\" alt=\"a picture of John McCarthy, from his website\"/&gt;
+&lt;h3&gt;1927-2011&lt;/h3&gt;
+&lt;br&gt;&lt;br&gt;
+&lt;a href=\"http://www-formal.stanford.edu/jmc/\"&gt;John McCarthy's Home Page&lt;/a&gt;&lt;br&gt;
+&lt;a href=\"http://news.stanford.edu/news/2011/october/john-mccarthy-obit-102511.html\"&gt;Obituary&lt;/a&gt;
+&lt;/BODY&gt;
+&lt;/HTML&gt;
+"
+200
+((:DATE . "Sun, 09 Dec 2012 08:01:56 GMT") (:CONNECTION . "Close") (:SERVER . "AllegroServe/1.2.65") (:CONTENT-TYPE . "text/html") (:CONTENT-LENGTH . "459") (:LAST-MODIFIED . "Wed, 26 Oct 2011 02:26:26 GMT"))
+#&lt;URI http://lisp.org/index.html&gt;
+#&lt;FLEXI-STREAMS:FLEXI-IO-STREAM #x30200155DB1D&gt;
+T
+" OK"
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name='ex-charsets' title='Requesting a page containing non-ASCII characters'>
+      Drakma automatically interprets the 'charset=utf-8' part correctly.
+
+      <pre>? (subseq (drakma:http-request "http://www.cl.cam.ac.uk/~mgk25/ucs/examples/digraphs.txt") 0 298)
+GET /~mgk25/ucs/examples/digraphs.txt HTTP/1.1
+Host: www.cl.cam.ac.uk
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+
+HTTP/1.1 200 OK
+Date: Sun, 09 Dec 2012 08:15:04 GMT
+Server: Apache/2.2.3 (CentOS)
+Last-Modified: Mon, 06 Apr 2009 18:13:43 GMT
+ETag: "17cd62-298-466e6dbcd03c0"
+Accept-Ranges: bytes
+Content-Length: 664
+X-UA-Compatible: IE=edge
+Connection: close
+Content-Type: text/plain; charset=utf-8
+
+"Latin Digraphs and Ligatures in ISO10646-1
+
+A short table of ligatures and digraphs follows. Some of these may not be
+ligatures/digraphs in the technical sense, (for example, æ is a seperate
+letter in English), but visually they behave that way.
+
+AÆE : U+00C6
+aæe : U+00E6
+ſßs : U+00DF
+IĲJ : U+0132"
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name='ex-binary-data' title='Requesting binary data'>
+
+      For non-textual content types, a vector of octets is returned.
+
+      <pre>? (drakma:http-request "http://zappa.com/favicon.ico")
+GET /favicon.ico HTTP/1.1
+Host: zappa.com
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+
+HTTP/1.1 200 OK
+Date: Sun, 09 Dec 2012 08:15:14 GMT
+Server: Apache/2
+Last-Modified: Sun, 01 Apr 2007 15:44:59 GMT
+ETag: "e2803c-b6-42d0efcaf94c0"
+Accept-Ranges: bytes
+Content-Length: 182
+Vary: Accept-Encoding,User-Agent
+Connection: close
+Content-Type: image/x-icon
+
+#(71 73 70 56 57 97 17 0 17 0 179 1 0 150 151 153 255 255 255 37 37 36 112 114 115 201 202 204
+  0 0 0 80 83 84 26 28 26 230 231 231 249 249 249 12 13 14 219 221 222 18 21 22 239 240 241 52
+  52 54 64 66 66 33 249 4 1 0 0 1 0 44 0 0 0 0 17 0 17 0 0 4 99 48 200 73 107 109 54 172 101
+  129 120 196 180 12 12 51 80 64 161 42 3 48 28 170 106 72 141 16 223 120 113 166 121 95 0 14
+  95 239 33 236 41 98 10 129 114 185 188 29 127 25 201 224 73 60 4 8 0 130 22 59 64 52 96 135
+  148 35 96 80 152 159 186 192 64 183 112 0 200 61 65 0 1 192 76 214 185 113 102 241 88 26 90
+  8 81 18 8 94 130 134 22 17 0 59)
+200
+((:DATE . "Sun, 09 Dec 2012 08:15:14 GMT") (:SERVER . "Apache/2")
+ (:LAST-MODIFIED . "Sun, 01 Apr 2007 15:44:59 GMT") (:ETAG . "\"e2803c-b6-42d0efcaf94c0\"")
+ (:ACCEPT-RANGES . "bytes") (:CONTENT-LENGTH . "182") (:VARY . "Accept-Encoding,User-Agent")
+ (:CONNECTION . "close") (:CONTENT-TYPE . "image/x-icon"))
+#&lt;URI http://zappa.com/favicon.ico&gt;
+#&lt;FLEXI-STREAMS:FLEXI-IO-STREAM #x30200154D83D&gt;
+T
+"OK"
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name='ex-chunked-https' title='Chunked transfers and HTTPS'>
+
+      Request a page using the HTTPS protocol.  Also note that the
+      server uses <a name="chunked"
+      href="http://www.rfc.net/rfc2616.html#s3.6.1">chunked transfer
+      encoding</a> for its reply
+
+      <pre>? (ql:quickload :cl-ppcre)
+To load "cl-ppcre":
+  Load 1 ASDF system:
+    cl-ppcre
+; Loading "cl-ppcre"
+
+(:CL-PPCRE)
+? (ppcre:scan-to-strings "(?s)You have.*your data."
+                                       (drakma:http-request "https://www.fortify.net/cgi/ssl_2.pl"))
+GET /cgi/ssl_2.pl HTTP/1.1
+Host: www.fortify.net
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+
+HTTP/1.1 200 OK
+Date: Sun, 09 Dec 2012 08:15:31 GMT
+Server: Apache
+Connection: close
+Transfer-Encoding: chunked
+Content-Type: text/html
+
+"You have connected to this web server using the RC4-SHA encryption cipher
+ with a key length of 128 bits.
+ &lt;p&gt;
+ This is a high-grade encryption connection, regarded by most experts as being suitable
+ for sending or receiving even the most sensitive or valuable information
+ across a network.
+ &lt;p&gt;
+ In a crude analogy, using this cipher is similar to sending or storing your data inside
+ a high quality safe - compared to an export-grade cipher which is similar to using
+ a paper envelope to protect your data."
+#()
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name='ex-fake-ua' title='Faking a user agent header'>
+
+      Some servers adapt their behavior according to the Browser that
+      is used.  Drakma can claim to be, i.e. MS Internet Explorer.
+
+      <pre>? (cl-ppcre:scan-to-strings "&lt;h4&gt;.*" (drakma:http-request "http://whatsmyuseragent.com/" :user-agent :explorer))
+GET / HTTP/1.1
+Host: whatsmyuseragent.com
+User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)
+Accept: */*
+Connection: close
+
+HTTP/1.1 200 OK
+Date: Sun, 09 Dec 2012 08:23:50 GMT
+Server: Apache
+X-Powered-By: PHP/5.2.17
+Connection: close
+Transfer-Encoding: chunked
+Content-Type: text/html
+
+"&lt;h4&gt;Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)&lt;/h4&gt;"
+#()
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name='ex-post-and-cookie' title='Posting data and using cookies'>
+      Drakma can send parameters in a POST request and knows how to
+      deal with <a href="#cookie">cookies</a>.  Note how Drakma sends
+      the cookie back in the second request.
+
+      <pre>? (let ((cookie-jar (make-instance 'drakma:cookie-jar)))
+    (drakma:http-request "http://www.phpsecurepages.com/test/test.php"
+                         :method :post
+                         :parameters '(("entered_login" . "test")
+                                       ("entered_password" . "test"))
+                         :cookie-jar cookie-jar)
+    (drakma:http-request "http://www.phpsecurepages.com/test/test2.php"
+                         :cookie-jar cookie-jar)
+    (drakma:cookie-jar-cookies cookie-jar))
+POST /test/test.php HTTP/1.1
+Host: www.phpsecurepages.com
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 40
+
+HTTP/1.1 200 OK
+Date: Sun, 09 Dec 2012 08:25:13 GMT
+Server:  
+X-Powered-By: PHP/5.2.17
+Set-Cookie: PHPSESSID=vijk3706eojs7n8u5cdpi3ju05; path=/
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Pragma: no-cache
+X-Powered-By: PleskLin
+Content-Length: 4479
+Connection: close
+Content-Type: text/html
+
+GET /test/test2.php HTTP/1.1
+Host: www.phpsecurepages.com
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Cookie: PHPSESSID=vijk3706eojs7n8u5cdpi3ju05
+Connection: close
+
+HTTP/1.1 200 OK
+Date: Sun, 09 Dec 2012 08:25:16 GMT
+Server:  
+X-Powered-By: PHP/5.2.17
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Pragma: no-cache
+X-Powered-By: PleskLin
+Content-Length: 4479
+Connection: close
+Content-Type: text/html
+
+(#&lt;COOKIE PHPSESSID=vijk3706eojs7n8u5cdpi3ju05; path=/; domain=www.phpsecurepages.com&gt;)
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name='ex-reuse-connection' title='Reusing a connection to a server'>
+
+      Drakma can <a name="re-use">use</a> a connection to a server for multiple requests.
+
+      <pre>? (let ((stream (nth-value 4 (drakma:http-request "http://www.lispworks.com/" :close nil))))
+    (nth-value 2 (drakma:http-request "http://www.lispworks.com/success-stories/index.html"
+                                      :stream stream)))
+GET / HTTP/1.1
+Host: www.lispworks.com
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+
+HTTP/1.1 200 OK
+Date: Sun, 09 Dec 2012 08:25:56 GMT
+Server: Apache/2.2.22 (Unix) mod_ssl/2.2.22 OpenSSL/1.0.1c mod_apreq2-20051231/2.6.0 mod_perl/2.0.5 Perl/v5.8.9
+Last-Modified: Tue, 20 Nov 2012 12:27:40 GMT
+ETag: "336280-28eb-4ceec5c1f4700"
+Accept-Ranges: bytes
+Content-Length: 10475
+Content-Type: text/html
+
+GET /success-stories/index.html HTTP/1.1
+Host: www.lispworks.com
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+
+HTTP/1.1 200 OK
+Date: Sun, 09 Dec 2012 08:25:56 GMT
+Server: Apache/2.2.22 (Unix) mod_ssl/2.2.22 OpenSSL/1.0.1c mod_apreq2-20051231/2.6.0 mod_perl/2.0.5 Perl/v5.8.9
+Last-Modified: Tue, 20 Nov 2012 12:28:52 GMT
+ETag: "336386-2940-4ceec6069e900"
+Accept-Ranges: bytes
+Content-Length: 10560
+Connection: close
+Content-Type: text/html
+
+((:DATE . "Sun, 09 Dec 2012 08:25:56 GMT")
+ (:SERVER . "Apache/2.2.22 (Unix) mod_ssl/2.2.22 OpenSSL/1.0.1c mod_apreq2-20051231/2.6.0 mod_perl/2.0.5 Perl/v5.8.9")
+ (:LAST-MODIFIED . "Tue, 20 Nov 2012 12:28:52 GMT") (:ETAG . "\"336386-2940-4ceec6069e900\"") (:ACCEPT-RANGES . "bytes")
+ (:CONTENT-LENGTH . "10560") (:CONNECTION . "close") (:CONTENT-TYPE . "text/html"))
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name='ex-basic-auth' title='Basic Authorization'>
+
+      Drakma supports basic authorization.  In this example, we use a
+      locally running <a
+      href="http://weitz.de/hunchentoot">Hunchentoot</a> server.
+
+      <pre>? (ql:quickload :hunchentoot-test)
+To load "hunchentoot-test":
+  Load 4 ASDF systems:
+    cl-ppcre cl-who drakma hunchentoot
+  Install 1 Quicklisp release:
+    hunchentoot
+; Loading "hunchentoot-test"
+[package cl-who]..................................
+[package trivial-backtrace].......................
+[package rfc2388].................................
+[package md5].....................................
+[package cl-fad]..................................
+[package cl-fad-test].............................
+[package cl-fad-ccl]..............................
+[package url-rewrite].............................
+[package hunchentoot].............................
+..................................................
+[package hunchentoot-test]........................
+[package hunchentoot-test-user]...................
+..................
+(:HUNCHENTOOT-TEST)
+? (hunchentoot:start (make-instance 'hunchentoot:easy-acceptor :port 4242))
+#&lt;EASY-ACCEPTOR (host *, port 4242)&gt;
+? (nth-value 1 (drakma:http-request "http://localhost:4242/hunchentoot/test/authorization.html"))
+GET /hunchentoot/test/authorization.html HTTP/1.1
+Host: localhost:4242
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+
+127.0.0.1 - [2012-12-09 09:27:40] "GET /hunchentoot/test/authorization.html HTTP/1.1" 401 543 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"
+HTTP/1.1 401 Authorization Required
+Content-Length: 543
+Date: Sun, 09 Dec 2012 08:27:40 GMT
+Server: Hunchentoot 1.2.5
+Connection: Close
+Www-Authenticate: Basic realm="Hunchentoot"
+Content-Type: text/html; charset=iso-8859-1
+
+401
+? (nth-value 1 (drakma:http-request "http://localhost:4242/hunchentoot/test/authorization.html"
+                                            :basic-authorization '("nanook" "igloo")))
+GET /hunchentoot/test/authorization.html HTTP/1.1
+Host: localhost:4242
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Authorization: Basic bmFub29rOmlnbG9v
+Accept: */*
+Connection: close
+
+127.0.0.1 nanook [2012-12-09 09:28:15] "GET /hunchentoot/test/authorization.html HTTP/1.1" 200 907 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"
+HTTP/1.1 200 OK
+Content-Length: 907
+Date: Sun, 09 Dec 2012 08:28:15 GMT
+Server: Hunchentoot 1.2.5
+Connection: Close
+Content-Type: text/html; charset=utf-8
+
+200
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name=' title='>
+
+      Drakma can return a stream to the application so that the reply
+      is not completely buffered in memory first.
+
+      <pre>? (let ((stream (drakma:http-request "http://www.quicklisp.org"
+                                     :want-stream t)))
+                   (loop for i below 41
+                         for line = (read-line stream)
+                         when (&gt; i 35)
+                         do (write-line line))
+                   (close stream)
+                   (values))
+GET / HTTP/1.1
+Host: www.quicklisp.org
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+
+HTTP/1.1 200 OK
+Server: nginx/1.1.17
+Date: Sun, 09 Dec 2012 08:29:45 GMT
+Content-Type: text/html
+Content-Length: 1993
+Last-Modified: Wed, 04 Jan 2012 14:42:40 GMT
+Connection: close
+Accept-Ranges: bytes
+
+
+&lt;p&gt;For the latest Quicklisp news,
+see &lt;a href="http://twitter.com/quicklisp"&gt;@quicklisp&lt;/a&gt; on twitter
+or &lt;a href="http://blog.quicklisp.org/"&gt;the Quicklisp blog&lt;/a&gt;.
+
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name='ex-assemble-request-content' title='Piecemeal assembly of request contents'>
+
+      Request contents can be assembled from various source, and
+      chunked encoding can be used by request bodies.  Many servers do
+      not support chunked encoding for request bodies, though.
+
+      <pre>? (let ((temp-file (ensure-directories-exist #p"/tmp/quux.txt"))
+        (continuation (drakma:http-request "http://localhost:4242/hunchentoot/test/parameter_latin1_post.html"
+                                           :method :post
+                                           :content :continuation)))
+    (funcall continuation "foo=" t)
+    (funcall continuation (list (char-code #\z) (char-code #\a)) t)
+    (funcall continuation (lambda (stream)
+                            (write-char #\p stream)) t)
+    (with-open-file (out temp-file
+                         :direction :output
+                         :if-does-not-exist :create
+                         :if-exists :supersede)
+      (write-string "p" out))
+    (funcall continuation temp-file t)
+    (ppcre:scan-to-strings "zappzerapp" (funcall continuation "zerapp")))
+POST /hunchentoot/test/parameter_latin1_post.html HTTP/1.1
+Host: localhost:4242
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+Content-Type: application/x-www-form-urlencoded
+Transfer-Encoding: chunked
+
+127.0.0.1 - [2012-12-09 10:06:44] "POST /hunchentoot/test/parameter_latin1_post.html HTTP/1.1" 200 1312 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"
+HTTP/1.1 200 OK
+Content-Length: 1312
+Date: Sun, 09 Dec 2012 09:06:44 GMT
+Server: Hunchentoot 1.2.5
+Connection: Close
+Last-Modified: Sun, 09 Dec 2012 09:06:44 GMT
+Pragma: no-cache
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+Expires: Mon, 26 Jul 1997 05:00:00 GMT
+Content-Type: text/html; charset=ISO-8859-1
+
+"zappzerapp"
+#()
+</pre>
+    </clix:subchapter>
+    <clix:subchapter name='ex-partial-transfers' title='Partial transfers'>
+
+      <a href="http://www.rfc.net/rfc2616.html#s14.35">Partial
+      transfers</a> of resources are possible.
+
+      <pre>? (ppcre:regex-replace-all
+   "&lt;.*?&gt;"
+   (format nil "~A~%~A"
+           (drakma:http-request "http://members.shaw.ca/mitb/hunchentoot.html"
+                                :additional-headers '(("Range" . "bytes=998-1034")))
+           (drakma:http-request "http://members.shaw.ca/mitb/hunchentoot.html"
+                                :additional-headers '(("Range" . "bytes=1213-1249"))))
+   "")
+GET /mitb/hunchentoot.html HTTP/1.1
+Host: members.shaw.ca
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+Range: bytes=998-1034
+
+HTTP/1.1 206 Partial Content
+Date: Sun, 09 Dec 2012 09:16:16 GMT
+Server: Apache/2.2.20 (Unix) mod_ldap_userdir/1.1.17
+Last-Modified: Wed, 14 Mar 2012 23:22:04 GMT
+ETag: "3b7eed-3238-4bb3c3e453f00"
+Accept-Ranges: bytes
+Content-Length: 37
+Content-Range: bytes 998-1034/12856
+Content-Type: text/html
+Connection: close
+
+GET /mitb/hunchentoot.html HTTP/1.1
+Host: members.shaw.ca
+User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+Accept: */*
+Connection: close
+Range: bytes=1213-1249
+
+HTTP/1.1 206 Partial Content
+Date: Sun, 09 Dec 2012 09:16:16 GMT
+Server: Apache/2.2.20 (Unix) mod_ldap_userdir/1.1.17
+Last-Modified: Wed, 14 Mar 2012 23:22:04 GMT
+ETag: "3b7eed-3238-4bb3c3e453f00"
+Accept-Ranges: bytes
+Content-Length: 37
+Content-Range: bytes 1213-1249/12856
+Content-Type: text/html
+
+"DRAKMA (Queen of Cosmic Greed)
+HUNCHENTOOT (The Giant Spider)"
+T
+</pre>
+    </clix:subchapter>
+
+  </clix:chapter>
+</clix:documentation>
+<!--
+    <br>&nbsp;<br><h3><a class=none name="download">Download and installation</a></h3>
+
+Drakma together with this documentation can be downloaded
+from <a href="http://weitz.de/files/drakma.tar.gz">http://weitz.de/files/drakma.tar.gz</a>.
+The current version is 1.2.9.  Drakma and all its dependencies can be
+installed via <a href="http://www.quicklisp.org/">quicklisp</a>.  It
+depends on the open source
+libraries <a href="http://www.cliki.net/cl-base64">CL-BASE64</a>, <a href="http://www.cliki.net/Puri">Puri</a>, <a href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a>,
+<a href="http://weitz.de/cl-ppcre/">CL-PPCRE</a>,
+and <a href="http://weitz.de/chunga/">Chunga</a>.  If
+you're <em>not</em> using LispWorks, you'll also
+need <a href="http://www.cliki.net/usocket">usocket</a> and (except
+for <a href="http://franz.com/products/allegrocl/">AllegroCL</a>) <a href="http://common-lisp.net/project/cl-plus-ssl/">CL+SSL</a>.
+Try to use the <b>newest</b> versions of all these libraries.  There's
+a port of Drakma
+for <a href="http://www.gentoo.org/proj/en/common-lisp/index.xml">Gentoo
+Linux</a> thanks to Matthew Kennedy.
+<p>
+For <a
+href="http://en.wikipedia.org/wiki/Secure_Sockets_Layer">SSL</a>, you
+will need to
+have <a
+href="http://www.lispworks.com/documentation/lw50/LWUG/html/lwuser-344.htm">the
+corresponding C libraries</a> as well.  You'll usually have them
+already unless you're on Windows. If you don't have required C libraries you can add <b>:drakma-no-ssl</b>
+to <b>*features*</b> to avoid using CL+SSL for https support.
+<p>
+The current development version of Drakma can be found
+at <a href="https://github.com/edicl/drakma">https://github.com/edicl/drakma</a>.
+This is the one to send <a href="#mail">patches</a> against.  Use at
+your own risk.
+<p>
+Lu&iacute;s Oliveira maintains an
+unofficial <a href="http://darcs.net/">darcs</a> repository of Drakma
+at <a href="http://common-lisp.net/~loliveira/ediware/">http://common-lisp.net/~loliveira/ediware/</a>.
+<p>
+An
+unofficial <a href="http://www.selenic.com/mercurial/wiki/">Mercurial</a>
+repository of older versions is available
+at <a href="http://arcanes.fr.eu.org/~pierre/2007/02/weitz/">http://arcanes.fr.eu.org/~pierre/2007/02/weitz/</a>
+thanks to Pierre Thierry.
+
+<br>&nbsp;<br><h3><a name="mail" class=none>Support and mailing lists</a></h3>
+
+For questions, bug reports, feature requests, improvements, or patches
+please use the <a
+href="http://common-lisp.net/mailman/listinfo/drakma-devel">drakma-devel
+mailing list</a>. If you want to be notified about future releases
+subscribe to the <a
+href="http://common-lisp.net/mailman/listinfo/drakma-announce">drakma-announce
+mailing list</a>. These mailing lists were made available thanks to
+the services of <a href="http://common-lisp.net/">common-lisp.net</a>.
+<p>
+If you want to send patches, please <a href="http://weitz.de/patches.html">read this first</a>.
+
+
+<br>&nbsp;<br><h3><a class=none name="dictionary">The Drakma dictionary</a></h3>
+
+<h4><a name="request" class=none>The request</a></h4>
+
+The <a href="#http-request"><code>HTTP-REQUEST</code></a> function is
+the heart of Drakma.  It is used to send requests to web servers and
+will either return the message body of the server's reply or (if the
+user so wishes) a stream one can read from.  The wealth of keyword
+parameters might look a bit intimidating first, but you will rarely
+need more than two or three of them - the default behaviour of Drakma
+is (hopefully) designed to do The Right Thing[TM] in most cases.
+<p>
+You can use
+the <a href="#*header-stream*"><code>*HEADER-STREAM*</code></a>
+variable to debug requests handled by Drakma in a way similar
+to <a href="http://livehttpheaders.mozdev.org/">LiveHTTPHeaders</a>.
+
+<p>
+  <br>
+  <table border=0>
+    <tr>
+      <td colspan=4 valign=top>[Function]</td>
+    </tr>
+    <tr>
+      <td valign=top style="white-space:nowrap"><a class=none name='http-request'><b>http-request</b></a>&nbsp;</td>
+      <td valign=top><i><a class=none href="#uri">uri</a>&nbsp;</i></td>
+      <td valign=top><tt>&amp;key</tt>&nbsp;</td>
+      <td>
+        <i>
+          <a class=none href="#protocol">protocol</a>
+          <a class=none href="#method">method</a>
+          <a class=none href="#force-ssl">force-ssl</a>
+          <a class=none href="#certificate">certificate</a>
+          <a class=none href="#key">key</a>
+          <a class=none href="#certificate-password">certificate-password</a>
+          <a class=none href="#verify">verify</a>
+          <a class=none href="#max-depth">max-depth</a>
+          <a class=none href="#ca-file">ca-file</a>
+          <a class=none href="#ca-directory">ca-directory</a>
+          <a class=none href="#parameters">parameters</a>
+          <a class=none href="#form-data">form-data</a>
+          <a class=none href="#content">content</a>
+          <a class=none href="#content-length">content-length</a>
+          <a class=none href="#content-type">content-type</a>
+          <a class=none href="#cookie-jar-param">cookie-jar</a>
+          <a class=none href="#basic-authorization">basic-authorization</a>
+          <a class=none href="#user-agent">user-agent</a>
+          <a class=none href="#accept">accept</a>
+          <a class=none href="#range">range</a>
+          <a class=none href="#proxy">proxy</a>
+          <a class=none href="#proxy-basic-authorization">proxy-basic-authorization</a>
+          <a class=none href="#real-host">real-host</a>
+          <a class=none href="#additional-headers">additional-headers</a>
+          <a class=none href="#redirect">redirect</a>
+          <a class=none href="#redirect-methods">redirect-methods</a>
+          <a class=none href="#auto-referer">auto-referer</a>
+          <a class=none href="#keep-alive">keep-alive</a>
+          <a class=none href="#close">close</a>
+          <a class=none href="#external-format-out">external-format-out</a>
+          <a class=none href="#external-format-in">external-format-in</a>
+          <a class=none href="#force-binary">force-binary</a>
+          <a class=none href="#want-stream">want-stream</a>
+          <a class=none href="#stream">stream</a>
+          <a class=none href="#preserve-uri">preserve-uri</a>
+          <a class=none href="#connection-timeout">connection-timeout</a>
+          <a class=none href="#read-timeout">read-timeout</a>
+          <a class=none href="#write-timeout">write-timeout</a>
+          <a class=none href="#deadline">deadline</a></i>
+      </td>
+    </tr>
+    <tr>
+      <td colspan=2></td>
+      <td colspan=2 valign=top> =&gt; <i>body-or-stream, status-code, headers, uri, stream, <a class=none href="#must-close">must-close</a>, reason-phrase</i></td>
+    </tr>
+  </table>
+<blockquote><br>
+
+Sends an <a href="http://www.rfc.net/rfc2616.html">HTTP</a> request to a web server and returns its reply.
+<a class=none name="uri"><code><i>uri</i></code></a> is where the
+request is sent to, and it is either a string denoting
+a <a
+href="http://en.wikipedia.org/wiki/Uniform_Resource_Identifier">uniform
+resource identifier</a> or
+a <a href="http://www.cliki.net/Puri"><code>PURI:URI</code></a>
+object.  The scheme of <code><i>uri</i></code> must be 'http' or
+'https'.  The function returns <em>seven</em> values - the body of the
+reply (but see below), the status code as an integer,
+an <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#alist">alist</a>
+of the headers sent by the server where for each element
+the <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_c.htm#car">car</a>
+(the name of the header) is a keyword and
+the <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_c.htm#cdr">cdr</a>
+(the value of the header) is a string, the URI the reply comes from
+(which might be different from the URI the request was sent to in case
+of <a href="#redirect">redirects</a>), the stream the reply was read
+from,
+a <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_g.htm#generalized_boolean">generalized
+boolean</a> which denotes whether the stream should be closed (and
+which you can usually ignore), and finally the reason phrase from the
+status line as a string.
+<p>
+<a class=none name="protocol"><code><i>protocol</i></code></a> is the HTTP protocol which is going to be used in the
+<a href="http://www.rfc.net/rfc2616.html#s5.1">request line</a>, it must be one of the keywords <code>:HTTP/1.0</code> or
+<code>:HTTP/1.1</code> (the default).  <a class=none
+name="method"><code><i>method</i></code></a> is the method used in the
+request line,
+a <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/t_kwd.htm">keyword</a>
+(like <code>:GET</code> or <code>:HEAD</code>) denoting a
+valid <a href="http://rfc.net/rfc2616.html">HTTP/1.1</a>
+or <a href="http://www.webdav.org/">WebDAV</a> request method or :REPORT, as described in the Versioning Extensions to WebDAV.
+Additionally, you can also use the pseudo method <code>:OPTIONS*</code> which is like
+<code>:OPTIONS</code> but means that an "<code>OPTIONS&nbsp;*</code>"
+request line will be sent, i.e. the URI's path and query parts will be
+ignored.
+<p>
+If <a class=none
+name="force-ssl"><code><i>force-ssl</i></code></a> is true,
+<a href="http://en.wikipedia.org/wiki/Secure_Sockets_Layer">SSL</a>
+will be <a href="http://www.lispworks.com/documentation/lw50/LWRM/html/lwref-24.htm">attached</a> to the socket stream which connects Drakma with the
+web server.  Usually, you don't have to provide this argument, as SSL
+will be attached anyway if the scheme of <code><i>uri</i></code> is 'https'.
+<p>
+<a class=none name="certificate"><code><i>certificate</i></code></a>
+is the file name of the PEM encoded client certificate to present to
+the server when making a SSL connection.  <a class=none
+name="key"><code><i>key</i></code></a> specifies the file name
+of the PEM encoded private key matching the certificate.
+<a class=none
+name="certificate-password"><code><i>certificate-password</i></code></a>
+specifies the pass phrase to use to decrypt the private key.
+The <i>certificate</i>, <i>key</i> and <i>certificate-password</i>
+parameters are ignored for non-SSL connections.
+<p>
+<a class=none name="verify"><code><i>verify</i></code></a> can be
+specified to force verification of the certificate that is presented
+by the server in an SSL connection.  It can be specified either
+as <i>nil</i> if no check should be performed, <i>:optional</i> to
+verify the server's certificate if it presented one
+or <i>:required</i> to verify the server's certificate and fail if an
+invalid or no certificate was presented.
+<p>
+<a class=none name="max-depth"><code><i>max-depth</i></code></a> can
+be specified to change the maximum allowed certificate signing depth
+that is accepted.  The default is 10.
+<p>
+<a class=none name="ca-file"><code><i>ca-file</i></code></a>
+and <a class=none
+name="ca-directory"><code><i>ca-directory</i></code></a> can be
+specified to set the certificate authority bundle file or directory to
+use for certificate validation.
+<p>
+The <i>certificate</i>, <i>key</i>, <i>certificate-password</i>,
+<i>verify</i>, <i>max-depth</i>, <i>ca-file</i>
+and <i>ca-directory</i> parameters are ignored for non-SSL
+requests.
+<p>
+<a class=none name="parameters"><code><i>parameters</i></code></a> is
+an <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#alist">alist</a>
+of name/value pairs
+(the <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_c.htm#car">car</a>
+and
+the <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_c.htm#cdr">cdr</a>
+each being a string) which denotes the parameters which are added to
+the query part of the URI or (in the case of a POST request) comprise
+the request body.  (But
+see <a href="#content"><code><i>content</i></code></a> below.)
+The values can also be
+<code>NIL</code> in which case only the name (without an equal sign) is used in
+the query string.  The
+name/value pairs
+are <a
+href="http://www.blooberry.com/indexdot/html/topics/urlencoding.htm">URL-encoded</a>
+using the external format <a class=none
+name="external-format-out"><code><i>external-format-out</i></code></a>
+before they are sent to the server, <em>unless</em> <a class=none
+name="form-data"><code><i>form-data</i></code></a> is true in which
+case the POST request body is sent
+as <a
+href="http://www.ietf.org/rfc/rfc2388.txt"><code>multipart/form-data</code></a>
+using
+<code><i>external-format-out</i></code>.  The values of
+the <code><i>parameters</i></code> alist can also be pathnames, unary
+functions, open binary input streams, or lists where the first element
+is of one of the former types.  These values denote files which should
+be sent as part of the request body.  If such file designators are
+present in <code><i>parameters</i></code>, the content type of the
+request is <em>always</em> <code>multipart/form-data</code>.  If the
+value denoting a file is a list, the part of the list behind the first
+element is treated as
+a <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_p.htm#plist">plist</a>
+which can be used to optionally specify a content type (the default is
+"application/octet-stream") and/or a filename (the default is the
+result of
+applying <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/f_namest.htm"><code>FILE-NAMESTRING</code></a>
+to the pathname) for the file.  So, for example, a full file upload
+request could look like this:
+<pre>
+(http-request "http://www.whatever.com/file_upload/"
+              :method :post
+              <font color=orange>;; the following line is only needed if the receiving server doesn't accept
+              ;; chunked transfer encoding (like for example Apache 1.x)</font>
+              <a class=noborder href="#content-length2">:content-length</a> t
+              :parameters '(("file1" #p"/tmp/top_secret_stuff.doc" :content-type "application/msword" :filename "upload.doc")
+                            ("file2" . #p"/tmp/portrait.jpg")
+                            ("lname" . "Duck") ("fname" . "Donald")))
+</pre>
+<p>
+<code><i>external-format-out</i></code> (the default is the value of <a href="#*drakma-default-external-format*"><code>*DRAKMA-DEFAULT-EXTERNAL-FORMAT*</code></a>) must be the name of a <a href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a> <a href="http://weitz.de/flexi-streams/#external-formats">external
+format</a>.
+<p><a class=none name="content"><code><i>content</i></code></a>, if not <code>NIL</code>, is
+used as the request body - <code><i>parameters</i></code> is ignored
+in this case.  <code><i>content</i></code> can be a string, a
+sequence of octets, a pathname, an open binary input stream, or a
+<a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_f.htm">function
+designator</a>.  If <code><i>content</i></code> is a sequence, it will
+be directly sent to the server (using <code><i>external-format-out</i></code> in the case of strings).  If <code><i>content</i></code> is a
+pathname, the binary contents of the corresponding file will be sent
+to the server.  If <code><i>content</i></code> is a stream, everything
+that can be read from the stream
+until <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/e_end_of.htm">EOF</a>
+will be sent to the server.  If <code><i>content</i></code> is a
+function designator, the corresponding function will be called with
+one argument, the stream to the server, to which it should send data.
+<p>
+Finally, <code><i>content</i></code> can also be the
+keyword <code>:CONTINUATION</code> in which
+case <a href="#http-request"><code>HTTP-REQUEST</code></a> returns
+only one value - a "continuation" function.  This function has one
+required argument and one optional argument.  The first argument will
+be interpreted like <code><i>content</i></code> above (but it cannot
+be a keyword), i.e. it will be sent to the server according to its
+type.  If the second argument is true, the continuation function can
+be called again to send more content, if it is <code>NIL</code>, the
+continuation function returns
+what <a href="#http-request"><code>HTTP-REQUEST</code></a> would have
+returned.  See <a href="#cont">above</a> for an
+example on how to use a continuation function and different types of
+content.
+<p>
+If <code><i>content</i></code> is a sequence, Drakma will
+use <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/f_length.htm"><code>LENGTH</code></a>
+to determine its length and will use the result for the
+'Content-Length' header sent to the server.  You can overwrite this
+with the <a class=none
+name="content-length"><code><i>content-length</i></code></a> parameter
+(a non-negative integer) which you can also use for the cases where
+Drakma can't or won't determine the content length itself.  You can
+also explicitly provide a <code><i>content-length</i></code> argument
+of <code>NIL</code> which will imply that no 'Content-Length' header
+will be sent even if Drakma could compute the value.  If no
+'Content-Length' header is sent, Drakma will
+use <a href="http://weitz.de/chunga/">chunked encoding</a> to send the
+content body.  Note that this will not work with some older web
+servers.
+<p>
+<a class=none name="content-length2">Providing
+a</a> <a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_t.htm#true">true</a>
+CONTENT-LENGTH argument which is not a non-negative integer means that
+Drakma <em>must</em> build the request body in RAM and compute the
+content length even if it would have otherwise used chunked encoding,
+for example in the case of file uploads.
+<p>
+<a class=none name="content-type"><code><i>content-type</i></code></a> is the
+corresponding 'Content-Type' header to be sent and will be ignored
+unless <code><i>content</i></code> is provided as well.
+<p>
+Note that a
+query already contained in <code><i>uri</i></code> will always be sent
+with the request line anyway in addition to other parameters sent by
+Drakma.
+<p>
+<a class=none name="cookie-jar-param"><code><i>cookie-jar</i></code></a> is a <a href="#cookie-jar">cookie
+jar</a> containing cookies which will potentially be sent to the
+server (if the domain matches, if they haven't expired, etc.) - this
+cookie jar will be modified according to the 'Set-Cookie' header(s)
+sent back by the server.
+<p>
+<a class=none
+name="basic-authorization"><code><i>basic-authorization</i></code></a>,
+if not <code>NIL</code>, should be a list of two strings (username and
+password) which will be sent to the server for basic authorization.
+If you want to use non-ASCII characters here, look at Christian
+Haselbach's <a href="http://mr-co.de/projects/cl-rfc2047/">CL-RFC2047</a>
+library.
+See <a href="http://common-lisp.net/pipermail/tbnl-devel/2008-May/001932.html">here</a>
+for a (server-side) code example.
+<p>
+<a class=none name="user-agent"><code><i>user-agent</i></code></a>, if
+not <code>NIL</code>, denotes which 'User-Agent' header will be sent
+with the request.  It can be one of the keywords <code>:DRAKMA</code>
+(the
+default), <code>:FIREFOX</code>, <code>:EXPLORER</code>, <code>:OPERA</code>,
+or
+<code>:SAFARI</code> which denote the current version of Drakma or, in
+the latter four cases, a fixed string corresponding to a more or less
+recent (as of August 2006) version of the corresponding browser.  Or
+it can be a string which is used
+directly.  <a class=none name="accept"><code><i>accept</i></code></a>, if not <code>NIL</code>, is the
+'Accept' header sent - the default is <code>"*/*"</code>.
+<a class=none name="range"><code><i>range</i></code></a> optionally
+specifies a subrange of the resource to be requested.  It must be
+specified as a list of two integers which indicate the start and
+(inclusive) end offset of the requested range, in bytes (i.e. octets).
+<p>
+If <a class=none name="proxy"><code><i>proxy</i></code></a> is not <code>NIL</code>, it should be a
+string denoting
+a <a href="http://en.wikipedia.org/wiki/Proxy_server">proxy server</a>
+through which the request should be sent.  Or it can be a list of two
+values - a string denoting the proxy server and an integer denoting
+the port to use (which will default to 80 otherwise).
+<a class=none name="proxy-basic-authorization"><code><i>proxy-basic-authorization</i></code></a> is used like <code><i>basic-authorization</i></code>, but for
+the proxy, and only if <code><i>proxy</i></code> is true.
+<p>
+If <a class=none name="real-host"><code><i>real-host</i></code></a> is
+not <code>NIL</code>, request is sent to the denoted host instead of
+the URI host.  When specified, <code><i>real-host</i></code>
+supersedes <code><i>proxy</i></code>.
+<p>
+<a class=none
+name="additional-headers"><code><i>additional-headers</i></code></a>
+is a
+name/value <a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#alist">alist</a>
+of additional HTTP headers which should be sent with the request.
+Unlike in <code><i>parameters</i></code>, the cdrs can not only be
+strings but also designators for unary functions (which should in turn
+return a string) in which case the function is called each time the
+header is written.
+<p>
+If <a name="redirect" class=none><code><i>redirect</i></code></a> is
+not <code>NIL</code>, it must be a non-negative integer
+or <code>T</code>.  If <code><i>redirect</i></code> is true, Drakma
+will follow redirects (return codes 301, 302, 303, or 307)
+unless <code><i>redirect</i></code> is <code>0</code>.
+If <code><i>redirect</i></code> is an integer, it will be decreased
+by&nbsp;<code>1</code> with each redirect.
+Furthermore, if <a name="auto-referer"><code><i>auto-referer</i></code></a> is true when following redirects,
+Drakma will populate the 'Referer' (sic!) header with the URI that
+triggered the redirection, overwriting an existing 'Referer'
+header (in <a href="#additional-headers"><code><i>additional-headers</i></code></a>) if necessary.
+<p>
+If <a name="keep-alive" class=none><code><i>keep-alive</i></code></a> is <code>T</code>, the server will
+be asked to keep the connection alive, i.e. not to close it after the
+reply has been sent.  (Note that
+this <a href="http://www.rfc.net/rfc2616.html#s8.1">not necessary</a>
+if both the client and the server use HTTP 1.1.)
+If <a class=none name="close"><code><i>close</i></code></a> is <code>T</code>, the server is
+explicitly asked to close the connection after the reply has been
+sent.  <code><i>keep-alive</i></code> and <code><i>close</i></code>
+are obviously mutually
+exclusive.  The default for <code><i>close</i></code> is <code>T</code>, the default for <code><i>keep-alive</i></code> is <code>NIL</code>.
+<p>
+<a href="#http-request"><code>HTTP-REQUEST</code></a> will always
+<a class=none name="close-stream">close the stream</a> to the server before it returns unless
+<code><i>want-stream</i></code> is true or if the headers exchanged
+between Drakma and the server determine that the connection will be
+kept alive - for example if both client and server used the
+HTTP&nbsp;1.1 protocol and no
+explicit <code>"Connection:&nbsp;close"</code> header was sent.  In
+these cases <em>you</em> will have to close the stream manually.
+<p>
+If the message body sent by the server has a
+text <a href="http://www.rfc.net/rfc2616.html#s14.17">content
+type</a>, Drakma will try to return it as a Lisp string.
+It'll first check if the 'Content-Type' header denotes an encoding
+(charset) to be used, or otherwise it will use the <a class=none
+name="external-format-in"><code><i>external-format-in</i></code></a>
+(the default is the value
+of <a href="#*drakma-default-external-format*"><code>*DRAKMA-DEFAULT-EXTERNAL-FORMAT*</code></a>)
+argument.  The body is decoded
+using <a href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a>.  If
+FLEXI-STREAMS doesn't know the external format, the body is returned
+as an array of octets.  If the message body doesn't have a text
+content type or if
+<a class=none name="force-binary"><code><i>force-binary</i></code></a>
+is true, the body is always returned as an array of octets.  (But
+see <a href="#*text-content-types*"><code>*TEXT-CONTENT-TYPES*</code></a>
+and <a href="#*body-format-function*"><code>*BODY-FORMAT-FUNCTION*</code></a>.)
+If the body is empty, <code>NIL</code> will be returned.
+<p>
+If <a class=none
+name="want-stream"><code><i>want-stream</i></code></a> is true, the
+message body is <em>not</em> read and instead the (open) socket stream
+is returned as the first return value.  If the sixth return value
+(<a class=none name="must-close"><code><i>must-close</i></code></a>)
+of <a href="#http-request"><code>HTTP-REQUEST</code></a> is true,
+Drakma deduced from the reply headers that the server will close the
+stream on its side, so you can't re-use it - you'll have to close it
+instead.  Of course, no matter what the sixth return value is, it's
+alway your responsibility to <a href="#close-stream">close the stream</a> once you're done with
+it.  The
+stream returned is a <a href="http://weitz.de/flexi-streams/">flexi
+stream</a> with a <a href="http://weitz.de/chunga/">chunked stream</a>
+as its underlying stream.
+<p>
+Drakma will usually
+create <a
+href="http://www.lispworks.com/documentation/lw50/LWRM/html/lwref-35.htm">a
+new socket connection</a> for each HTTP request.  However, you can use
+the <a class=none name="stream"><code><i>stream</i></code></a> argument to provide an open socket stream which should be
+re-used instead.  <code><i>stream</i></code> <em>must</em> be a stream returned by a previous invocation of
+<a href="#http-request"><code>HTTP-REQUEST</code></a> where the sixth return value wasn't true.  Obviously, it
+must also be connected to the correct server and at the right position
+(i.e. the message body, if any, must have been read).  Drakma will
+<em>never</em> attach SSL to a stream provided as the <code><i>stream</i></code> argument.
+<p>
+If <a class=none name="preserve-uri"><code>preserve-uri</code></a> is
+not <code>NIL</code>, the given URI will not be processed. This means
+that the URI will be sent as-is to the remote server and it is the
+responsibility of the client to make sure that all parameters are
+encoded properly. Note that if this parameter is given, and the
+request is not a <code>POST</code> with a content-type
+of <code>multipart/form-data</code>, <code>parameters</code> will not
+be used.
+<p>
+<a class=none name="connection-timeout"><code><i>connection-timeout</i></code></a> is the time (in seconds) Drakma
+will wait until it considers an attempt to connect to a server as a
+failure.  <a class=none name="read-timeout"><code><i>read-timeout</i></code></a>
+and <a class=none name="write-timeout"><code><i>write-timeout</i></code></a> are the read and write timeouts
+(in seconds) for the socket stream to the server.  All three timeout
+arguments can also be <code>NIL</code> (meaning no timeout), and they
+don't apply if an existing stream is re-used.  All timeout keyword
+arguments are only available for
+LispWorks, <code><i>write-timeout</i></code> is only available for
+LispWorks&nbsp;5.0 or higher.
+<p>
+<a class=none name="deadline"><code><i>deadline</i></code></a>, a time
+in the future, specifies the time until which the request should be
+finished.  The deadline is specified
+in <a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_i.htm#internal_time_unit">internal
+time units</a>.  If the server fails to respond until that time, a
+<a href="http://ccl.clozure.com/manual/chapter9.1.html"><code>COMMUNICATION-DEADLINE-EXPIRED</code></a>
+condition is signalled.  DEADLINE is only available
+on <a href="http://www.clozure.com/clozurecl.html">CCL&nbsp;1.2</a>
+and later.
+
+</blockquote>
+
+
+
+
+
+<p><br>[Special variable]<br><a class=none name='*drakma-default-external-format*'><b>*drakma-default-external-format*</b></a>
+<blockquote><br>
+
+The default value for the two external format keyword arguments of
+<a href="#http-request"><code>HTTP-REQUEST</code></a>.  The value of
+this variable will be interpreted
+by <a href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a>.  The
+initial value is the keyword <code>:LATIN-1</code>.  (Note that Drakma
+binds <a
+href="http://weitz.de/flexi-streams/#*default-eol-style*"><code>*DEFAULT-EOL-STYLE*</code></a>
+to <code>:LF</code>.)
+
+</blockquote>
+
+
+
+
+
+
+<p><br>[Special variable]<br><a class=none name='*text-content-types*'><b>*text-content-types*</b></a>
+<blockquote><br>
+
+A list of conses which are used by the default value of <a href="#*body-format-function*"><code>*BODY-FORMAT-FUNCTION*</code></a> to decide
+whether a 'Content-Type' header denotes text content.  The car and cdr
+of each cons should each be a string or <code>NIL</code>.  A content type matches
+one of these entries (and thus denotes text) if the type part is
+<a href="http://www.lispworks.com/documentation/HyperSpec/Body/f_stgeq_.htm"><code>STRING-EQUAL</code></a>
+to the car or if the car is <code>NIL</code> and if the subtype part
+is <a href="http://www.lispworks.com/documentation/HyperSpec/Body/f_stgeq_.htm"><code>STRING-EQUAL</code></a>
+to the cdr or if the cdr is <code>NIL</code>.
+<p>
+The initial value of this variable is the list
+<pre>
+(("text" . nil))
+</pre>
+which means that every content type that starts with "text/" is
+regarded as text, no matter what the subtype is.
+
+</blockquote>
+
+
+
+
+
+<p><br>[Special variable]<br><a class=none name='*body-format-function*'><b>*body-format-function*</b></a>
+<blockquote><br>
+
+A function which determines whether the content body returned by the
+server is text and should be treated as such or not.  The function is
+called after the request <a href="#headers">headers</a> have been read
+and it must accept two arguments, <code><i>headers</i></code>
+and <code><i>external-format-in</i></code>, where <code><i>headers</i></code> is like the
+third return value of <a href="#http-request"><code>HTTP-REQUEST</code></a> while <code><i>external-format-in</i></code> is the
+<a href="#http-request"><code>HTTP-REQUEST</code></a> argument of the
+same name.  It should return <code>NIL</code> if the body should be
+regarded as binary content, or
+a <a href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a> external
+format (which will be used to read the body) otherwise.
+<p>
+This function will only be called if
+the <a href="#force-binary"><code><i>force-binary</i></code></a>
+argument to <a href="#http-request"><code>HTTP-REQUEST</code></a> is <code>NIL</code>.
+<p>
+The initial value of this variable is a function which uses
+<a href="#*text-content-types*"><code>*TEXT-CONTENT-TYPES*</code></a>
+to determine whether the body is text and then proceeds as described
+in the <a href="#http-request"><code>HTTP-REQUEST</code></a>
+documentation entry.
+
+</blockquote>
+
+
+
+
+
+<p><br>[Special variable]<br><a class=none name='*header-stream*'><b>*header-stream*</b></a>
+<blockquote><br>
+
+If this variable is not <code>NIL</code>, it should be bound to a
+stream to which incoming and outgoing headers will be written for
+debugging purposes.
+
+</blockquote>
+
+
+
+<h4><a name="cookies" class=none>Cookies</a></h4>
+
+<a href="#http-request"><code>HTTP-REQUEST</code></a> can deal
+with <a href="http://en.wikipedia.org/wiki/HTTP_cookie">cookies</a> if
+it gets a <a href="#cookie-jar"><em>cookie jar</em></a>, a collection
+of <a href="#cookie"><code>COOKIE</code></a> objects, as
+its <a href="#cookie-jar-param"><code><i>cookie-jar</i></code></a> argument.  Cookies sent by the web
+server will be added to the cookie jar (or updated) if appropriate and
+cookies already in the cookie jar will be sent to the server together
+with the request.
+<p>
+Drakma will <em>never</em> remove cookies from a cookie jar
+automatically - you have to do it manually
+using <a
+href="#delete-old-cookies"><code>DELETE-OLD-COOKIES</code></a>.
+
+
+
+<p><br>[Standard class]<br><a class=none name='cookie'><b>cookie</b></a>
+<blockquote><br>
+
+Elements of this class
+represent <a href="http://en.wikipedia.org/wiki/HTTP_cookie">HTTP
+cookies</a>.  If you need to create your own cookies, you should
+use <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_ins.htm"><code>MAKE-INSTANCE</code></a>
+with the
+initargs <code>:NAME</code>, <code>:DOMAIN</code>, <code>:VALUE</code>, <code>:PATH</code>, <code>:EXPIRES</code>,
+<code>:SECUREP</code>, and <code>:HTTP-ONLY-P</code> all of which are
+optional except for the first two.  The meaning of these initargs
+and <a href="#cookie-name">the corresponding accessors</a> should be
+pretty clear if one looks at
+the <a href="http://wp.netscape.com/newsref/std/cookie_spec.html">original
+cookie specification</a> (and
+at <a href="http://msdn2.microsoft.com/en-us/library/ms533046.aspx">this
+page</a> for the <code>HttpOnly</code> extension).
+
+<pre>
+<font color=red>DRAKMA-USER 18 &gt;</font> (make-instance 'cookie :name "Foo" 
+                                        :value "Bar"
+                                        :expires (+ (get-universal-time) 3600)
+                                        :domain ".weitz.de")
+#&lt;COOKIE Foo=Bar; expires=Sat, 26-08-2006 23:14:27 GMT; path=/; domain=.weitz.de&gt;
+</pre>
+
+</blockquote>
+
+
+
+
+<p><br>[Specialized accessors]<br><a name="cookie-name" class=none><b>cookie-name</b> <i>(cookie cookie)</i> =&gt; <i>name</i></a>
+<br><a class=none><tt>(setf (</tt><b>cookie-name</b> <i>(cookie cookie)</i><tt>)</tt> <i>name</i><tt>)</tt></a>
+<br><a name="cookie-value" class=none><b>cookie-value</b> <i>(cookie cookie)</i> =&gt; <i>value</i></a>
+<br><a class=none><tt>(setf (</tt><b>cookie-value</b> <i>(cookie cookie)</i><tt>)</tt> <i>value</i><tt>)</tt></a>
+<br><a name="cookie-domain" class=none><b>cookie-domain</b> <i>(cookie cookie)</i> =&gt; <i>domain</i></a>
+<br><a class=none><tt>(setf (</tt><b>cookie-domain</b> <i>(cookie cookie)</i><tt>)</tt> <i>domain</i><tt>)</tt></a>
+<br><a name="cookie-path" class=none><b>cookie-path</b> <i>(cookie cookie)</i> =&gt; <i>path</i></a>
+<br><a class=none><tt>(setf (</tt><b>cookie-path</b> <i>(cookie cookie)</i><tt>)</tt> <i>path</i><tt>)</tt></a>
+<br><a name="cookie-expires" class=none><b>cookie-expires</b> <i>(cookie cookie)</i> =&gt; <i>expiry</i></a>
+<br><a class=none><tt>(setf (</tt><b>cookie-expires</b> <i>(cookie cookie)</i><tt>)</tt> <i>expiry</i><tt>)</tt></a>
+<br><a name="cookie-securep" class=none><b>cookie-securep</b> <i>(cookie cookie)</i> =&gt; <i>securep</i></a>
+<br><a class=none><tt>(setf (</tt><b>cookie-securep</b> <i>(cookie cookie)</i><tt>)</tt> <i>securep</i><tt>)</tt></a>
+<br><a name="cookie-http-only-p" class=none><b>cookie-http-only-p</b> <i>(cookie cookie)</i> =&gt; <i>http-only-p</i></a>
+<br><a class=none><tt>(setf (</tt><b>cookie-http-only-p</b> <i>(cookie cookie)</i><tt>)</tt> <i>http-only-p</i><tt>)</tt></a>
+<blockquote><br>
+
+These
+are <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#accessor">accessors</a>
+to get and set the corresponding slots of
+a <a href="#cookie"><code>COOKIE</code></a> object.  Note that <code><i>expiry</i></code> is a <a href="http://www.lispworks.com/documentation/HyperSpec/Body/25_adb.htm">universal time</a>
+and <code><i>securep</i></code> and <code><i>http-only-p</i></code> are <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_g.htm#generalized_boolean">generalized
+booleans</a>.  All other values are strings.
+
+</blockquote>
+
+
+
+<p><br>[Standard class]<br><a class=none name='cookie-jar'><b>cookie-jar</b></a>
+<blockquote><br>
+
+An object of this class encapsulates a collection (a list, actually)
+of <a href="#cookie"><code>COOKIE</code></a> objects.  You create a
+new cookie jar with
+<code>(MAKE-INSTANCE&nbsp;'COOKIE-JAR)</code>
+where you can optionally provide a list
+of <a href="#cookie"><code>COOKIE</code></a> objects with
+the <code>:COOKIES</code> initarg.  The cookies in a cookie jar are
+accessed
+with <a
+href="#cookie-jar-cookies"><code>COOKIE-JAR-COOKIES</code></a>.
+
+</blockquote>
+
+
+
+
+
+
+<p><br>[Specialized accessor]<br><a name="cookie-jar-cookies" class=none><b>cookie-jar-cookies</b> <i>(cookie-jar cookie-jar)</i> =&gt; <i>list</i></a>
+<br><a class=none><tt>(setf (</tt><b>cookie-jar-cookies</b> <i>(cookie-jar cookie-jar)</i><tt>)</tt> <i>list</i><tt>)</tt></a>
+<blockquote><br>
+
+This <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#accessor">accessor</a>
+is used to get and set the cookies comprised in a cookie
+jar.  <code><i>list</i></code> is a list
+of <a href="#cookie"><code>COOKIE</code></a> objects.
+<p>
+Note that <code><i>list</i></code> should not contain two cookies which are equal according to <a href="#cookie="><code>COOKIE=</code></a>.
+
+</blockquote>
+
+
+
+
+
+
+<p><br>[Function]<br><a class=none name='cookie='><b>cookie=</b> <i>cookie1 cookie2</i> =&gt; <i>result</i></a>
+<blockquote><br>
+
+Returns <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_t.htm#true">true</a>
+if the cookies <code><i>cookie1</i></code>
+and <code><i>cookie2</i></code> are equal.  Two cookies are considered
+to be equal if their <a href="#cookie-name">names</a> and <a href="#cookie-path">paths</a> are equal.
+
+</blockquote>
+
+
+
+
+
+
+<p><br>[Function]<br><a class=none name='delete-old-cookies'><b>delete-old-cookies</b> <i>cookie-jar</i> =&gt; <i>cookie-jar</i></a>
+<blockquote><br>
+
+Removes all cookies from the <a href="#cookie-jar">cookie
+jar</a> <code><i>cookie-jar</i></code> which have either expired or
+which don't have an expiry date.
+
+</blockquote>
+
+
+
+
+
+
+<p><br>[Special variable]<br><a class=none name='*allow-dotless-cookie-domains-p*'><b>*allow-dotless-cookie-domains-p*</b></a>
+<blockquote><br>
+
+When this variable is not <code>NIL</code>, cookie domains containing
+no dots are considered valid.  The default is <code>NIL</code>,
+meaning to disallow such domains except for <code>"localhost"</code>.
+
+</blockquote>
+
+
+
+
+
+
+<p><br>[Special variable]<br><a class=none name='*ignore-unparseable-cookie-dates-p*'><b>*ignore-unparseable-cookie-dates-p*</b></a>
+<blockquote><br>
+
+Whether Drakma is allowed to treat <code>Expires</code> dates in
+cookie headers as non-existent if it can't parse them.  If the value
+of this variable is <code>NIL</code> (which is the default), an error
+of
+type <a href="#cookie-date-parse-error"><code>COOKIE-DATE-PARSE-ERROR</code></a>
+will be signalled instead.
+<p>
+Note that Drakma tries hard to parse every date representation its
+author has so far seen in the wild.  As everybody and their sister
+seems to invent their own format, this feels like an uphill battle,
+though.  Nevertheless, if you're confronted with something Drakma
+can't parse, report it to the <a href="#mail">mailing list</a> and set
+this variable to a true value only as a temporary workaround.
+
+</blockquote>
+
+
+
+
+
+<p><br>[Function]<br><a class=none name='parse-cookie-date'><b>parse-cookie-date</b> <i>string</i> =&gt; <i>universal-time</i></a>
+<blockquote><br>
+
+Parses (the string representation of) a cookie expiry date <code><i>string</i></code> and returns it as a Lisp <a href="http://www.lispworks.com/documentation/HyperSpec/Body/25_adb.htm">universal time</a>.  Currently understands the following formats:
+<pre>
+"Wed, 06-Feb-2008 21:01:38 GMT"
+"Wed, 06-Feb-08 21:01:38 GMT"
+"Tue Feb 13 08:00:00 2007 GMT"
+"Wednesday, 07-February-2027 08:55:23 GMT"
+"Wed, 07-02-2017 10:34:45 GMT"
+</pre>
+Instead of <code>"GMT"</code>, time zone abbreviations
+like <code>"CEST"</code>
+and <a href="http://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a>
+offsets like <code>"GMT-01:30"</code> are also allowed.
+<p>
+While this function has <em>cookie</em> in its name, it might come in
+handy in other situations as well and it is thus exported as a
+convenience function.
+</blockquote>
+
+
+
+
+
+
+<p><br>[Special variable]<br><a class=none name='*remove-duplicate-cookies-p*'><b>*remove-duplicate-cookies-p*</b></a>
+<blockquote><br>
+Determines how duplicate cookies in the response are handled, defaults
+to <code>T</code>.  Cookies are considered duplicate using 
+<a href="#cookie="><code>COOKIE=</code></a>.
+
+Valid values are:
+<ul>
+ <li><code>NIL</code> - duplicates will not be removed,</li>
+ <li><code>T</code> or <code>:KEEP-LAST</code> - for duplicates, only the last cookie 
+   value will be kept, based on the order of the response header,</li>
+ <li><code>:KEEP-FIRST</code> - for duplicates, only the first cookie 
+   value will be kept, based on the order of the response header.</li>
+</ul>
+
+Misbehaving servers may send duplicate cookies back in the same 
+<code>Set-Cookie</code> header:
+<pre>
+HTTP/1.1 200  OK
+Server: My-hand-rolled-server
+Date: Wed, 07 Apr 2010 15:12:30 GMT
+Connection: Close
+Content-Type: text/html
+Content-Length: 82
+Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
+</pre>
+<p>
+In this case Drakma has to choose whether cookie "a" has the value 
+"1" or "2".  By default, Drakma will choose the last value specified, 
+in this case "2".
+</p>
+<p>
+By default, Drakma conforms to <a href="http://www.ietf.org/rfc/rfc2109.txt">RFC2109 HTTP State 
+Management Mechanism</a>, section 4.3.3 Cookie Management:
+<blockquote><em>
+If a user agent receives a Set-Cookie response header whose NAME is
+the same as a pre-existing cookie, and whose Domain and Path
+attribute values exactly (string) match those of a pre-existing
+cookie, the new cookie supersedes the old.</em>
+</blockquote>
+</p>
+
+</blockquote>
+
+
+
+
+
+<h4><a name="headers" class=none>Headers</a></h4>
+
+This section assembles a couple of convenience functions which can be
+used to access information returned as the third
+value (<code><i>headers</i></code>)
+of <a href="#http-request"><code>HTTP-REQUEST</code></a>.
+<p>
+Note that if the header
+sends <a href="http://www.rfc.net/rfc2616.html#s4.2">multiple headers
+with the same name</a>, these are comprised into one entry by
+<a href="#http-request"><code>HTTP-REQUEST</code></a> where the values
+are separated by commas.
+
+
+
+<p><br>[Function]<br><a class=none name='header-value'><b>header-value</b> <i>name headers</i> =&gt; <i>value</i></a>
+<blockquote><br>
+
+If <code><i>headers</i></code> is an <a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#alist">alist</a> of headers as returned by <a href="#http-request"><code>HTTP-REQUEST</code></a>
+and <code><i>name</i></code> is a keyword naming a header, this function returns the
+corresponding value of this header (or <code>NIL</code> if it's not in
+<code><i>headers</i></code>).
+<pre>
+<font color=red>DRAKMA-USER 19 &gt;</font> (setq <a href="#*header-stream*" class=noborder>*header-stream*</a> nil)
+NIL
+<font color=red>DRAKMA-USER 20 &gt;</font> (header-value :server
+                               (<a class=noborder href="http://www.lispworks.com/documentation/HyperSpec/Body/m_nth_va.htm">nth-value</a> 2 (<a class=noborder href="#http-request">http-request</a> &quot;<a href="http://www.jalat.com/blogs/lisp?id=5" class=noborder>http://www.jalat.com/blogs/lisp?id=5</a>&quot;)))
+&quot;<a href="http://weitz.de/" class=noborder>Hunchentoot</a> 0.1.3 (<a href="http://weitz.de/tbnl/" class=noborder>TBNL</a> 0.9.7)&quot;
+</pre>
+
+</blockquote>
+
+
+
+
+
+<p><br>[Function]<br><a class=none name='split-tokens'><b>split-tokens</b> <i>string</i> =&gt; <i>string-list</i></a>
+<blockquote><br>
+
+Splits the string <code><i>string</i></code> into a list of substrings separated
+by commas and optional whitespace.  Empty substrings are
+ignored.
+<pre>
+<font color=red>DRAKMA-USER 21 &gt;</font> (split-tokens "chunked, identity")
+("chunked" "identity")
+</pre>
+
+</blockquote>
+
+
+
+
+
+
+<p><br>[Function]<br><a class=none name='read-tokens-and-parameters'><b>read-tokens-and-parameters</b> <i>string <tt>&amp;key</tt> value-required-p</i> =&gt; <i>list</i></a>
+<blockquote><br>
+
+Reads a comma-separated list
+of <a href="http://www.rfc.net/rfc2616.html#s2.2">tokens</a> from the
+string <code><i>string</i></code>.  Each token can be followed by an
+optional, semicolon-separated list
+of <a href="http://www.rfc.net/rfc2616.html#s3.6">attribute/value
+pairs</a> where the attributes are tokens followed by
+a <code>#\=</code> character and a token or
+a <a href="http://www.rfc.net/rfc2616.html#s2.2">quoted string</a>.
+Returned is a list where each element is either a string (for a simple
+token) or
+a <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_c.htm#cons">cons</a>
+of a string (the token) and
+an <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#alist">alist</a>
+(the attribute/value pairs).  If <code><i>value-required-p</i></code>
+is <code>NIL</code> (the default is <code>T</code>), the value part
+(including the <code>#\=</code> character) of each attribute/value
+pair is optional.
+<p>
+An example of an HTTP header which uses a syntax which can be parsed
+with this function is the 'Transfer-Encoding' header.
+<pre>
+<font color=red>DRAKMA-USER 21 &gt;</font> (read-tokens-and-parameters "iso-8859-5, unicode-1-1;q=0.8")
+("iso-8859-5" ("unicode-1-1" ("q" . "0.8")))
+</pre>
+
+</blockquote>
+
+
+
+
+
+<p><br>[Function]<br><a class=none name='parameter-present-p'><b>parameter-present-p</b> <i>name parameters</i> =&gt; <i>generalized-boolean</i></a>
+<blockquote><br>
+
+If <code><i>parameters</i></code> is
+an <a
+href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#alist">alist</a>
+of parameters (i.e. of attribute/value pairs) as returned by, for
+example, <a href="#read-tokens-and-parameters"><code>READ-TOKENS-AND-PARAMETERS</code></a> and <code><i>name</i></code> is a string naming a
+parameter, this function returns the full parameter (name and value) -
+or <code>NIL</code> if it's not in <code><i>parameters</i></code>.
+<pre>
+<font color=red>DRAKMA-USER 23 &gt;</font> (parameter-present-p "frob" '(("charset" . "latin-1") ("frob" . "quux")))
+("frob" . "quux")
+
+<font color=red>DRAKMA-USER 24 &gt;</font> (parameter-present-p "foo" '(("charset" . "latin-1") ("frob" . "quux")))
+NIL
+</pre>
+</blockquote>
+
+
+
+
+
+
+<p><br>[Function]<br><a class=none name='parameter-value'><b>parameter-value</b> <i>name parameters</i> =&gt; <i>value</i></a>
+<blockquote><br>
+
+If <code><i>parameters</i></code> is an <a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#alist">alist</a> of parameters (i.e. of attribute/value pairs) as returned by, for
+example, <a href="#read-tokens-and-parameters"><code>READ-TOKENS-AND-PARAMETERS</code></a> and <code><i>name</i></code> is a string naming a
+parameter, this function returns the value of this parameter - or
+<code>NIL</code> if it's not in <code><i>parameters</i></code>.
+<pre>
+<font color=red>DRAKMA-USER 25 &gt;</font> (parameter-value "frob" '(("charset" . "latin-1") ("frob" . "quux")))
+"quux"
+
+<font color=red>DRAKMA-USER 26 &gt;</font> (parameter-value "foo" '(("charset" . "latin-1") ("frob" . "quux")))
+NIL
+</pre>
+</blockquote>
+
+
+
+
+
+<p><br>[Function]<br><a class=none name='get-content-type'><b>get-content-type</b> <i>headers</i> =&gt; <i>type, subtype, parameters</i></a>
+<blockquote><br>
+
+Reads and parses a 'Content-Type' header and returns it as
+three values - the type, the subtype, and an <a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#alist">alist</a> (possibly
+empty) of name/value pairs for the optional parameters.  <code><i>headers</i></code>
+is supposed to be an <a href="http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_a.htm#alist">alist</a> of HTTP headers as returned by
+<a href="#http-request"><code>HTTP-REQUEST</code></a>.  Returns <code>NIL</code> if there is no 'Content-Type' header amongst
+<code><i>headers</i></code>.
+<pre>
+<font color=red>DRAKMA-USER 27 &gt;</font> (get-content-type 
+                  (<a class=noborder href="http://www.lispworks.com/documentation/HyperSpec/Body/m_nth_va.htm">nth-value</a> 2 (<a href="#http-request" class=noborder>http-request</a> &quot;<a href="http://weitz.de/" class=noborder>http://weitz.de/</a>&quot;)))
+"text"
+"html"
+(("charset" . "iso-8859-1"))
+</pre>
+</blockquote>
+
+
+
+<h4><a name="conditions" class=none>Conditions</a></h4>
+
+This section lists all the condition types that are defined by Drakma.
+
+
+
+<p><br>[Condition]
+<br><a class=none name="drakma-condition"><b>drakma-condition</b></a>
+
+<blockquote><br>
+All conditions signalled by Drakma are of this type.  This is a subtype of <a href="http://www.lispworks.com/documentation/HyperSpec/Body/e_cnd.htm"><code>CONDITION</code></a>.
+</blockquote>
+
+
+
+
+
+<p><br>[Error]
+<br><a class=none name="drakma-error"><b>drakma-error</b></a>
+
+<blockquote><br>
+All errors signalled by Drakma are of this type.  This is a subtype of <a href="#drakma-condition"><code>DRAKMA-CONDITION</code></a> and of <a href="http://www.lispworks.com/documentation/HyperSpec/Body/e_error.htm"><code>ERROR</code></a>.
+</blockquote>
+
+
+
+
+
+<p><br>[Warning]
+<br><a class=none name="drakma-warning"><b>drakma-warning</b></a>
+
+<blockquote><br>
+All warnings signalled by Drakma are of this type.  This is a subtype of <a href="#drakma-condition"><code>DRAKMA-CONDITION</code></a> and of <a href="http://www.lispworks.com/documentation/HyperSpec/Body/e_warnin.htm"><code>WARNING</code></a>.
+</blockquote>
+
+
+
+
+
+<p><br>[Error]
+<br><a class=none name="syntax-error"><b>syntax-error</b></a>
+
+<blockquote><br> An error of this type is signalled if Drakma
+encounters wrong or unknown syntax when reading the reply from the
+server.  This is a subtype
+of <a href="#drakma-error"><code>DRAKMA-ERROR</code></a>.
+</blockquote>
+
+
+
+
+
+<p><br>[Error]
+<br><a class=none name="parameter-error"><b>parameter-error</b></a>
+
+<blockquote><br> An error of this type is signalled if a function was
+called with inconsistent or illegal parameters.  This is a subtype
+of <a href="#drakma-error"><code>DRAKMA-ERROR</code></a>.
+</blockquote>
+
+
+
+
+
+<p><br>[Error]
+<br><a class=none name="cookie-error"><b>cookie-error</b></a>
+
+<blockquote><br> An error of this type is signalled in case of an
+attempt to create a <a href="#cookie"><code>COOKIE</code></a> object
+that's not valid.  This is a subtype
+of <a href="#drakma-error"><code>DRAKMA-ERROR</code></a>.  The
+condition object contains a <code><i>cookie</i></code> slot which can be accessed with the
+<a href="#cookie-error-cookie"><code>COOKIE-ERROR-COOKIE</code></a> reader.  Note that the content of this slot can be
+<code>NIL</code> if the cookie couldn't be initialized.
+</blockquote>
+
+
+
+<p><br>[Reader]
+<br><a class=none name="cookie-error-cookie"><b>cookie-error-cookie</b> <i>error</i> =&gt; <i>cookie-or-nil</i></a>
+
+<blockquote><br> If <code><i>error</i></code> is of
+type <a href="#cookie-error"><code>COOKIE-ERROR</code></a>, this
+function will return the associated invalid cookie or <code>NIL</code> if the
+cookie couldn't be created.
+</blockquote>
+
+
+
+<p><br>[Error]
+<br><a class=none name="cookie-date-parse-error"><b>cookie-date-parse-error</b></a>
+
+<blockquote><br> An error of this type is signalled if Drakma tried to
+parse the date of an incoming cookie header and can't interpret it.
+This is a subtype
+of <a href="#cookie-error"><code>COOKIE-ERROR</code></a>.
+<p>
+See also <a href="#*ignore-unparseable-cookie-dates-p*"><code>*IGNORE-UNPARSEABLE-COOKIE-DATES-P*</code></a>.
+</blockquote>
+
+
+
+
+<br>&nbsp;<br><h3><a class=none name="prob">Potential problems</a></h3>
+
+Some web servers (notably <a href="http://paulgraham.com/">Paul Graham</a>'s
+<a
+href="http://paulgraham.com/arc.html">Arc</a> <a
+href="http://common-lisp.net/pipermail/drakma-devel/2007-April/000116.html">web
+server</a>
+and <a
+href="http://common-lisp.net/pipermail/drakma-devel/2007-May/000135.html">some
+very old ones</a>) use wrong line endings when sending the HTTP
+headers.  By default, Drakma won't be able to understand them, but
+see <a
+href="http://weitz.de/chunga/">Chunga</a>'s <a
+href="http://weitz.de/chunga/#*accept-bogus-eols*"><code>*ACCEPT-BOGUS-EOLS*</code></a>.
+
+
+<br>&nbsp;<br><h3><a class=none name="ack">Acknowledgements</a></h3>
+
+Initial versions of Drakma used code
+from <a href="http://www.cliki.net/ACL-COMPAT">ACL-COMPAT</a>,
+specifically the chunking code from Jochen Schmidt.  (This has been replaced by <a href="http://weitz.de/chunga/">Chunga</a>.)
+The API of
+Drakma's <a href="#http-request"><code>HTTP-REQUEST</code></a> was
+inspired by John
+Foderaro's <a
+href="http://opensource.franz.com/aserve/aserve-dist/doc/aserve.html#f-do-http-request"><code>DO-HTTP-REQUEST</code></a>.
+And greetings to Bob Hutchinson who
+already <a
+href="http://recursive.ca/hutch/index.php?p=278">anticipated this
+library in 2005</a>... :)
+
+<p>
+This documentation was prepared with <a href="http://weitz.de/documentation-template/">DOCUMENTATION-TEMPLATE</a>.
+</p>
+<p>
+$Header: /usr/local/cvsrep/drakma/doc/index.html,v 1.88 2008/05/30 09:28:20 edi Exp $
+<p><a href="http://weitz.de/index.html">BACK TO MY HOMEPAGE</a>
+
+</body>
+</html>
+-->
