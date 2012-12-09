@@ -116,21 +116,21 @@ To load "cl+ssl":
 </pre>
     
     <h4 xmlns=""><a name="ex-logging">Log headers to the REPL output stream</a></h4>
-
-      In the following examples, the headers exchanged between Drakma
-      and the HTTP server should be shown, for illustration purposes.
-      This can be achieved like so:
-
+      <p>
+        In the following examples, the headers exchanged between
+        Drakma and the HTTP server should be shown, for illustration
+        purposes.  This can be achieved like so:
+      </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(setf drakma:*header-stream* *standard-output*)</span>
 <span class="repl-output">#&lt;SYNONYM-STREAM to *TERMINAL-IO* #x3020006AC7DD&gt;</span>
 </pre>
     
     <h4 xmlns=""><a name="ex-request-redirect">Requesting a page with redirection</a></h4>
-
-      Request a page.  Note how Drakma automatically follows the 301
-      redirect and how the fourth return value shows the <em>new</em>
-      URI.
-
+      <p>
+        Request a page.  Note how Drakma automatically follows the 301
+        redirect and how the fourth return value shows the
+        <em>new</em> URI.
+      </p>
 <pre><span class="repl-output">? </span><span class="repl-input">(drakma:http-request "http://lisp.org/")</span>
 <span class="headers-out">GET / HTTP/1.1
 Host: lisp.org
@@ -185,8 +185,10 @@ T
 </pre>
     
     <h4 xmlns=""><a name="ex-charsets">Requesting a page containing non-ASCII characters</a></h4>
-      Drakma automatically interprets the 'charset=utf-8' part correctly.
-
+      <p>
+        Drakma automatically interprets the 'charset=utf-8' part
+        correctly.
+      </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(subseq (drakma:http-request "http://www.cl.cam.ac.uk/~mgk25/ucs/examples/digraphs.txt") 0 298)</span>
 <span class="headers-out">GET /~mgk25/ucs/examples/digraphs.txt HTTP/1.1
 Host: www.cl.cam.ac.uk
@@ -218,9 +220,9 @@ IĲJ : U+0132"</span>
 </pre>
     
     <h4 xmlns=""><a name="ex-binary-data">Requesting binary data</a></h4>
-
-      For non-textual content types, a vector of octets is returned.
-
+      <p>
+        For non-textual content types, a vector of octets is returned.
+      </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(drakma:http-request "http://zappa.com/favicon.ico")</span>
 <span class="headers-out">GET /favicon.ico HTTP/1.1
 Host: zappa.com
@@ -258,11 +260,11 @@ T
 </pre>
     
     <h4 xmlns=""><a name="ex-chunked-https">Chunked transfers and HTTPS</a></h4>
-
-      Request a page using the HTTPS protocol.  Also note that the
-      server uses <a name="chunked" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1">chunked transfer
-      encoding</a> for its reply
-
+      <p>
+        Request a page using the HTTPS protocol.  Also note that the
+        server uses <a name="chunked" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1">chunked
+        transfer encoding</a> for its reply
+      </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(ql:quickload :cl-ppcre)</span>
 <span class="repl-output">To load "cl-ppcre":
   Load 1 ASDF system:
@@ -299,10 +301,11 @@ Content-Type: text/html
 </pre>
     
     <h4 xmlns=""><a name="ex-fake-ua">Faking a user agent header</a></h4>
-
-      Some servers adapt their behavior according to the Browser that
-      is used.  Drakma can claim to be i.e. MS Internet Explorer.
-
+      <p>
+        Some servers adapt their behavior according to the Browser
+        that is used.  Drakma can claim to be i.e. MS Internet
+        Explorer.
+      </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(cl-ppcre:scan-to-strings "&lt;h4&gt;.*" (drakma:http-request "http://whatsmyuseragent.com/" :user-agent :explorer))</span>
 <span class="headers-out">GET / HTTP/1.1
 Host: whatsmyuseragent.com
@@ -323,10 +326,11 @@ Content-Type: text/html
 </pre>
     
     <h4 xmlns=""><a name="ex-post-and-cookie">Posting data and using cookies</a></h4>
-      Drakma can send parameters in a POST request and knows how to
-      deal with <a href="#cookie">cookies</a>.  Note how Drakma sends
-      the cookie back in the second request.
-
+      <p>
+        Drakma can send parameters in a POST request and knows how to
+        deal with <a href="#cookie">cookies</a>.  Note how Drakma
+        sends the cookie back in the second request.
+      </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(let ((cookie-jar (make-instance 'drakma:cookie-jar)))
     (drakma:http-request "http://www.phpsecurepages.com/test/test.php"
                          :method :post
@@ -380,9 +384,9 @@ Content-Type: text/html
 </pre>
     
     <h4 xmlns=""><a name="ex-reuse-connection">Reusing a connection to a server</a></h4>
-
-      Drakma can <a name="re-use">use</a> a connection to a server for multiple requests.
-
+      <p>
+        Drakma can <a name="re-use">use</a> a connection to a server for multiple requests.
+      </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (nth-value 4 (drakma:http-request "http://www.lispworks.com/" :close nil))))
     (nth-value 2 (drakma:http-request "http://www.lispworks.com/success-stories/index.html"
                                       :stream stream)))</span>
@@ -423,10 +427,10 @@ Content-Type: text/html
 </pre>
     
     <h4 xmlns=""><a name="ex-basic-auth">Basic Authorization</a></h4>
-
-      Drakma supports basic authorization.  In this example, we use a
-      locally running <a href="http://weitz.de/hunchentoot">Hunchentoot</a> server.
-
+      <p>
+        Drakma supports basic authorization.  In this example, we use
+        a locally running <a href="http://weitz.de/hunchentoot">Hunchentoot</a> server.
+      </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(ql:quickload :hunchentoot-test)</span>
 <span class="repl-output">To load "hunchentoot-test":
   Load 4 ASDF systems:
@@ -496,10 +500,10 @@ Content-Type: text/html; charset=utf-8
 </pre>
     
     <h4 xmlns=""><a name="ex-response-stream">Reading the response from a stream</a></h4>
-
-      Drakma can return a stream to the application so that the reply
-      is not completely buffered in memory first.
-
+      <p>
+        Drakma can return a stream to the application so that the
+        reply is not completely buffered in memory first.
+      </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (drakma:http-request "http://www.quicklisp.org"
                                      :want-stream t)))
                    (loop for i below 41
@@ -531,11 +535,11 @@ or &lt;a href="http://blog.quicklisp.org/"&gt;the Quicklisp blog&lt;/a&gt;.
 </pre>
     
     <h4 xmlns=""><a name="ex-assemble-request-content">Piecemeal assembly of request contents</a></h4>
-
-      Request contents can be assembled from various sources, and
-      chunked encoding can be used by request bodies.  Many servers do
-      not support chunked encoding for request bodies, though.
-
+      <p>
+        Request contents can be assembled from various sources, and
+        chunked encoding can be used by request bodies.  Many servers
+        do not support chunked encoding for request bodies, though.
+      </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(let ((temp-file (ensure-directories-exist #p"/tmp/quux.txt"))
         (continuation (drakma:http-request "http://localhost:4242/hunchentoot/test/parameter_latin1_post.html"
                                            :method :post
@@ -576,10 +580,10 @@ Content-Type: text/html; charset=ISO-8859-1
 </pre>
     
     <h4 xmlns=""><a name="ex-partial-transfers">Partial transfers</a></h4>
-
-      <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35">Partial
-      transfers</a> of resources are possible.
-
+      <p>
+        <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35">Partial
+        transfers</a> of resources are possible.
+      </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(ppcre:regex-replace-all
    "&lt;.*?&gt;"
    (format nil "~A~%~A"
