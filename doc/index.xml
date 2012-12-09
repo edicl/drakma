@@ -404,26 +404,7 @@ Content-Type: text/html
     cl-ppcre cl-who drakma hunchentoot
   Install 1 Quicklisp release:
     hunchentoot
-; Loading "hunchentoot-test"
-To load "trivial-backtrace":
-  Install 1 Quicklisp release:
-    trivial-backtrace
-; Loading "trivial-backtrace"
-[package trivial-backtrace]..
-; Loading "hunchentoot-test"
-To load "md5":
-  Install 1 Quicklisp release:
-    md5
-; Loading "md5"
-[package md5]..............
-; Loading "hunchentoot-test"
-To load "cl-fad":
-  Install 1 Quicklisp release:
-    cl-fad
-; Loading "cl-fad"
-[package cl-fad]..................................
-[package cl-fad-test].............................
-[package cl-fad-ccl].
+...
 ; Loading "hunchentoot-test"
 
 (:HUNCHENTOOT-TEST)
