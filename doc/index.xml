@@ -55,11 +55,14 @@
     <p>
       Here is a collection of example uses of Drakma to which
       demonstrate some of its features.  In the examples, text is
-      color coded to indicate where it comes from (<span
+      color coded to indicate where it comes from (<tt><span
       class="repl-input">REPL input</span>, <span
       class="repl-output">REPL output</span>, <span
-      class="headers-out">HTTP headers sent</span> and <span
-      class="headers-in">HTTP headers received</span>).
+      class="headers-out">HTTP headers sent</span></tt> and <tt><span
+      class="headers-in">HTTP headers received</span></tt>).  Headers
+      particularly relevant to the example at hand are shown <tt><span
+      class="headers-out"><b>in</b></span> <span
+      class="headers-in"><b>bold</b></span></tt>.
     </p>
 
     <clix:subchapter name='ex-loading' title='Loading Drakma with Quicklisp'>
@@ -97,7 +100,7 @@ To load "cl+ssl":
         redirect and how the fourth return value shows the
         <em>new</em> URI.
       </p>
-<pre><span class="repl-output">? </span><span class="repl-input">(drakma:http-request "http://lisp.org/")</span>
+<pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "http://lisp.org/")</span>
 <span class="headers-out">GET / HTTP/1.1
 Host: lisp.org
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -156,7 +159,7 @@ T
         Drakma automatically interprets the 'charset=utf-8' part
         correctly.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(subseq (drakma:http-request "http://www.cl.cam.ac.uk/~mgk25/ucs/examples/digraphs.txt") 0 298)</span>
+      <pre><span class="repl-output">? </span><span class="repl-input">(subseq (<a href="#http-request">drakma:http-request</a> "http://www.cl.cam.ac.uk/~mgk25/ucs/examples/digraphs.txt") 0 298)</span>
 <span class="headers-out">GET /~mgk25/ucs/examples/digraphs.txt HTTP/1.1
 Host: www.cl.cam.ac.uk
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -190,7 +193,7 @@ IĲJ : U+0132"</span>
       <p>
         For non-textual content types, a vector of octets is returned.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(drakma:http-request "http://zappa.com/favicon.ico")</span>
+      <pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "http://zappa.com/favicon.ico")</span>
 <span class="headers-out">GET /favicon.ico HTTP/1.1
 Host: zappa.com
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -235,7 +238,7 @@ T
       </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(ql:quickload :cl-ppcre)</span>
 <span class="repl-output">? </span><span class="repl-input">(cl-ppcre:scan-to-strings "(?s)You have.*your data."
-                                       (drakma:http-request "https://www.fortify.net/cgi/ssl_2.pl"))</span>
+                            (<a href="#http-request">drakma:http-request</a> "https://www.fortify.net/cgi/ssl_2.pl"))</span>
 <span class="headers-out">GET /cgi/ssl_2.pl HTTP/1.1
 Host: www.fortify.net
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -268,7 +271,7 @@ Content-Type: text/html
         that is used.  Drakma can claim to be i.e. MS Internet
         Explorer.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(cl-ppcre:scan-to-strings "&lt;h4&gt;.*" (drakma:http-request "http://whatsmyuseragent.com/" :user-agent :explorer))</span>
+      <pre><span class="repl-output">? </span><span class="repl-input">(cl-ppcre:scan-to-strings "&lt;h4&gt;.*" (<a href="#http-request">drakma:http-request</a> "http://whatsmyuseragent.com/" <a href="#arg-user-agent">:user-agent :explorer</a>))</span>
 <span class="headers-out">GET / HTTP/1.1
 Host: whatsmyuseragent.com
 <b>User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)</b>
@@ -293,15 +296,15 @@ Content-Type: text/html
         deal with <a href="#cookie">cookies</a>.  Note how Drakma
         sends the cookie back in the second request.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(let ((cookie-jar (make-instance 'drakma:cookie-jar)))
-    (drakma:http-request "http://www.phpsecurepages.com/test/test.php"
-                         :method :post
-                         :parameters '(("entered_login" . "test")
-                                       ("entered_password" . "test"))
-                         :cookie-jar cookie-jar)
-    (drakma:http-request "http://www.phpsecurepages.com/test/test2.php"
-                         :cookie-jar cookie-jar)
-    (drakma:cookie-jar-cookies cookie-jar))</span>
+      <pre><span class="repl-output">? </span><span class="repl-input">(let ((cookie-jar (make-instance <a href="#cookie-jar">'drakma:cookie-jar</a>)))
+    (<a href="#http-request">drakma:http-request</a> "http://www.phpsecurepages.com/test/test.php"
+                         <a href="#arg-method">:method :post</a>
+                         <a href="#arg-parameters">:parameters '(("entered_login" . "test")
+                                       ("entered_password" . "test"))</a>
+                         <a href="#arg-cookie-jar">:cookie-jar cookie-jar</a>)
+    (<a href="#http-request">drakma:http-request</a> "http://www.phpsecurepages.com/test/test2.php"
+                         <a href="#arg-cookie-jar">:cookie-jar cookie-jar</a>)
+    (<a href="#cookie-jar-cookies">drakma:cookie-jar-cookies</a> cookie-jar))</span>
 <span class="headers-out">POST /test/test.php HTTP/1.1
 Host: www.phpsecurepages.com
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -349,9 +352,9 @@ Content-Type: text/html
       <p>
         Drakma can <a name="re-use">use</a> a connection to a server for multiple requests.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (nth-value 4 (drakma:http-request "http://www.lispworks.com/" :close nil))))
-    (nth-value 2 (drakma:http-request "http://www.lispworks.com/success-stories/index.html"
-                                      :stream stream)))</span>
+      <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (nth-value 4 (<a href="#http-request">drakma:http-request</a> "http://www.lispworks.com/" <a href="#arg-close">:close nil</a>))))
+    (nth-value 2 (<a href="#http-request">drakma:http-request</a> "http://www.lispworks.com/success-stories/index.html"
+                                      <a href="#arg-stream">:stream stream</a>)))</span>
 <span class="headers-out">GET / HTTP/1.1
 Host: www.lispworks.com
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -406,7 +409,7 @@ Content-Type: text/html
 (:HUNCHENTOOT-TEST)
 ? </span><span class="repl-input">(hunchentoot:start (make-instance 'hunchentoot:easy-acceptor :port 4242))</span>
 <span class="repl-output">#&lt;EASY-ACCEPTOR (host *, port 4242)&gt;
-? </span><span class="repl-input">(nth-value 1 (drakma:http-request "http://localhost:4242/hunchentoot/test/authorization.html"))</span>
+? </span><span class="repl-input">(nth-value 1 (<a href="#http-request">drakma:http-request</a> "http://localhost:4242/hunchentoot/test/authorization.html"))</span>
 <span class="headers-out">GET /hunchentoot/test/authorization.html HTTP/1.1
 Host: localhost:4242
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -423,8 +426,8 @@ Www-Authenticate: Basic realm="Hunchentoot"
 Content-Type: text/html; charset=iso-8859-1
 </span>
 <span class="repl-output">401
-? </span><span class="repl-input">(nth-value 1 (drakma:http-request "http://localhost:4242/hunchentoot/test/authorization.html"
-                                            :basic-authorization '("nanook" "igloo")))</span>
+? </span><span class="repl-input">(nth-value 1 (<a href="#http-request">drakma:http-request</a> "http://localhost:4242/hunchentoot/test/authorization.html"
+                                    <a href="#arg-basic-authorization">:basic-authorization '("nanook" "igloo")</a>))</span>
 <span class="headers-out">GET /hunchentoot/test/authorization.html HTTP/1.1
 Host: localhost:4242
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -448,8 +451,8 @@ Content-Type: text/html; charset=utf-8
         Drakma can return a stream to the application so that the
         reply is not completely buffered in memory first.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (drakma:http-request "http://www.quicklisp.org"
-                                     :want-stream t)))
+      <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (<a href="#http-request">drakma:http-request</a> "http://www.quicklisp.org"
+                                     <a href="#arg-want-stream">:want-stream t</a>)))
                    (loop for i below 40
                          for line = (read-line stream)
                          when (&gt; i 36)
@@ -483,9 +486,9 @@ or &lt;a href="http://blog.quicklisp.org/"&gt;the Quicklisp blog&lt;/a&gt;.</spa
         do not support chunked encoding for request bodies, though.
       </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(let ((temp-file (ensure-directories-exist #p"/tmp/quux.txt"))
-        (continuation (drakma:http-request "http://localhost:4242/hunchentoot/test/parameter_latin1_post.html"
-                                           :method :post
-                                           :content :continuation)))
+        (continuation (<a href="#http-request">drakma:http-request</a> "http://localhost:4242/hunchentoot/test/parameter_latin1_post.html"
+                                           <a href="#arg-method">:method :post</a>
+                                           <a href="#arg-content">:content :continuation</a>)))
     (funcall continuation "foo=" t)
     (funcall continuation (list (char-code #\z) (char-code #\a)) t)
     (funcall continuation (lambda (stream)
@@ -529,10 +532,10 @@ Content-Type: text/html; charset=ISO-8859-1
       <pre><span class="repl-output">? </span><span class="repl-input">(cl-ppcre:regex-replace-all
    "&lt;.*?&gt;"
    (format nil "~A~%~A"
-           (drakma:http-request "http://members.shaw.ca/mitb/hunchentoot.html"
-                                :additional-headers '(("Range" . "bytes=998-1034")))
-           (drakma:http-request "http://members.shaw.ca/mitb/hunchentoot.html"
-                                :additional-headers '(("Range" . "bytes=1213-1249"))))
+           (<a href="#http-request">drakma:http-request</a> "http://members.shaw.ca/mitb/hunchentoot.html"
+                                <a href="#arg-range">:range '(998 1034)</a>)
+           (<a href="#http-request">drakma:http-request</a> "http://members.shaw.ca/mitb/hunchentoot.html"
+                                <a href="#arg-range">:range '(1213 1249)</a>))
    "")</span>
 <span class="headers-out">GET /mitb/hunchentoot.html HTTP/1.1
 Host: members.shaw.ca
