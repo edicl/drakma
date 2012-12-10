@@ -83,9 +83,9 @@ To load "cl+ssl":
     </clix:subchapter>
     <clix:subchapter name='ex-logging' title='Log headers to the REPL output stream'>
       <p>
-        In the following examples, the headers exchanged between
-        Drakma and the HTTP server should be shown, for illustration
-        purposes.  This can be achieved like so:
+        In some of the following examples, the headers exchanged
+        between Drakma and the HTTP server should be shown, for
+        illustration purposes.  This can be achieved like so:
       </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(setf drakma:*header-stream* *standard-output*)</span>
 <span class="repl-output">#&lt;SYNONYM-STREAM to *TERMINAL-IO* #x3020006AC7DD&gt;</span>
@@ -104,14 +104,14 @@ User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664)
 Accept: */*
 Connection: close
 </span>
-<span class="headers-in">HTTP/1.1 307  Temporary Redirect
+<span class="headers-in">HTTP/1.1 <b>307  Temporary Redirect</b>
 Date: Sun, 09 Dec 2012 08:01:56 GMT
 Connection: Close
 Server: AllegroServe/1.2.65
 Transfer-Encoding: chunked
-LOCATION: http://lisp.org/index.html
+<b>LOCATION: http://lisp.org/index.html</b>
 </span>
-<span class="headers-out">GET /index.html HTTP/1.1
+<span class="headers-out"><b>GET /index.html HTTP/1.1</b>
 Host: lisp.org
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
@@ -172,7 +172,7 @@ Accept-Ranges: bytes
 Content-Length: 664
 X-UA-Compatible: IE=edge
 Connection: close
-Content-Type: text/plain; charset=utf-8
+<b>Content-Type: text/plain; charset=utf-8</b>
 </span>
 <span class="repl-output">"Latin Digraphs and Ligatures in ISO10646-1
 
@@ -206,7 +206,7 @@ Accept-Ranges: bytes
 Content-Length: 182
 Vary: Accept-Encoding,User-Agent
 Connection: close
-Content-Type: image/x-icon
+<b>Content-Type: image/x-icon</b>
 </span>
 <span class="repl-output">#(71 73 70 56 57 97 17 0 17 0 179 1 0 150 151 153 255 255 255 37 37 36 112 114 115 201 202 204
   0 0 0 80 83 84 26 28 26 230 231 231 249 249 249 12 13 14 219 221 222 18 21 22 239 240 241 52
@@ -234,13 +234,7 @@ T
         transfer encoding</a> for its reply
       </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(ql:quickload :cl-ppcre)</span>
-<span class="repl-output">To load "cl-ppcre":
-  Load 1 ASDF system:
-    cl-ppcre
-; Loading "cl-ppcre"
-
-(:CL-PPCRE)
-? </span><span class="repl-input">(cl-ppcre:scan-to-strings "(?s)You have.*your data."
+<span class="repl-output">? </span><span class="repl-input">(cl-ppcre:scan-to-strings "(?s)You have.*your data."
                                        (drakma:http-request "https://www.fortify.net/cgi/ssl_2.pl"))</span>
 <span class="headers-out">GET /cgi/ssl_2.pl HTTP/1.1
 Host: www.fortify.net
@@ -252,7 +246,7 @@ Connection: close
 Date: Sun, 09 Dec 2012 08:15:31 GMT
 Server: Apache
 Connection: close
-Transfer-Encoding: chunked
+<b>Transfer-Encoding: chunked</b>
 Content-Type: text/html
 </span>
 <span class="repl-output">"You have connected to this web server using the RC4-SHA encryption cipher
@@ -277,7 +271,7 @@ Content-Type: text/html
       <pre><span class="repl-output">? </span><span class="repl-input">(cl-ppcre:scan-to-strings "&lt;h4&gt;.*" (drakma:http-request "http://whatsmyuseragent.com/" :user-agent :explorer))</span>
 <span class="headers-out">GET / HTTP/1.1
 Host: whatsmyuseragent.com
-User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)
+<b>User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)</b>
 Accept: */*
 Connection: close
 </span>
@@ -320,7 +314,7 @@ Content-Length: 40
 Date: Sun, 09 Dec 2012 08:25:13 GMT
 Server:  
 X-Powered-By: PHP/5.2.17
-Set-Cookie: PHPSESSID=vijk3706eojs7n8u5cdpi3ju05; path=/
+<b>Set-Cookie: PHPSESSID=vijk3706eojs7n8u5cdpi3ju05; path=/</b>
 Expires: Thu, 19 Nov 1981 08:52:00 GMT
 Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
 Pragma: no-cache
@@ -333,7 +327,7 @@ Content-Type: text/html
 Host: www.phpsecurepages.com
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
-Cookie: PHPSESSID=vijk3706eojs7n8u5cdpi3ju05
+<b>Cookie: PHPSESSID=vijk3706eojs7n8u5cdpi3ju05</b>
 Connection: close
 </span>
 <span class="headers-in">HTTP/1.1 200 OK
@@ -376,7 +370,7 @@ Content-Type: text/html
 Host: www.lispworks.com
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
-Connection: close
+<b>Connection: close</b>
 </span>
 <span class="headers-in">HTTP/1.1 200 OK
 Date: Sun, 09 Dec 2012 08:25:56 GMT
@@ -385,7 +379,7 @@ Last-Modified: Tue, 20 Nov 2012 12:28:52 GMT
 ETag: "336386-2940-4ceec6069e900"
 Accept-Ranges: bytes
 Content-Length: 10560
-Connection: close
+<b>Connection: close</b>
 Content-Type: text/html
 </span>
 <span class="repl-output">((:DATE . "Sun, 09 Dec 2012 08:25:56 GMT")
@@ -420,7 +414,7 @@ Accept: */*
 Connection: close
 </span>
 <span class="repl-output">127.0.0.1 - [2012-12-09 09:27:40] "GET /hunchentoot/test/authorization.html HTTP/1.1" 401 543 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"</span>
-<span class="headers-in">HTTP/1.1 401 Authorization Required
+<span class="headers-in">HTTP/1.1 <b>401 Authorization Required</b>
 Content-Length: 543
 Date: Sun, 09 Dec 2012 08:27:40 GMT
 Server: Hunchentoot 1.2.5
@@ -434,7 +428,7 @@ Content-Type: text/html; charset=iso-8859-1
 <span class="headers-out">GET /hunchentoot/test/authorization.html HTTP/1.1
 Host: localhost:4242
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
-Authorization: Basic bmFub29rOmlnbG9v
+<b>Authorization: Basic bmFub29rOmlnbG9v</b>
 Accept: */*
 Connection: close
 </span>
@@ -509,7 +503,7 @@ User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664)
 Accept: */*
 Connection: close
 Content-Type: application/x-www-form-urlencoded
-Transfer-Encoding: chunked
+<b>Transfer-Encoding: chunked</b>
 </span>
 <span class="repl-output">127.0.0.1 - [2012-12-09 10:06:44] "POST /hunchentoot/test/parameter_latin1_post.html HTTP/1.1" 200 1312 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"</span>
 <span class="headers-in">HTTP/1.1 200 OK
@@ -545,7 +539,7 @@ Host: members.shaw.ca
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
-Range: bytes=998-1034
+<b>Range: bytes=998-1034</b>
 </span>
 <span class="headers-in">HTTP/1.1 206 Partial Content
 Date: Sun, 09 Dec 2012 09:16:16 GMT
@@ -554,7 +548,7 @@ Last-Modified: Wed, 14 Mar 2012 23:22:04 GMT
 ETag: "3b7eed-3238-4bb3c3e453f00"
 Accept-Ranges: bytes
 Content-Length: 37
-Content-Range: bytes 998-1034/12856
+<b>Content-Range: bytes 998-1034/12856</b>
 Content-Type: text/html
 Connection: close
 </span>
@@ -563,7 +557,7 @@ Host: members.shaw.ca
 User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
-Range: bytes=1213-1249
+<b>Range: bytes=1213-1249</b>
 </span>
 <span class="headers-in">HTTP/1.1 206 Partial Content
 Date: Sun, 09 Dec 2012 09:16:16 GMT
@@ -572,7 +566,7 @@ Last-Modified: Wed, 14 Mar 2012 23:22:04 GMT
 ETag: "3b7eed-3238-4bb3c3e453f00"
 Accept-Ranges: bytes
 Content-Length: 37
-Content-Range: bytes 1213-1249/12856
+<b>Content-Range: bytes 1213-1249/12856</b>
 Content-Type: text/html
 </span>
 <span class="repl-output">"DRAKMA (Queen of Cosmic Greed)
@@ -693,20 +687,21 @@ T</span>
             request to a web server and returns its reply.
             <clix:arg>uri</clix:arg> is where the request is sent to,
             and it is either a string denoting a uniform resource
-            identifier or a <code>PURI:URI</code> object.  The
-            scheme of <clix:arg>uri</clix:arg> must be `http' or
-            `https'.  The function returns SEVEN values - the body of
-            the reply (but see below), the status code as an integer,
-            an alist of the headers sent by the server where for each
+            identifier or a <code>PURI:URI</code> object.  The scheme
+            of <clix:arg>uri</clix:arg> must be `http' or `https'.
+            The function returns SEVEN values - the body of the
+            reply<sup>0</sup> (but see below), the status
+            code<sup>1</sup> as an integer, an alist of the
+            headers<sup>2</sup> sent by the server where for each
             element the car (the name of the header) is a keyword and
             the cdr (the value of the header) is a string, the
-            <clix:arg>uri</clix:arg> the reply comes from (which might
-            be different from the <clix:arg>uri</clix:arg> the request
-            was sent to in case of redirects), the stream the reply
-            was read from, a generalized boolean which denotes whether
-            the stream should be closed (and which you can usually
-            ignore), and finally the reason phrase from the status
-            line as a string.
+            uri<sup>3</sup> the reply comes from (which might be
+            different from the <clix:arg>uri</clix:arg> the request
+            was sent to in case of redirects), the stream<sup>4</sup>
+            the reply was read from, a generalized boolean<sup>5</sup>
+            which denotes whether the stream should be closed (and
+            which you can usually ignore), and finally the reason
+            phrase<sup>6</sup> from the status line as a string.
           </p>
           <p>
             <a name="arg-protocol"/>
