@@ -110,9 +110,9 @@ Content-Type: text/html
 Content-Length: 82
 Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 
-In this case Drakma has to choose whether cookie "a" has the value "1"
-or "2".  By default, Drakma will choose the last value specified, in
-this case "2".  By default, Drakma conforms to RFC2109 HTTP State
+In this case Drakma has to choose whether cookie 'a' has the value '1'
+or '2'.  By default, Drakma will choose the last value specified, in
+this case '2'.  By default, Drakma conforms to RFC2109 HTTP State
 Management Mechanism, section 4.3.3 Cookie Management:
 
     If a user agent receives a Set-Cookie response header whose NAME
