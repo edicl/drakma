@@ -69,11 +69,11 @@ you need to create your own cookies, you should use MAKE-INSTANCE with
 the initargs :NAME, :DOMAIN, :VALUE, :PATH, :EXPIRES,
 :SECUREP, and :HTTP-ONLY-P all of which are optional except for the
 first two.  The meaning of these initargs and the corresponding
-accessors should be pretty clear if one looks at the <a
-href=\"http://wp.netscape.com/newsref/std/cookie_spec.html\">original
-cookie specification</a> (and at <a
-href=\"http://msdn2.microsoft.com/en-us/library/ms533046.aspx\">this
-page</a> for the <code>HttpOnly</code> extension)."))
+accessors should be pretty clear if one looks at the original cookie
+specification
+<http://wp.netscape.com/newsref/std/cookie_spec.html> (and at this
+page <http://msdn2.microsoft.com/en-us/library/ms533046.aspx> for the
+HttpOnly extension)."))
 
 (defun render-cookie-date (time)
   "Returns a string representation of the universal time TIME
