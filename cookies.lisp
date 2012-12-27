@@ -70,9 +70,9 @@ the initargs :NAME, :DOMAIN, :VALUE, :PATH, :EXPIRES,
 :SECUREP, and :HTTP-ONLY-P all of which are optional except for the
 first two.  The meaning of these initargs and the corresponding
 accessors should be pretty clear if one looks at the <a
-href="http://wp.netscape.com/newsref/std/cookie_spec.html">original
+href=\"http://wp.netscape.com/newsref/std/cookie_spec.html\">original
 cookie specification</a> (and at <a
-href="http://msdn2.microsoft.com/en-us/library/ms533046.aspx">this
+href=\"http://msdn2.microsoft.com/en-us/library/ms533046.aspx\">this
 page</a> for the <code>HttpOnly</code> extension)."))
 
 (defun render-cookie-date (time)
