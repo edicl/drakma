@@ -73,6 +73,10 @@
     </html>
   </xsl:template>
 
+  <xsl:template match="clix:library-version">
+    <xsl:value-of select="$library-version"/>
+  </xsl:template>
+
   <xsl:template match="clix:title"/>
   <xsl:template match="clix:short-description"/>
 

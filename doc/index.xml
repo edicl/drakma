@@ -103,7 +103,7 @@ To load "cl+ssl":
 <pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "http://lisp.org/")</span>
 <span class="headers-out">GET / HTTP/1.1
 Host: lisp.org
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 </span>
@@ -116,7 +116,7 @@ Transfer-Encoding: chunked
 </span>
 <span class="headers-out"><b>GET /index.html HTTP/1.1</b>
 Host: lisp.org
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 </span>
@@ -162,7 +162,7 @@ T
       <pre><span class="repl-output">? </span><span class="repl-input">(subseq (<a href="#http-request">drakma:http-request</a> "http://www.cl.cam.ac.uk/~mgk25/ucs/examples/digraphs.txt") 0 298)</span>
 <span class="headers-out">GET /~mgk25/ucs/examples/digraphs.txt HTTP/1.1
 Host: www.cl.cam.ac.uk
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 </span>
@@ -196,7 +196,7 @@ IĲJ : U+0132"</span>
       <pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist" :external-format :utf-8)</span>
 <span class="headers-out">GET /repos/edicl/drakma/git/tags/tag-does-not-exist HTTP/1.1
 Host: api.github.com
-User-Agent: Drakma/1.2.9 (SBCL 1.1.1.31.master.2-9fac43f-dirty; Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (SBCL 1.1.1.31.master.2-9fac43f-dirty; Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 </span>
@@ -237,7 +237,7 @@ T
                             (<a href="#http-request">drakma:http-request</a> "https://www.fortify.net/cgi/ssl_2.pl"))</span>
 <span class="headers-out">GET /cgi/ssl_2.pl HTTP/1.1
 Host: www.fortify.net
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 </span>
@@ -303,7 +303,7 @@ Content-Type: text/html
     (<a href="#cookie-jar-cookies">drakma:cookie-jar-cookies</a> cookie-jar))</span>
 <span class="headers-out">POST /test/test.php HTTP/1.1
 Host: www.phpsecurepages.com
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 Content-Type: application/x-www-form-urlencoded
@@ -324,7 +324,7 @@ Content-Type: text/html
 </span>
 <span class="headers-out">GET /test/test2.php HTTP/1.1
 Host: www.phpsecurepages.com
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 <b>Cookie: PHPSESSID=vijk3706eojs7n8u5cdpi3ju05</b>
 Connection: close
@@ -353,7 +353,7 @@ Content-Type: text/html
                                       <a href="#arg-stream">:stream stream</a>)))</span>
 <span class="headers-out">GET / HTTP/1.1
 Host: www.lispworks.com
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 </span>
 <span class="headers-in">HTTP/1.1 200 OK
@@ -367,7 +367,7 @@ Content-Type: text/html
 </span>
 <span class="headers-out">GET /success-stories/index.html HTTP/1.1
 Host: www.lispworks.com
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 <b>Connection: close</b>
 </span>
@@ -408,11 +408,11 @@ Content-Type: text/html
 ? </span><span class="repl-input">(nth-value 1 (<a href="#http-request">drakma:http-request</a> "http://localhost:4242/hunchentoot/test/authorization.html"))</span>
 <span class="headers-out">GET /hunchentoot/test/authorization.html HTTP/1.1
 Host: localhost:4242
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 </span>
-<span class="repl-output">127.0.0.1 - [2012-12-09 09:27:40] "GET /hunchentoot/test/authorization.html HTTP/1.1" 401 543 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"</span>
+<span class="repl-output">127.0.0.1 - [2012-12-09 09:27:40] "GET /hunchentoot/test/authorization.html HTTP/1.1" 401 543 "-" "Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"</span>
 <span class="headers-in">HTTP/1.1 <b>401 Authorization Required</b>
 Content-Length: 543
 Date: Sun, 09 Dec 2012 08:27:40 GMT
@@ -426,12 +426,12 @@ Content-Type: text/html; charset=iso-8859-1
                                     <a href="#arg-basic-authorization">:basic-authorization '("nanook" "igloo")</a>))</span>
 <span class="headers-out">GET /hunchentoot/test/authorization.html HTTP/1.1
 Host: localhost:4242
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 <b>Authorization: Basic bmFub29rOmlnbG9v</b>
 Accept: */*
 Connection: close
 </span>
-<span class="repl-output">127.0.0.1 nanook [2012-12-09 09:28:15] "GET /hunchentoot/test/authorization.html HTTP/1.1" 200 907 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"</span>
+<span class="repl-output">127.0.0.1 nanook [2012-12-09 09:28:15] "GET /hunchentoot/test/authorization.html HTTP/1.1" 200 907 "-" "Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"</span>
 <span class="headers-in">HTTP/1.1 200 OK
 Content-Length: 907
 Date: Sun, 09 Dec 2012 08:28:15 GMT
@@ -453,7 +453,7 @@ Content-Type: text/html; charset=utf-8
     (<a href="http://common-lisp.net/project/yason/#parse" target="_new">yason:parse</a> stream :object-as :plist))</span>
 <span class="headers-out">GET /orgs/edicl/public_members HTTP/1.1
 Host: api.github.com
-User-Agent: Drakma/1.2.9 (SBCL 1.1.1.31.master.2-9fac43f-dirty; Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (SBCL 1.1.1.31.master.2-9fac43f-dirty; Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 </span>
@@ -522,13 +522,13 @@ X-RateLimit-Remaining: 56
     (cl-ppcre:scan-to-strings "zappzerapp" (funcall continuation "zerapp")))</span>
 <span class="headers-out">POST /hunchentoot/test/parameter_latin1_post.html HTTP/1.1
 Host: localhost:4242
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 Content-Type: application/x-www-form-urlencoded
 <b>Transfer-Encoding: chunked</b>
 </span>
-<span class="repl-output">127.0.0.1 - [2012-12-09 10:06:44] "POST /hunchentoot/test/parameter_latin1_post.html HTTP/1.1" 200 1312 "-" "Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"</span>
+<span class="repl-output">127.0.0.1 - [2012-12-09 10:06:44] "POST /hunchentoot/test/parameter_latin1_post.html HTTP/1.1" 200 1312 "-" "Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)"</span>
 <span class="headers-in">HTTP/1.1 200 OK
 Content-Length: 1312
 Date: Sun, 09 Dec 2012 09:06:44 GMT
@@ -559,7 +559,7 @@ Content-Type: text/html; charset=ISO-8859-1
    "")</span>
 <span class="headers-out">GET /mitb/hunchentoot.html HTTP/1.1
 Host: members.shaw.ca
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 <b>Range: bytes=998-1034</b>
@@ -577,7 +577,7 @@ Connection: close
 </span>
 <span class="headers-out">GET /mitb/hunchentoot.html HTTP/1.1
 Host: members.shaw.ca
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+User-Agent: Drakma/1.3.0 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 <b>Range: bytes=1213-1249</b>
@@ -603,7 +603,8 @@ T</span>
     <p>
       Drakma depends on a number of open source libraries, so the
       preferred method to download, compile and load it is via <a
-      href="http://www.quicklisp.org/">Quicklisp</a>.
+      href="http://www.quicklisp.org/">Quicklisp</a>.  Drakma's
+      current version number is <clix:library-version/>.
     </p>
     <p>
       The canonical location for the latest version of Drakma is <a
