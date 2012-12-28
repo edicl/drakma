@@ -193,7 +193,7 @@ IĲJ : U+0132"</span>
       <p>
         For non-textual content types, a vector of octets is returned.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist")</span>
+      <pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist" :external-format :utf-8)</span>
 <span class="headers-out">GET /repos/edicl/drakma/git/tags/tag-does-not-exist HTTP/1.1
 Host: api.github.com
 User-Agent: Drakma/1.2.9 (SBCL 1.1.1.31.master.2-9fac43f-dirty; Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -215,9 +215,9 @@ Cache-Control:
 </span>
 <span class="repl-output">#(123 34 109 101 115 115 97 103 101 34 58 34 78 111 116 32 70 111 117 110 100 34 125)
 404
-((:SERVER . "nginx") (:DATE . "Fri, 28 Dec 2012 08:37:31 GMT") (:CONTENT-TYPE . "application/json; charset=utf-8") (:CONNECTION . "close") (:STATUS . "404 Not Found")
- (:X-GITHUB-MEDIA-TYPE . "github.beta") (:X-RATELIMIT-REMAINING . "48") (:X-RATELIMIT-LIMIT . "60") (:CONTENT-LENGTH . "23") (:X-CONTENT-TYPE-OPTIONS . "nosniff")
- (:CACHE-CONTROL . ""))
+((:SERVER . "nginx") (:DATE . "Fri, 28 Dec 2012 08:37:31 GMT") (:CONTENT-TYPE . "application/json; charset=utf-8")
+ (:CONNECTION . "close") (:STATUS . "404 Not Found") (:X-GITHUB-MEDIA-TYPE . "github.beta") (:X-RATELIMIT-REMAINING . "48")
+ (:X-RATELIMIT-LIMIT . "60") (:CONTENT-LENGTH . "23") (:X-CONTENT-TYPE-OPTIONS . "nosniff") (:CACHE-CONTROL . ""))
 #&lt;PURI:URI https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist&gt;
 #&lt;FLEXI-STREAMS:FLEXI-IO-STREAM {101C40C043}&gt;
 T
