@@ -1,3 +1,9 @@
+Version 1.3.0
+2012-12-28
+Redirect HTTP 302 and 303 using GET (Orivej Desh)
+Add URL-ENCODER keyword argument
+Move documentation to XML format and update docstrings
+
 Version 1.2.9
 2012-10-18
 Fix bug with Content-Length computation (Manabu Takayama)
