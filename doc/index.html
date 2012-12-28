@@ -255,7 +255,7 @@ Cache-Control:
 #&lt;FLEXI-STREAMS:FLEXI-IO-STREAM {101C40C043}&gt;
 T
 "Not Found"</span>
-<span class="repl-output">? </span><span class="repl-input">(<a href="http://weitz.de/flexi-streams/#octets-to-string">flexi-streams:octets-to-string</a> *)</span>
+<span class="repl-output">? </span><span class="repl-input">(<a href="http://weitz.de/flexi-streams/#octets-to-string" target="_new">flexi-streams:octets-to-string</a> *)</span>
 <span class="repl-output">"{\"message\":\"Not Found\"}"</span></pre>
     
     <h4 xmlns=""><a name="ex-chunked-https">Chunked transfers and HTTPS</a></h4>
@@ -478,32 +478,56 @@ Content-Type: text/html; charset=utf-8
         Drakma can return a stream to the application so that the
         reply is not completely buffered in memory first.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (<a href="#http-request">drakma:http-request</a> "http://www.quicklisp.org"
-                                     <a href="#arg-want-stream">:want-stream t</a>)))
-                   (loop for i below 40
-                         for line = (read-line stream)
-                         when (&gt; i 36)
-                         do (write-line line))
-                   (close stream)
-                   (values))</span>
-<span class="headers-out">GET / HTTP/1.1
-Host: www.quicklisp.org
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+      <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (<a href="#http-request">drakma:http-request</a> "https://api.github.com/orgs/edicl/public_members"
+                                      <b>:want-stream t</b>)))
+    (setf (<a href="http://weitz.de/flexi-streams/#flexi-stream-external-format" target="_new">flexi-streams:flexi-stream-external-format</a> stream) :utf-8)
+    (<a href="http://common-lisp.net/project/yason/#parse" target="_new">yason:parse</a> stream :object-as :plist))</span>
+<span class="headers-out">GET /orgs/edicl/public_members HTTP/1.1
+Host: api.github.com
+User-Agent: Drakma/1.2.9 (SBCL 1.1.1.31.master.2-9fac43f-dirty; Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 </span>
 <span class="headers-in">HTTP/1.1 200 OK
-Server: nginx/1.1.17
-Date: Sun, 09 Dec 2012 08:29:45 GMT
-Content-Type: text/html
-Content-Length: 1993
-Last-Modified: Wed, 04 Jan 2012 14:42:40 GMT
+Server: nginx
+Date: Fri, 28 Dec 2012 10:27:34 GMT
+Content-Type: application/json; charset=utf-8
 Connection: close
-Accept-Ranges: bytes
+Status: 200 OK
+Last-Modified: Sat, 22 Dec 2012 18:39:14 GMT
+X-Content-Type-Options: nosniff
+X-RateLimit-Limit: 60
+X-GitHub-Media-Type: github.beta
+Vary: Accept
+Content-Length: 1899
+Cache-Control: public, max-age=60, s-maxage=60
+ETag: "66a5dd35e79146a53029a1807293f9d3"
+X-RateLimit-Remaining: 56
 </span>
-<span class="repl-output">&lt;p&gt;For the latest Quicklisp news,
-see &lt;a href="http://twitter.com/quicklisp"&gt;@quicklisp&lt;/a&gt; on twitter
-or &lt;a href="http://blog.quicklisp.org/"&gt;the Quicklisp blog&lt;/a&gt;.</span>
+<span class="repl-output">(("type" "User" "repos_url" "https://api.github.com/users/hanshuebner/repos" "followers_url"
+  "https://api.github.com/users/hanshuebner/followers" "login" "hanshuebner" "gists_url"
+  "https://api.github.com/users/hanshuebner/gists{/gist_id}" "following_url"
+  "https://api.github.com/users/hanshuebner/following" "events_url"
+  "https://api.github.com/users/hanshuebner/events{/privacy}" "organizations_url"
+  "https://api.github.com/users/hanshuebner/orgs" "received_events_url"
+  "https://api.github.com/users/hanshuebner/received_events" "url"
+  "https://api.github.com/users/hanshuebner" "avatar_url"
+  "https://secure.gravatar.com/avatar/280d76aa82179ae04550534649de1e6e?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png"
+  "subscriptions_url" "https://api.github.com/users/hanshuebner/subscriptions" "starred_url"
+  "https://api.github.com/users/hanshuebner/starred{/owner}{/repo}" "id" 108751 "gravatar_id"
+  "280d76aa82179ae04550534649de1e6e")
+ ("type" "User" "repos_url" "https://api.github.com/users/nhabedi/repos" "followers_url"
+  "https://api.github.com/users/nhabedi/followers" "login" "nhabedi" "gists_url"
+  "https://api.github.com/users/nhabedi/gists{/gist_id}" "following_url"
+  "https://api.github.com/users/nhabedi/following" "events_url"
+  "https://api.github.com/users/nhabedi/events{/privacy}" "organizations_url"
+  "https://api.github.com/users/nhabedi/orgs" "received_events_url"
+  "https://api.github.com/users/nhabedi/received_events" "url"
+  "https://api.github.com/users/nhabedi" "avatar_url"
+  "https://secure.gravatar.com/avatar/24c09c7b0b2c0481283d854bacdd7926?d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png"
+  "subscriptions_url" "https://api.github.com/users/nhabedi/subscriptions" "starred_url"
+  "https://api.github.com/users/nhabedi/starred{/owner}{/repo}" "id" 537618 "gravatar_id"
+  "24c09c7b0b2c0481283d854bacdd7926"))</span>
 </pre>
     
     <h4 xmlns=""><a name="ex-assemble-request-content">Piecemeal assembly of request contents</a></h4>
@@ -553,8 +577,7 @@ Content-Type: text/html; charset=ISO-8859-1
     
     <h4 xmlns=""><a name="ex-partial-transfers">Partial transfers</a></h4>
       <p>
-        <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35">Partial
-        transfers</a> of resources are possible.
+        <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35" target="_new">Partial transfers</a> of resources are possible.
       </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(cl-ppcre:regex-replace-all
    "&lt;.*?&gt;"
@@ -1030,10 +1053,10 @@ T</span>
             <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code> is true, the stream
             should be closed (and not be re-used) after the body has
             been read.  The stream returned is a <a href="http://weitz.de/flexi-streams/">flexi-stream</a>
-            with a <a href="http://weitz.de/chunga/">chunked stream</a>
-            as its underlying stream.  If you want to read binary data
-            from this stream, read from the underlying stream which
-            you can get with FLEXI-STREAM-STREAM.
+            with a <a href="http://weitz.de/chunga/" target="_new">chunked stream</a> as its underlying stream.
+            If you want to read binary data from this stream, read
+            from the underlying stream which you can get with
+            FLEXI-STREAM-STREAM.
           </p>
           <p xmlns="http://www.w3.org/1999/xhtml">
             <a name="arg-stream"></a>
