@@ -193,41 +193,37 @@ IĲJ : U+0132"</span>
       <p>
         For non-textual content types, a vector of octets is returned.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "http://zappa.com/favicon.ico")</span>
-<span class="headers-out">GET /favicon.ico HTTP/1.1
-Host: zappa.com
-User-Agent: Drakma/1.2.9 (Clozure Common Lisp Version 1.8-r15286M  (DarwinX8664); Darwin; 12.2.0; http://weitz.de/drakma/)
+      <pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist")</span>
+<span class="headers-out">GET /repos/edicl/drakma/git/tags/tag-does-not-exist HTTP/1.1
+Host: api.github.com
+User-Agent: Drakma/1.2.9 (SBCL 1.1.1.31.master.2-9fac43f-dirty; Darwin; 12.2.0; http://weitz.de/drakma/)
 Accept: */*
 Connection: close
 </span>
-<span class="headers-in">HTTP/1.1 200 OK
-Date: Sun, 09 Dec 2012 08:15:14 GMT
-Server: Apache/2
-Last-Modified: Sun, 01 Apr 2007 15:44:59 GMT
-ETag: "e2803c-b6-42d0efcaf94c0"
-Accept-Ranges: bytes
-Content-Length: 182
-Vary: Accept-Encoding,User-Agent
+<span class="headers-in">HTTP/1.1 404 Not Found
+Server: nginx
+Date: Fri, 28 Dec 2012 08:37:31 GMT
+<b>Content-Type: application/json; charset=utf-8</b>
 Connection: close
-<b>Content-Type: image/x-icon</b>
+Status: 404 Not Found
+X-GitHub-Media-Type: github.beta
+X-RateLimit-Remaining: 48
+X-RateLimit-Limit: 60
+Content-Length: 23
+X-Content-Type-Options: nosniff
+Cache-Control: 
 </span>
-<span class="repl-output">#(71 73 70 56 57 97 17 0 17 0 179 1 0 150 151 153 255 255 255 37 37 36 112 114 115 201 202 204
-  0 0 0 80 83 84 26 28 26 230 231 231 249 249 249 12 13 14 219 221 222 18 21 22 239 240 241 52
-  52 54 64 66 66 33 249 4 1 0 0 1 0 44 0 0 0 0 17 0 17 0 0 4 99 48 200 73 107 109 54 172 101
-  129 120 196 180 12 12 51 80 64 161 42 3 48 28 170 106 72 141 16 223 120 113 166 121 95 0 14
-  95 239 33 236 41 98 10 129 114 185 188 29 127 25 201 224 73 60 4 8 0 130 22 59 64 52 96 135
-  148 35 96 80 152 159 186 192 64 183 112 0 200 61 65 0 1 192 76 214 185 113 102 241 88 26 90
-  8 81 18 8 94 130 134 22 17 0 59)
-200
-((:DATE . "Sun, 09 Dec 2012 08:15:14 GMT") (:SERVER . "Apache/2")
- (:LAST-MODIFIED . "Sun, 01 Apr 2007 15:44:59 GMT") (:ETAG . "\"e2803c-b6-42d0efcaf94c0\"")
- (:ACCEPT-RANGES . "bytes") (:CONTENT-LENGTH . "182") (:VARY . "Accept-Encoding,User-Agent")
- (:CONNECTION . "close") (:CONTENT-TYPE . "image/x-icon"))
-#&lt;URI http://zappa.com/favicon.ico&gt;
-#&lt;FLEXI-STREAMS:FLEXI-IO-STREAM #x30200154D83D&gt;
+<span class="repl-output">#(123 34 109 101 115 115 97 103 101 34 58 34 78 111 116 32 70 111 117 110 100 34 125)
+404
+((:SERVER . "nginx") (:DATE . "Fri, 28 Dec 2012 08:37:31 GMT") (:CONTENT-TYPE . "application/json; charset=utf-8") (:CONNECTION . "close") (:STATUS . "404 Not Found")
+ (:X-GITHUB-MEDIA-TYPE . "github.beta") (:X-RATELIMIT-REMAINING . "48") (:X-RATELIMIT-LIMIT . "60") (:CONTENT-LENGTH . "23") (:X-CONTENT-TYPE-OPTIONS . "nosniff")
+ (:CACHE-CONTROL . ""))
+#&lt;PURI:URI https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist&gt;
+#&lt;FLEXI-STREAMS:FLEXI-IO-STREAM {101C40C043}&gt;
 T
-"OK"</span>
-</pre>
+"Not Found"</span>
+<span class="repl-output">? </span><span class="repl-input">(<a href="http://weitz.de/flexi-streams/#octets-to-string">flexi-streams:octets-to-string</a> *)</span>
+<span class="repl-output">"{\"message\":\"Not Found\"}"</span></pre>
     </clix:subchapter>
     <clix:subchapter name='ex-chunked-https' title='Chunked transfers and HTTPS'>
       <p>
