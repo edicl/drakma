@@ -222,7 +222,7 @@ Cache-Control:
 #&lt;FLEXI-STREAMS:FLEXI-IO-STREAM {101C40C043}&gt;
 T
 "Not Found"</span>
-<span class="repl-output">? </span><span class="repl-input">(<a href="http://weitz.de/flexi-streams/#octets-to-string">flexi-streams:octets-to-string</a> *)</span>
+<span class="repl-output">? </span><span class="repl-input">(<a href="http://weitz.de/flexi-streams/#octets-to-string" target="_new">flexi-streams:octets-to-string</a> *)</span>
 <span class="repl-output">"{\"message\":\"Not Found\"}"</span></pre>
     </clix:subchapter>
     <clix:subchapter name='ex-chunked-https' title='Chunked transfers and HTTPS'>
@@ -449,8 +449,8 @@ Content-Type: text/html; charset=utf-8
       </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(let ((stream (<a href="#http-request">drakma:http-request</a> "https://api.github.com/orgs/edicl/public_members"
                                       <b>:want-stream t</b>)))
-    (setf (<a href="http://weitz.de/flexi-streams/#flexi-stream-external-format">flexi-streams:flexi-stream-external-format</a> stream) :utf-8)
-    (<a href="http://common-lisp.net/project/yason/#parse">yason:parse</a> stream :object-as :plist))</span>
+    (setf (<a href="http://weitz.de/flexi-streams/#flexi-stream-external-format" target="_new">flexi-streams:flexi-stream-external-format</a> stream) :utf-8)
+    (<a href="http://common-lisp.net/project/yason/#parse" target="_new">yason:parse</a> stream :object-as :plist))</span>
 <span class="headers-out">GET /orgs/edicl/public_members HTTP/1.1
 Host: api.github.com
 User-Agent: Drakma/1.2.9 (SBCL 1.1.1.31.master.2-9fac43f-dirty; Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -546,8 +546,8 @@ Content-Type: text/html; charset=ISO-8859-1
     </clix:subchapter>
     <clix:subchapter name='ex-partial-transfers' title='Partial transfers'>
       <p>
-        <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35">Partial
-        transfers</a> of resources are possible.
+        <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35"
+           target="_new">Partial transfers</a> of resources are possible.
       </p>
       <pre><span class="repl-output">? </span><span class="repl-input">(cl-ppcre:regex-replace-all
    "&lt;.*?&gt;"
@@ -1035,10 +1035,11 @@ T</span>
             should be closed (and not be re-used) after the body has
             been read.  The stream returned is a <a
             href="http://weitz.de/flexi-streams/">flexi-stream</a>
-            with a <a href="http://weitz.de/chunga/">chunked stream</a>
-            as its underlying stream.  If you want to read binary data
-            from this stream, read from the underlying stream which
-            you can get with FLEXI-STREAM-STREAM.
+            with a <a href="http://weitz.de/chunga/"
+            target="_new">chunked stream</a> as its underlying stream.
+            If you want to read binary data from this stream, read
+            from the underlying stream which you can get with
+            FLEXI-STREAM-STREAM.
           </p>
           <p>
             <a name="arg-stream"/>
