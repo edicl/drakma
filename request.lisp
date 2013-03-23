@@ -776,16 +776,20 @@ PARAMETERS will not be used."
                                        (ignore-errors (close http-stream)))
                                      (setq done t)
                                      (return-from http-request
-                                       (apply #'http-request new-uri
-                                              :method (cond ((member status-code +redirect-to-get-codes+) :get)
-                                                            (t method))
-                                              :redirect (cond ((integerp redirect) (1- redirect))
-                                                              (t redirect))
-                                              :stream (and re-use-stream http-stream)
-                                              :additional-headers additional-headers
-                                              :parameters parameters
-                                              :preserve-uri t
-                                              args)))))
+                                       (let ((method (cond ((member status-code +redirect-to-get-codes+) :get)
+                                                           (t method))))
+                                         (apply #'http-request new-uri
+                                                :method method
+                                                :redirect (cond ((integerp redirect) (1- redirect))
+                                                                (t redirect))
+                                                :stream (and re-use-stream http-stream)
+                                                :additional-headers additional-headers
+                                                :parameters parameters
+                                                :preserve-uri t
+                                                :form-data (if (eq method :get)
+                                                               nil
+                                                               form-data)
+                                                args))))))
                                (let ((transfer-encodings (header-value :transfer-encoding headers)))
                                  (when transfer-encodings
                                    (setq transfer-encodings (split-tokens transfer-encodings)))
