@@ -1361,11 +1361,10 @@ T</span>
             time</a>.  Currently understands the following formats:
           </p>
           <pre>"Wed, 06-Feb-2008 21:01:38 GMT"
-          "Wed, 06-Feb-08 21:01:38 GMT"
-          "Tue Feb 13 08:00:00 2007 GMT"
-          "Wednesday, 07-February-2027 08:55:23 GMT"
-          "Wed, 07-02-2017 10:34:45 GMT"
-          </pre>
+"Wed, 06-Feb-08 21:01:38 GMT"
+"Tue Feb 13 08:00:00 2007 GMT"
+"Wednesday, 07-February-2027 08:55:23 GMT"
+"Wed, 07-02-2017 10:34:45 GMT"</pre>
           <p>
             Instead of "GMT" time zone abbreviations like "CEST" and UTC
             offsets like "GMT-01:30" are also allowed.
