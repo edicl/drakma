@@ -468,7 +468,7 @@ PARAMETERS will not be used."
   (when (and close keep-alive)
     (parameter-error "CLOSE and KEEP-ALIVE must not be both true."))
   (when (and form-data (not (member method '(:post :report) :test #'eq)))
-    (parameter-error "FORM-DATA makes only sense with POST requests."))
+    (parameter-error "FORM-DATA only makes sense with POST requests."))
   (when range
     (unless (and (listp range)
                  (integerp (first range))
