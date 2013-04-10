@@ -245,7 +245,7 @@ PROTOCOL is the HTTP protocol which is going to be used in the
 request line, it must be one of the keywords :HTTP/1.0 or
 :HTTP/1.1.  METHOD is the method used in the request line, a
 keyword \(like :GET or :HEAD) denoting a valid HTTP/1.1 or WebDAV
-request method, or :REPORT, as described in the Versioning 
+request method, or :REPORT, as described in the Versioning
 Extensions to WebDAV.  Additionally, you can also use the pseudo
 method :OPTIONS* which is like :OPTIONS but means that an
 \"OPTIONS *\" request line will be sent, i.e. the URI's path and
@@ -702,7 +702,7 @@ PARAMETERS will not be used."
               (force-output http-stream)
               (when (and content (null content-length))
                 (setf (chunked-stream-output-chunking-p
-                       (flexi-stream-stream http-stream)) t))         
+                       (flexi-stream-stream http-stream)) t))
               (labels ((finish-request (content &optional continuep)
                          (send-content content http-stream external-format-out)
                          (when continuep
@@ -776,8 +776,10 @@ PARAMETERS will not be used."
                                        (ignore-errors (close http-stream)))
                                      (setq done t)
                                      (return-from http-request
-                                       (let ((method (cond ((member status-code +redirect-to-get-codes+) :get)
-                                                           (t method))))
+                                       (let ((method (if (and (member status-code +redirect-to-get-codes+)
+                                                              (member method +redirect-to-get-methods+))
+                                                         :get
+                                                         method)))
                                          (apply #'http-request new-uri
                                                 :method method
                                                 :redirect (cond ((integerp redirect) (1- redirect))
