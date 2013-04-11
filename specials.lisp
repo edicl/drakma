@@ -42,10 +42,10 @@
   "A list of all HTTP return codes that redirect us to another URI.")
 
 (define-constant +redirect-to-get-codes+ '(302 303)
-  "A list of HTTP return codes that redirect using a GET method.")
+  "A list of HTTP return codes that redirect using a GET method
+(see http://en.wikipedia.org/wiki/Post/Redirect/Get).")
 
 (define-constant +known-methods+ '(:copy
-                                   :delete
                                    :delete
                                    :get
                                    :head
@@ -63,6 +63,10 @@
                                    :trace
                                    :unlock)
   "The HTTP methods \(including WebDAV methods) Drakma knows.")
+
+(define-constant +redirect-to-get-methods+ '(:post)
+  "A list of HTTP methods that should be changed to GET in case of redirect
+(see http://en.wikipedia.org/wiki/Post/Redirect/Get).")
 
 (defconstant +buffer-size+ 8192)
 
@@ -262,4 +266,3 @@ timezones.")
     (cdr (assoc symbol
                 exported-symbols-alist
                 :test #'eq))))
-               
