@@ -735,7 +735,8 @@ PARAMETERS will not be used."
                                (when cookie-jar
                                  (update-cookies (get-cookies headers uri) cookie-jar))
                                (when (and redirect
-                                          (member status-code +redirect-codes+))
+                                          (member status-code +redirect-codes+)
+                                          (header-value :location headers))
                                  (unless (or (eq redirect t)
                                              (and (integerp redirect)
                                                   (plusp redirect)))
@@ -747,14 +748,7 @@ PARAMETERS will not be used."
                                  (when auto-referer
                                    (setq additional-headers (set-referer uri additional-headers)))
                                  (let* ((location (header-value :location headers))
-                                        (new-uri (merge-uris
-                                                  (cond ((or (null location)
-                                                             (zerop (length location)))
-                                                         (drakma-warn
-                                                          "Empty `Location' header, assuming \"/\".")
-                                                         "/")
-                                                        (t location))
-                                                  uri))
+                                        (new-uri (merge-uris location uri))
                                         ;; can we re-use the stream?
                                         (old-server-p (and (string= (uri-host new-uri)
                                                                     (uri-host uri))
