@@ -205,7 +205,7 @@ headers of the chunked stream \(if any) as a second value."
                               (user-agent :drakma)
                               (accept "*/*")
                               range
-                              proxy
+                              (proxy *default-http-proxy*)
                               proxy-basic-authorization
                               real-host
                               additional-headers
@@ -377,7 +377,7 @@ list of two values - a string denoting the proxy server and an
 integer denoting the port to use \(which will default to 80
 otherwise).  PROXY-BASIC-AUTHORIZATION is used like
 BASIC-AUTHORIZATION, but for the proxy, and only if PROXY is
-true.
+true. Defaults to *default-http-proxy*.
 
 If REAL-HOST is not NIL, request is sent to the denoted host instead
 of the URI host.  When specified, REAL-HOST supersedes PROXY.

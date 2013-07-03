@@ -37,6 +37,7 @@
   (:export #:*allow-dotless-cookie-domains-p*
            #:*body-format-function*
            #:*remove-duplicate-cookies-p*
+           #:*default-http-proxy*
            #:*drakma-default-external-format*
            #:*header-stream*
            #:*ignore-unparseable-cookie-dates-p*
