@@ -205,7 +205,7 @@ headers of the chunked stream \(if any) as a second value."
                               (user-agent :drakma)
                               (accept "*/*")
                               range
-                              proxy
+                              (proxy *default-http-proxy*)
                               proxy-basic-authorization
                               real-host
                               additional-headers
@@ -375,7 +375,8 @@ If PROXY is not NIL, it should be a string denoting a proxy
 server through which the request should be sent.  Or it can be a
 list of two values - a string denoting the proxy server and an
 integer denoting the port to use \(which will default to 80
-otherwise).  PROXY-BASIC-AUTHORIZATION is used like
+otherwise).  Defaults to *default-http-proxy*. 
+PROXY-BASIC-AUTHORIZATION is used like
 BASIC-AUTHORIZATION, but for the proxy, and only if PROXY is
 true.
 
