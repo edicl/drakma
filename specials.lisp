@@ -248,6 +248,13 @@ proceeds as described in the HTTP-REQUEST documentation entry.")
   "An alist which maps time zone abbreviations to Common Lisp
 timezones.")
 
+(defvar *default-http-proxy* nil
+  "HTTP proxy to be used as default. If not NIL, it should be a string
+denoting a proxy server through which the request should be sent.  Or
+it can be a list of two values - a string denoting the proxy server
+and an integer denoting the port to use \(which will default to 80
+otherwise).")
+
 ;; stuff for Nikodemus Siivola's HYPERDOC
 ;; see <http://common-lisp.net/project/hyperdoc/>
 ;; and <http://www.cliki.net/hyperdoc>

@@ -957,7 +957,8 @@ T</span>
             the request should be sent.  Or it can be a list of two
             values - a string denoting the proxy server and an integer
             denoting the port to use (which will default to 80
-            otherwise).
+            otherwise).  Defaults to
+            <clix:arg>*default-http-proxy*</clix:arg>.
             <clix:arg>proxy-basic-authorization</clix:arg> is used
             like <clix:arg>basic-authorization</clix:arg>, but for the
             proxy, and only if <clix:arg>proxy</clix:arg> is true.
@@ -1168,6 +1169,20 @@ T</span>
             determine whether the body is text and then proceeds as
             described in the <clix:ref>HTTP-REQUEST</clix:ref>
             documentation entry.
+          </p>
+        </clix:description>
+      </clix:special-variable>
+
+      <clix:special-variable name="*default-http-proxy*">
+        <clix:description>
+          <p>
+	    HTTP proxy to be used as default for the proxy keyword
+	    argument of <clix:ref>HTTP-REQUEST</clix:ref>. If not
+	    <code>NIL</code>, it should be a string denoting a proxy
+	    server through which the request should be sent.  Or it
+	    can be a list of two values - a string denoting the proxy
+	    server and an integer denoting the port to use (which
+	    will default to 80 otherwise).
           </p>
         </clix:description>
       </clix:special-variable>
