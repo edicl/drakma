@@ -375,9 +375,10 @@ If PROXY is not NIL, it should be a string denoting a proxy
 server through which the request should be sent.  Or it can be a
 list of two values - a string denoting the proxy server and an
 integer denoting the port to use \(which will default to 80
-otherwise).  PROXY-BASIC-AUTHORIZATION is used like
+otherwise).  Defaults to *default-http-proxy*. 
+PROXY-BASIC-AUTHORIZATION is used like
 BASIC-AUTHORIZATION, but for the proxy, and only if PROXY is
-true. Defaults to *default-http-proxy*.
+true.
 
 If REAL-HOST is not NIL, request is sent to the denoted host instead
 of the URI host.  When specified, REAL-HOST supersedes PROXY.
