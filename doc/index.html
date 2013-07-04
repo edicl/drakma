@@ -633,7 +633,7 @@ T</span>
     <p>
       Drakma depends on a number of open source libraries, so the
       preferred method to download, compile and load it is via <a href="http://www.quicklisp.org/">Quicklisp</a>.  Drakma's
-      current version number is 1.3.3.
+      current version number is 1.3.4.
     </p>
     <p>
       The canonical location for the latest version of Drakma is <a href="http://weitz.de/files/drakma.tar.gz">http://weitz.de/files/drakma.tar.gz</a>.
@@ -976,7 +976,8 @@ T</span>
             the request should be sent.  Or it can be a list of two
             values - a string denoting the proxy server and an integer
             denoting the port to use (which will default to 80
-            otherwise).
+            otherwise).  Defaults to
+            <code xmlns=""><i>*default-http-proxy*</i></code>.
             <code xmlns=""><i>proxy-basic-authorization</i></code> is used
             like <code xmlns=""><i>basic-authorization</i></code>, but for the
             proxy, and only if <code xmlns=""><i>proxy</i></code> is true.
@@ -1183,6 +1184,20 @@ T</span>
             determine whether the body is text and then proceeds as
             described in the <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code>
             documentation entry.
+          </p>
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="*default-http-proxy*"></a>
+      [Special variable]
+      <br><b>*default-http-proxy*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+	    HTTP proxy to be used as default for the proxy keyword
+	    argument of <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code>. If not
+	    <code>NIL</code>, it should be a string denoting a proxy
+	    server through which the request should be sent.  Or it
+	    can be a list of two values - a string denoting the proxy
+	    server and an integer denoting the port to use (which
+	    will default to 80 otherwise).
           </p>
         </clix:description></blockquote></p>
 
@@ -1602,6 +1617,9 @@ Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 </li>
 <li>
 <code><a href="#*body-format-function*">*body-format-function*</a></code><span class="entry-type">Special variable</span>
+</li>
+<li>
+<code><a href="#*default-http-proxy*">*default-http-proxy*</a></code><span class="entry-type">Special variable</span>
 </li>
 <li>
 <code><a href="#*drakma-default-external-format*">*drakma-default-external-format*</a></code><span class="entry-type">Special variable</span>
