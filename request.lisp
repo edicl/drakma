@@ -141,7 +141,8 @@ TEXTP is true, the body is assumed to be of content type `text' and
 will be returned as a string.  Otherwise an array of octets \(or NIL
 for an empty body) is returned.  Returns the optional `trailer' HTTP
 headers of the chunked stream \(if any) as a second value."
-  (let ((content-length (when-let (value (header-value :content-length headers))
+  (let ((content-length (when-let (value (and (not (header-value :transfer-encoding headers)) ;; see RFC 2616, section 4.4, 3.
+                                              (header-value :content-length headers)))
                           (parse-integer value)))
         (element-type (if textp
                         #+:lispworks 'lw:simple-char #-:lispworks 'character
@@ -149,9 +150,6 @@ headers of the chunked stream \(if any) as a second value."
         (chunkedp (chunked-stream-input-chunking-p (flexi-stream-stream stream))))
     (values (cond ((eql content-length 0) nil)
                   (content-length
-                   (when chunkedp
-                     ;; see RFC 2616, section 4.4
-                     (syntax-error "Got Content-Length header although input chunking is on."))
                    (setf (flexi-stream-element-type stream) 'octet)
                    (let ((result (make-array content-length :element-type 'octet)))
                      #+:clisp
