@@ -31,7 +31,7 @@
 
 (defmacro define-constant (name value &optional doc)
   "A version of DEFCONSTANT for, cough, /strict/ CL implementations."
-  ;; See <http://www.sbcl.org/manual/Defining-Constants.html>
+  ;; See <http://www.sbcl.org/manual#Defining-Constants>
   `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)
      ,@(when doc (list doc))))
 
