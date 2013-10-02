@@ -111,7 +111,7 @@ body using the boundary BOUNDARY."
                  (crlf) (crlf)
                  (setf (flexi-stream-external-format stream) external-format-out)
                  (format stream "~A" value)
-                 (setf (flexi-stream-external-format stream) +latin-1+)                 
+                 (setf (flexi-stream-external-format stream) +latin-1+))
                 ((and (listp value)
                       (first value)
                       (not (stringp (first value))))
