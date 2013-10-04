@@ -260,6 +260,9 @@ otherwise).")
 ;; and <http://www.cliki.net/hyperdoc>
 ;; also used by LW-ADD-ONS
 
+(defvar *no-proxy-domains* nil
+  "A list of domains for which a proxy should not be used.")
+
 (defvar *hyperdoc-base-uri* "http://weitz.de/drakma/")
 
 (let ((exported-symbols-alist
