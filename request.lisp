@@ -86,7 +86,7 @@ depending on the type of CONTENT."
            (funcall content stream))
           (t (parameter-error "Don't know how to send content ~S to server." content)))))
 
-(defun make-form-data-function (parameters boundary)
+(defun make-form-data-function (parameters boundary external-format-out)
   "Creates and returns a closure which can be used as an argument for
 SEND-CONTENT to send PARAMETERS as a `multipart/form-data' request
 body using the boundary BOUNDARY."
@@ -106,8 +106,12 @@ body using the boundary BOUNDARY."
           (crlf)
           (format stream "Content-Disposition: form-data; name=\"~A\"" name)
           (cond ((stringp value)
+                 (crlf)
+                 (format stream "Content-Type: text/plain; charset=~a" external-format-out)
                  (crlf) (crlf)
-                 (format stream "~A" value))
+                 (setf (flexi-stream-external-format stream) external-format-out)
+                 (format stream "~A" value)
+                 (setf (flexi-stream-external-format stream) +latin-1+))
                 ((and (listp value)
                       (first value)
                       (not (stringp (first value))))
@@ -509,7 +513,7 @@ PARAMETERS will not be used."
         (setq parameters-used-p t)
         (cond ((or form-data file-parameters-p)
                (let ((boundary (format nil "----------~A" (make-random-string))))
-                 (setq content (make-form-data-function parameters boundary)
+                 (setq content (make-form-data-function parameters boundary external-format-out)
                        content-type (format nil "multipart/form-data; boundary=~A" boundary)))
                (unless (or file-parameters-p content-length-provided-p)
                  (setq content-length (or content-length t))))
