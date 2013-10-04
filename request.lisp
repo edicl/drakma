@@ -204,6 +204,7 @@ headers of the chunked stream \(if any) as a second value."
                               (accept "*/*")
                               range
                               (proxy *default-http-proxy*)
+                              (no-proxy-domains *no-proxy-domains*)
                               proxy-basic-authorization
                               real-host
                               additional-headers
@@ -376,7 +377,13 @@ integer denoting the port to use \(which will default to 80
 otherwise).  Defaults to *default-http-proxy*. 
 PROXY-BASIC-AUTHORIZATION is used like
 BASIC-AUTHORIZATION, but for the proxy, and only if PROXY is
-true.
+true. If the host portion of the uri is present in the
+*no-proxy-domains* or the NO-PROXY-DOMAINS list then the proxy
+setting will be ignored for this request.
+
+If NO-PROXY-DOMAINS is set then it will supersede the
+*no-proxy-domains* variable. Inserting domains into this list will
+allow them to ignore the proxy setting.
 
 If REAL-HOST is not NIL, request is sent to the denoted host instead
 of the URI host.  When specified, REAL-HOST supersedes PROXY.
@@ -481,6 +488,9 @@ PARAMETERS will not be used."
   (when proxy
     (when (atom proxy)
       (setq proxy (list proxy 80))))
+  ;; Ignore the proxy for whitelisted hosts.
+  (when (member (uri-host uri) no-proxy-domains :test #'string=)
+    (setq proxy '()))
   ;; make sure we don't get :CRLF on Windows
   (let ((*default-eol-style* :lf)
         (file-parameters-p (find-if-not (lambda (thing)

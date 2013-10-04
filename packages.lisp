@@ -38,6 +38,7 @@
            #:*body-format-function*
            #:*remove-duplicate-cookies-p*
            #:*default-http-proxy*
+           #:*no-proxy-domains*
            #:*drakma-default-external-format*
            #:*header-stream*
            #:*ignore-unparseable-cookie-dates-p*
