@@ -961,7 +961,17 @@ T</span>
             <clix:arg>*default-http-proxy*</clix:arg>.
             <clix:arg>proxy-basic-authorization</clix:arg> is used
             like <clix:arg>basic-authorization</clix:arg>, but for the
-            proxy, and only if <clix:arg>proxy</clix:arg> is true.
+            proxy, and only if <clix:arg>proxy</clix:arg> is true.  If
+            the host portion of the uri is present in the
+            <clix:ref>*NO-PROXY-DOMAINS*</clix:ref> or the
+            <clix:arg>NO-PROXY-DOMAINS</clix:arg> list then the proxy
+            setting will be ignored for this request.
+          </p>
+          <p>
+            If <clix:arg>NO-PROXY-DOMAINS</clix:arg> is set then it
+            will supersede the <clix:ref>*NO-PROXY-DOMAINS*</clix:ref>
+            variable. Inserting domains into this list will allow them
+            to ignore the proxy setting.
           </p>
           <p>
             <a name="arg-real-host"/>
@@ -1183,6 +1193,14 @@ T</span>
 	    can be a list of two values - a string denoting the proxy
 	    server and an integer denoting the port to use (which
 	    will default to 80 otherwise).
+          </p>
+        </clix:description>
+      </clix:special-variable>
+
+      <clix:special-variable name="*no-proxy-domains*">
+        <clix:description>
+          <p>
+            A list of domains for which a proxy should not be used.
           </p>
         </clix:description>
       </clix:special-variable>
