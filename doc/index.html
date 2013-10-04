@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Strict//EN">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta><title>DRAKMA - A Common Lisp HTTP client</title><meta name="description" content="
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta><title>Drakma - A Common Lisp HTTP client</title><meta name="description" content="
     Drakma is a full-featured HTTP client implemented in Common Lisp.
     It knows how to handle HTTP/1.1 chunking,
     persistent connections, re-usable sockets, SSL, continuable uploads, file uploads, cookies, and more.
@@ -25,7 +25,7 @@
   
   
 
-  <h2>DRAKMA - A Common Lisp HTTP client</h2>
+  <h2>Drakma - A Common Lisp HTTP client</h2>
 
   <blockquote>
     <h3 xmlns=""><a class="none" name="abstract">Abstract</a></h3>
@@ -633,7 +633,7 @@ T</span>
     <p>
       Drakma depends on a number of open source libraries, so the
       preferred method to download, compile and load it is via <a href="http://www.quicklisp.org/">Quicklisp</a>.  Drakma's
-      current version number is 1.3.5.
+      current version number is 1.3.6.
     </p>
     <p>
       The canonical location for the latest version of Drakma is <a href="http://weitz.de/files/drakma.tar.gz">http://weitz.de/files/drakma.tar.gz</a>.
@@ -853,9 +853,11 @@ T</span>
             <code xmlns=""><i>url-encoder</i></code> specifies a custom URL
             encoder function which will be used by drakma to
             URL-encode parameter names and values.  It needs to be a
-            function of one argument.  The argument is the string to
-            encode, the return value must be the URL-encoded string.
-            This can be used if specific encoding rules are required.
+            function of two arguments.  The arguments are the string
+            to encode and the external format to use (as accepted by
+            FLEXI-STREAMS:STRING-TO-OCTETS).  The return value must be
+            the URL-encoded string.  This can be used if specific
+            encoding rules are required.
           </p>
           <p xmlns="http://www.w3.org/1999/xhtml">
             <a name="arg-content"></a>
