@@ -1,3 +1,6 @@
+Version 1.3.6
+Documentation fixes (thanks to sarvid and stassats for the report)
+
 Version 1.3.5
 Ignore incoming Content-Length header when chunking is on
 Make POST requests use external-format-out for multipart/form-data. (Raymond Wiker)
