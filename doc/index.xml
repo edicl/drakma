@@ -2,7 +2,7 @@
 <?xml-stylesheet type="text/xsl" href="clixdoc.xsl" ?>
 
 <clix:documentation xmlns='http://www.w3.org/1999/xhtml' xmlns:clix='http://bknr.net/clixdoc'>
-  <clix:title>DRAKMA - A Common Lisp HTTP client</clix:title>
+  <clix:title>Drakma - A Common Lisp HTTP client</clix:title>
   <clix:short-description>
     Drakma is a full-featured HTTP client implemented in Common Lisp.
     It knows how to handle <a href="#chunked">HTTP/1.1 chunking</a>,
@@ -14,7 +14,7 @@
     href="#arg-cookie-jar">cookies</a>, and more.
   </clix:short-description>
 
-  <h2>DRAKMA - A Common Lisp HTTP client</h2>
+  <h2>Drakma - A Common Lisp HTTP client</h2>
 
   <blockquote>
     <clix:chapter name='abstract' title='Abstract'>
@@ -834,9 +834,11 @@ T</span>
             <clix:arg>url-encoder</clix:arg> specifies a custom URL
             encoder function which will be used by drakma to
             URL-encode parameter names and values.  It needs to be a
-            function of one argument.  The argument is the string to
-            encode, the return value must be the URL-encoded string.
-            This can be used if specific encoding rules are required.
+            function of two arguments.  The arguments are the string
+            to encode and the external format to use (as accepted by
+            FLEXI-STREAMS:STRING-TO-OCTETS).  The return value must be
+            the URL-encoded string.  This can be used if specific
+            encoding rules are required.
           </p>
           <p>
             <a name="arg-content"/>
