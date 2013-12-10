@@ -30,7 +30,7 @@
 (in-package :cl-user)
 
 (defpackage :drakma
-  (:use :cl :puri :flexi-streams :chunga)
+  (:use :cl :flexi-streams :chunga)
   ;; the variable defined in the ASDF system definition
   (:import-from :drakma-asd #:*drakma-version-string*)
   (:shadow #:syntax-error #:parameter-error)

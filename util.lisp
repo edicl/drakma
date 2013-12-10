@@ -129,7 +129,7 @@ value with a #\\= character.  If the value is NIL, no #\\= is used."
 (defun default-port (uri)
   "Returns the default port number for the \(PURI) URI URI.
 Works only with the http and https schemes."
-  (ecase (uri-scheme uri)
+  (ecase (puri:uri-scheme uri)
     (:http 80)
     (:https 443)))
 
@@ -137,7 +137,7 @@ Works only with the http and https schemes."
   "If the \(PURI) URI specifies an explicit port number which is
 different from the default port its scheme, this port number is
 returned, otherwise NIL."
-  (when-let (port (uri-port uri))
+  (when-let (port (puri:uri-port uri))
     (when (/= port (default-port uri))
       port)))
 
