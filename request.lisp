@@ -472,12 +472,12 @@ PARAMETERS will not be used."
   (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory))
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
-  (setq uri (cond ((uri-p uri) (copy-uri uri))
-                  (t (parse-uri uri))))
+  (setq uri (cond ((puri:uri-p uri) (puri:copy-uri uri))
+                  (t (puri:parse-uri uri))))
   (unless (member method +known-methods+ :test #'eq)
     (parameter-error "Don't know how to handle method ~S." method))
-  (unless (member (uri-scheme uri) '(:http :https) :test #'eq)
-    (parameter-error "Don't know how to handle scheme ~S." (uri-scheme uri)))
+  (unless (member (puri:uri-scheme uri) '(:http :https) :test #'eq)
+    (parameter-error "Don't know how to handle scheme ~S." (puri:uri-scheme uri)))
   (when (and close keep-alive)
     (parameter-error "CLOSE and KEEP-ALIVE must not be both true."))
   (when (and form-data (not (member method '(:post :report) :test #'eq)))
@@ -496,7 +496,7 @@ PARAMETERS will not be used."
     (when (atom proxy)
       (setq proxy (list proxy 80))))
   ;; Ignore the proxy for whitelisted hosts.
-  (when (member (uri-host uri) no-proxy-domains :test #'string=)
+  (when (member (puri:uri-host uri) no-proxy-domains :test #'string=)
     (setq proxy '()))
   ;; make sure we don't get :CRLF on Windows
   (let ((*default-eol-style* :lf)
@@ -528,13 +528,13 @@ PARAMETERS will not be used."
       (unwind-protect
           (progn
             (let ((host (or (and proxy (first proxy))
-                            (uri-host uri)))
+                            (puri:uri-host uri)))
                   (port (cond (proxy (second proxy))
-                              ((uri-port uri))
+                              ((puri:uri-port uri))
                               (t (default-port uri))))
                   (use-ssl (and (not proxying-https-p)
                                 (or force-ssl
-                                    (eq (uri-scheme uri) :https)))))
+                                    (eq (puri:uri-scheme uri) :https)))))
               #+(and :lispworks5.0 :mswindows
                      (not :lw-does-not-have-write-timeout))
               (when use-ssl
@@ -605,9 +605,9 @@ PARAMETERS will not be used."
                 ;; set up a tunnel through the proxy server to the
                 ;; final destination
                 (write-http-line "CONNECT ~A:~:[443~;~:*~A~] HTTP/1.1"
-                                 (uri-host uri) (uri-port uri))
+                                 (puri:uri-host uri) (puri:uri-port uri))
                 (write-http-line "Host: ~A:~:[443~;~:*~A~]"
-                                 (uri-host uri) (uri-port uri))
+                                 (puri:uri-host uri) (puri:uri-port uri))
                 (write-http-line "")
                 (force-output http-stream)
                 ;; check we get a 200 response before proceeding
@@ -622,33 +622,33 @@ PARAMETERS will not be used."
                 (setq http-stream (wrap-stream (make-ssl-stream raw-http-stream))))
               (when-let (all-get-parameters
                          (and (not preserve-uri)
-                              (append (dissect-query (uri-query uri))
+                              (append (dissect-query (puri:uri-query uri))
                                       (and (not parameters-used-p) parameters))))
-                (setf (uri-query uri)
+                (setf (puri:uri-query uri)
                       (alist-to-url-encoded-string all-get-parameters external-format-out url-encoder)))
               (when (eq method :options*)
                 ;; special pseudo-method
                 (setf method :options
-                      (uri-path uri) "*"
-                      (uri-query uri) nil))
+                      (puri:uri-path uri) "*"
+                      (puri:uri-query uri) nil))
               (write-http-line "~A ~A ~A"
                                (string-upcase method)
                                (if (and preserve-uri
                                         (stringp unparsed-uri))
                                    (trivial-uri-path unparsed-uri)
-                                   (render-uri (cond
+                                   (puri:render-uri (cond
                                                  ((and proxy
                                                        (null stream)
                                                        (not proxying-https-p)
                                                        (not real-host))
                                                   uri)
                                                  (t
-                                                  (make-instance 'uri
-                                                                 :path (or (uri-path uri) "/")
-                                                                 :query (uri-query uri))))
+                                                  (make-instance 'puri:uri
+                                                                 :path (or (puri:uri-path uri) "/")
+                                                                 :query (puri:uri-query uri))))
                                                nil))
                                (string-upcase protocol))
-              (write-header "Host" "~A~@[:~A~]" (uri-host uri) (non-default-port uri))
+              (write-header "Host" "~A~@[:~A~]" (puri:uri-host uri) (non-default-port uri))
               (when user-agent
                 (write-header "User-Agent" "~A" (user-agent-string user-agent)))
               (when basic-authorization
@@ -764,14 +764,14 @@ PARAMETERS will not be used."
                                  (when auto-referer
                                    (setq additional-headers (set-referer uri additional-headers)))
                                  (let* ((location (header-value :location headers))
-                                        (new-uri (merge-uris location uri))
+                                        (new-uri (puri:merge-uris location uri))
                                         ;; can we re-use the stream?
-                                        (old-server-p (and (string= (uri-host new-uri)
-                                                                    (uri-host uri))
-                                                           (eql (uri-port new-uri)
-                                                                (uri-port uri))
-                                                           (eq (uri-scheme new-uri)
-                                                               (uri-scheme uri)))))
+                                        (old-server-p (and (string= (puri:uri-host new-uri)
+                                                                    (puri:uri-host uri))
+                                                           (eql (puri:uri-port new-uri)
+                                                                (puri:uri-port uri))
+                                                           (eq (puri:uri-scheme new-uri)
+                                                               (puri:uri-scheme uri)))))
                                    (unless old-server-p
                                      (setq must-close t
                                            want-stream nil))

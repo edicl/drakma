@@ -110,7 +110,7 @@ every domain name is considered acceptable."
 
 (defun cookie-domain-matches (domain uri)
   "Checks if the domain DOMAIN \(a string) matches the \(PURI) URI URI."
-  (ends-with-p (normalize-cookie-domain (uri-host uri))
+  (ends-with-p (normalize-cookie-domain (puri:uri-host uri))
                (normalize-cookie-domain domain)))
 
 (defun send-cookie-p (cookie uri force-ssl)
@@ -120,7 +120,7 @@ in HTTP-REQUEST)."
   (and ;; check domain
        (cookie-domain-matches (cookie-domain cookie) uri)
        ;; check path
-       (starts-with-p (or (uri-path uri) "/") (cookie-path cookie))
+       (starts-with-p (or (puri:uri-path uri) "/") (cookie-path cookie))
        ;; check expiry date
        (let ((expires (cookie-expires cookie)))
          (or (null expires)
@@ -128,7 +128,7 @@ in HTTP-REQUEST)."
        ;; check if connection must be secure       
        (or (null (cookie-securep cookie))
            force-ssl
-           (eq (uri-scheme uri) :https))))
+           (eq (puri:uri-scheme uri) :https))))
 
 (defun check-cookie (cookie)
   "Checks if the slots of the COOKIE object COOKIE have valid values
@@ -285,14 +285,14 @@ the \(PURI) URI URI."
         with parsed-cookies = (and set-cookie-header (parse-set-cookie set-cookie-header))
         for (name value parameters) in parsed-cookies
         for expires = (parameter-value "expires" parameters)
-        for domain = (or (parameter-value "domain" parameters) (uri-host uri))
+        for domain = (or (parameter-value "domain" parameters) (puri:uri-host uri))
         when (and (valid-cookie-domain-p domain)
                   (cookie-domain-matches domain uri))
         collect (make-instance 'cookie
                                :name name
                                :value value
                                :path (or (parameter-value "path" parameters)
-                                         (uri-path uri)
+                                         (puri:uri-path uri)
                                          "/")
                                :expires (and expires
                                              (plusp (length expires))
