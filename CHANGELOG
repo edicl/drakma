@@ -1,3 +1,9 @@
+Version 1.3.8
+2014-02-25
+Determine version number from asdf package (Hans Huebner)
+Silence warning on LispWorks (Hans Huebner)
+All symbols from puri are prefixed with puri:. (Kilian Sprotte)
+
 Version 1.3.7
 2013-11-21
 Dummy without any functional changes
