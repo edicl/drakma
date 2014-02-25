@@ -796,7 +796,7 @@ T</span>
             <clix:arg>max-depth</clix:arg>,
             <clix:arg>ca-file</clix:arg> and
             <clix:arg>ca-directory</clix:arg> parameters are ignored
-            for non-SSL requests.
+            for non-SSL requests.  They are also ignored on LispWorks.
           </p>
           <p>
             <a name="arg-parameters"/>

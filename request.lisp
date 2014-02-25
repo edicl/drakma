@@ -279,7 +279,8 @@ CA-FILE and CA-DIRECTORY can be specified to set the certificate
 authority bundle file or directory to use for certificate validation.
 
 The CERTIFICATE, KEY, CERTIFICATE-PASSWORD, VERIFY, MAX-DEPTH, CA-FILE
-and CA-DIRECTORY parameters are ignored for non-SSL requests.
+and CA-DIRECTORY parameters are ignored for non-SSL requests.  They
+are also ignored on LispWorks.
 
 PARAMETERS is an alist of name/value pairs \(the car and the cdr each
 being a string) which denotes the parameters which are added to the
@@ -467,6 +468,8 @@ the responsibility of the client to make sure that all parameters are
 encoded properly. Note that if this parameter is given, and the
 request is not a POST with a content-type of `multipart/form-data',
 PARAMETERS will not be used."
+  #+lispworks
+  (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory))
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
   (setq uri (cond ((uri-p uri) (copy-uri uri))
