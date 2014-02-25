@@ -148,7 +148,7 @@ Returns TOKEN itself otherwise."
   (case token
     (:drakma
      (format nil "Drakma/~A (~A~@[ ~A~]; ~A;~@[ ~A;~] http://weitz.de/drakma/)"
-             *drakma-version-string*
+             *drakma-version*
              (or (lisp-implementation-type) "Common Lisp")
              (or (lisp-implementation-version) "")
              (or #-:clisp (software-type)

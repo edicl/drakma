@@ -38,16 +38,10 @@
 
 (in-package :drakma-asd)
 
-(defvar *drakma-version-string* "1.3.7"
-  "Drakma's version number as a string.")
-
-;; we export its name so we can import it later
-(export '*drakma-version-string*)
-
 (defsystem :drakma
   :description "Full-featured http/https client based on usocket"
   :serial t
-  :version #.*drakma-version-string*
+  :version "1.3.7"
   :components ((:file "packages")
                (:file "specials")
                (:file "conditions")

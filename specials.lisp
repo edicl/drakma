@@ -29,6 +29,9 @@
 
 (in-package :drakma)
 
+(defparameter *drakma-version* #.(asdf:component-version (asdf:find-system :drakma))
+  "Drakma's version number as a string.")
+
 (defmacro define-constant (name value &optional doc)
   "A version of DEFCONSTANT for, cough, /strict/ CL implementations."
   ;; See <http://www.sbcl.org/manual#Defining-Constants>
