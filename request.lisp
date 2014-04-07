@@ -636,17 +636,15 @@ PARAMETERS will not be used."
                                (if (and preserve-uri
                                         (stringp unparsed-uri))
                                    (trivial-uri-path unparsed-uri)
-                                   (puri:render-uri (cond
-                                                 ((and proxy
-                                                       (null stream)
-                                                       (not proxying-https-p)
-                                                       (not real-host))
-                                                  uri)
-                                                 (t
-                                                  (make-instance 'puri:uri
-                                                                 :path (or (puri:uri-path uri) "/")
-                                                                 :query (puri:uri-query uri))))
-                                               nil))
+                                   (puri:render-uri (if (and proxy
+                                                             (null stream)
+                                                             (not proxying-https-p)
+                                                             (not real-host))
+                                                        uri
+                                                        (make-instance 'puri:uri
+                                                                       :path (or (puri:uri-path uri) "/")
+                                                                       :query (puri:uri-query uri)))
+                                                    nil))
                                (string-upcase protocol))
               (write-header "Host" "~A~@[:~A~]" (puri:uri-host uri) (non-default-port uri))
               (when user-agent
