@@ -55,4 +55,4 @@
                :flexi-streams
                :cl-ppcre
                #-:lispworks :usocket
-               #-(or :lispworks :allegro :drakma-no-ssl) :cl+ssl))
+               #-(or :lispworks :allegro :mocl-ssl :drakma-no-ssl) :cl+ssl))
