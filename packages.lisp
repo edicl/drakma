@@ -58,6 +58,7 @@
            #:cookie-value
            #:cookie=
            #:delete-old-cookies
+           #:decode-stream
            #:drakma-condition
            #:drakma-error
            #:drakma-warning
