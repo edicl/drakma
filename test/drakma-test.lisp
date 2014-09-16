@@ -67,3 +67,22 @@
       (is (string= "Method Not Allowed" reason-phrase)))))
 
 
+(test gzip-content
+  (let ((drakma:*header-stream* *standard-output*)
+	(drakma:*text-content-types* (cons '(nil . "json") drakma:*text-content-types*)))
+    (multiple-value-bind (body-or-stream status-code)
+	(drakma:http-request "http://httpbin.org/gzip")
+      (is (= 200 status-code))
+      (is (typep body-or-stream 'string))
+      (is (search "\"gzipped\": true" body-or-stream)))))
+
+(test deflate-content
+  (let ((drakma:*header-stream* *standard-output*)
+	(drakma:*text-content-types* (cons '(nil . "json") drakma:*text-content-types*)))
+    (multiple-value-bind (body-or-stream status-code)
+	(drakma:http-request "http://httpbin.org/deflate")
+      (is (= 200 status-code))
+      (is (typep body-or-stream 'string))
+      (is (search "\"deflated\": true" body-or-stream)))))
+
+

@@ -34,25 +34,13 @@
 body is to be read.  See the docstring of *BODY-FORMAT-FUNCTION* for
 more info."
   (handler-case
-      (let ((transfer-encodings (header-value :transfer-encoding headers))
-            (content-encodings (header-value :content-encoding headers)))
-        (when transfer-encodings
-          (setq transfer-encodings (split-tokens transfer-encodings)))
-        (when content-encodings
-          (setq content-encodings (split-tokens content-encodings)))
-        (multiple-value-bind (type subtype params)
-            (get-content-type headers)
-          (when (and (text-content-type-p type subtype)
-                     (null (set-difference transfer-encodings
-                                           '("chunked" "identity")
-                                           :test #'equalp))
-                     (null (set-difference content-encodings
-                                           '("identity")
-                                           :test #'equalp)))
-            (let* ((charset (parameter-value "charset" params))
-                   (name (cond (charset (as-keyword charset))
-                               (t external-format-in))))
-              (make-external-format name :eol-style :lf)))))
+      (multiple-value-bind (type subtype params)
+          (get-content-type headers)
+        (when (text-content-type-p type subtype)
+          (let* ((charset (parameter-value "charset" params))
+                 (name (cond (charset (as-keyword charset))
+                             (t external-format-in))))
+            (make-external-format name :eol-style :lf))))
     (error (condition)
       (drakma-warn "Problems determining charset \(falling back to binary):~%~A"
                    condition))))
@@ -138,7 +126,19 @@ body using the boundary BOUNDARY."
       (format stream "--~A--" boundary)
       (crlf))))
 
-(defun read-body (stream headers must-close textp)
+(defun %read-body (stream element-type)
+  (declare (stream stream))
+  "Helper function to read from stream into a buffer of element-type, which is returned."
+  (let ((buffer (make-array +buffer-size+ :element-type element-type))
+        (result (make-array 0 :element-type element-type :adjustable t)))
+        (loop for index = 0 then (+ index pos)
+           for pos = (read-sequence buffer stream)
+           do (adjust-array result (+ index pos))
+             (replace result buffer :start1 index :end2 pos)
+           while (= pos +buffer-size+))
+        result))
+
+(defun read-body (stream headers textp)
   "Reads the message body from the HTTP stream STREAM using the
 information contained in HEADERS \(as produced by HTTP-REQUEST).  If
 TEXTP is true, the body is assumed to be of content type `text' and
@@ -150,8 +150,7 @@ headers of the chunked stream \(if any) as a second value."
                           (parse-integer value)))
         (element-type (if textp
                         #+:lispworks 'lw:simple-char #-:lispworks 'character
-                        'octet))
-        (chunkedp (chunked-stream-input-chunking-p (flexi-stream-stream stream))))
+                        'octet)))
     (values (cond ((eql content-length 0) nil)
                   (content-length
                    (setf (flexi-stream-element-type stream) 'octet)
@@ -159,24 +158,20 @@ headers of the chunked stream \(if any) as a second value."
                      #+:clisp
                      (setf (flexi-stream-element-type stream) 'octet)
                      (read-sequence result stream)
+                     (when (header-value :content-encoding headers)
+                       (setq result (with-input-from-sequence (s result)
+                                      (%read-body (decode-response-stream headers s) 'octet))))
                      (when textp
                        (setf result
                              (octets-to-string result :external-format (flexi-stream-external-format stream))
                              #+:clisp (flexi-stream-element-type stream)
                              #+:clisp element-type))
                      result))
-                  ((or chunkedp must-close)
+                  (t
                    ;; no content length, read until EOF (or end of chunking)
                    #+:clisp
                    (setf (flexi-stream-element-type stream) element-type)
-                   (let ((buffer (make-array +buffer-size+ :element-type element-type))
-                         (result (make-array 0 :element-type element-type :adjustable t)))
-                     (loop for index = 0 then (+ index pos)
-                           for pos = (read-sequence buffer stream)
-                           do (adjust-array result (+ index pos))
-                           (replace result buffer :start1 index :end2 pos)
-                           while (= pos +buffer-size+))
-                     result)))
+                   (%read-body (decode-flexi-stream headers stream) element-type)))
             (chunked-input-stream-trailers (flexi-stream-stream stream)))))
 
 (defun trivial-uri-path (uri-string)
@@ -817,12 +812,12 @@ PARAMETERS will not be used."
                                (unless (or want-stream (eq method :head))
                                  (let (trailers)
                                    (multiple-value-setq (body trailers)
-                                       (read-body http-stream headers must-close external-format-body))
+                                       (read-body http-stream headers external-format-body))
                                    (when trailers
                                      (drakma-warn "Adding trailers from chunked encoding to HTTP headers.")
                                      (setq headers (nconc headers trailers)))))
                                (setq done t)
-                               (values (cond (want-stream http-stream)
+                               (values (cond (want-stream (decode-flexi-stream headers http-stream))
                                              (t body))
                                        status-code
                                        headers

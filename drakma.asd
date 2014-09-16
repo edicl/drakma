@@ -48,11 +48,13 @@
                (:file "util")
                (:file "read")
                (:file "cookies")
+               (:file "encoding")
                (:file "request"))
   :depends-on (:puri
                :cl-base64
                :chunga
                :flexi-streams
                :cl-ppcre
+               #-:drakma-no-chipz :chipz
                #-:lispworks :usocket
                #-(or :lispworks :allegro :mocl-ssl :drakma-no-ssl) :cl+ssl))
