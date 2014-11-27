@@ -637,8 +637,10 @@ PARAMETERS will not be used."
                                                              (not real-host))
                                                         uri
                                                         (make-instance 'puri:uri
-                                                                       :path (or (puri:uri-path uri) "/")
-                                                                       :query (puri:uri-query uri)))
+                                                                       :path (puri:uri-path uri)
+                                                                       :parsed-path (puri:uri-parsed-path uri)
+                                                                       :query (puri:uri-query uri)
+                                                                       :escaped t))
                                                     nil))
                                (string-upcase protocol))
               (write-header "Host" "~A~@[:~A~]" (puri:uri-host uri) (non-default-port uri))
