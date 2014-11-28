@@ -41,7 +41,7 @@
 (defsystem :drakma
   :description "Full-featured http/https client based on usocket"
   :serial t
-  :version "1.3.10"
+  :version "1.3.11"
   :components ((:file "packages")
                (:file "specials")
                (:file "conditions")
