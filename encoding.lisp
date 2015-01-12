@@ -89,7 +89,7 @@ Wrapper around decode-response-stream which preserverves the external format of 
 flexi-stream."
   (let* ((raw-stream (flexi-stream-stream stream))
          (result (decode-response-stream headers raw-stream)))
-    (if (eq stream result)
+    (if (eq raw-stream result)
         stream
         (make-flexi-stream result
                            :external-format
