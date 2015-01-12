@@ -374,7 +374,7 @@ If PROXY is not NIL, it should be a string denoting a proxy
 server through which the request should be sent.  Or it can be a
 list of two values - a string denoting the proxy server and an
 integer denoting the port to use \(which will default to 80
-otherwise).  Defaults to *default-http-proxy*. 
+otherwise).  Defaults to *default-http-proxy*.
 PROXY-BASIC-AUTHORIZATION is used like
 BASIC-AUTHORIZATION, but for the proxy, and only if PROXY is
 true. If the host portion of the uri is present in the
@@ -819,8 +819,9 @@ PARAMETERS will not be used."
                                      (drakma-warn "Adding trailers from chunked encoding to HTTP headers.")
                                      (setq headers (nconc headers trailers)))))
                                (setq done t)
-                               (values (cond (want-stream (decode-flexi-stream headers http-stream))
-                                             (t body))
+                               (values (if want-stream
+                                           (decode-flexi-stream headers http-stream)
+                                           body)
                                        status-code
                                        headers
                                        uri
