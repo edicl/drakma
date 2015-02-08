@@ -374,7 +374,7 @@ If PROXY is not NIL, it should be a string denoting a proxy
 server through which the request should be sent.  Or it can be a
 list of two values - a string denoting the proxy server and an
 integer denoting the port to use \(which will default to 80
-otherwise).  Defaults to *default-http-proxy*. 
+otherwise).  Defaults to *default-http-proxy*.
 PROXY-BASIC-AUTHORIZATION is used like
 BASIC-AUTHORIZATION, but for the proxy, and only if PROXY is
 true. If the host portion of the uri is present in the
@@ -637,8 +637,10 @@ PARAMETERS will not be used."
                                                              (not real-host))
                                                         uri
                                                         (make-instance 'puri:uri
-                                                                       :path (or (puri:uri-path uri) "/")
-                                                                       :query (puri:uri-query uri)))
+                                                                       :path (puri:uri-path uri)
+                                                                       :parsed-path (puri:uri-parsed-path uri)
+                                                                       :query (puri:uri-query uri)
+                                                                       :escaped t))
                                                     nil))
                                (string-upcase protocol))
               (write-header "Host" "~A~@[:~A~]" (puri:uri-host uri) (non-default-port uri))
@@ -817,8 +819,9 @@ PARAMETERS will not be used."
                                      (drakma-warn "Adding trailers from chunked encoding to HTTP headers.")
                                      (setq headers (nconc headers trailers)))))
                                (setq done t)
-                               (values (cond (want-stream (decode-flexi-stream headers http-stream))
-                                             (t body))
+                               (values (if want-stream
+                                           (decode-flexi-stream headers http-stream)
+                                           body)
                                        status-code
                                        headers
                                        uri

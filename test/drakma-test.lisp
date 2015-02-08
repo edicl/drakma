@@ -69,20 +69,36 @@
 
 (test gzip-content
   (let ((drakma:*header-stream* *standard-output*)
-	(drakma:*text-content-types* (cons '(nil . "json") drakma:*text-content-types*)))
+        (drakma:*text-content-types* (cons '(nil . "json") drakma:*text-content-types*)))
     (multiple-value-bind (body-or-stream status-code)
-	(drakma:http-request "http://httpbin.org/gzip")
+        (drakma:http-request "http://httpbin.org/gzip")
       (is (= 200 status-code))
       (is (typep body-or-stream 'string))
       (is (search "\"gzipped\": true" body-or-stream)))))
 
 (test deflate-content
   (let ((drakma:*header-stream* *standard-output*)
-	(drakma:*text-content-types* (cons '(nil . "json") drakma:*text-content-types*)))
+        (drakma:*text-content-types* (cons '(nil . "json") drakma:*text-content-types*)))
     (multiple-value-bind (body-or-stream status-code)
-	(drakma:http-request "http://httpbin.org/deflate")
+        (drakma:http-request "http://httpbin.org/deflate")
       (is (= 200 status-code))
       (is (typep body-or-stream 'string))
       (is (search "\"deflated\": true" body-or-stream)))))
 
+(test stream
+  (multiple-value-bind (stream status-code)
+      (drakma:http-request "http://google.com/" :want-stream t)
+    (is (streamp stream))
+    (is (= 200 status-code))
+    (is (subtypep (stream-element-type stream) 'character))
+    (let ((buffer (make-string 1)))
+      (read-sequence buffer stream))))
 
+(test force-binary
+  (multiple-value-bind (stream status-code)
+      (drakma:http-request "http://google.com/" :want-stream t :force-binary t)
+    (is (streamp stream))
+    (is (= 200 status-code))
+    (is (subtypep (stream-element-type stream) 'flexi-streams:octet))
+    (let ((buffer (make-array 1 :element-type 'flexi-streams:octet)))
+      (read-sequence buffer stream))))

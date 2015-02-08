@@ -74,22 +74,25 @@ Creates new chunked-stream."
       (setq transfer-encodings (split-tokens transfer-encodings)))
     (when content-encodings
       (setq content-encodings (split-tokens content-encodings)))
-    ; Reverse, because we need to run decodings in the opposite order they were applied
-    (let* ((encodings (nreverse (nconc content-encodings transfer-encodings))))
+    ;; Reverse, because we need to run decodings in the opposite order
+    ;; they were applied.
+    (let ((encodings (nreverse (nconc content-encodings transfer-encodings))))
       (loop for s = stream then (decode-stream encoding s)
-         for encoding-str in encodings
-         for encoding = (intern (string-upcase encoding-str) 'keyword)
-         finally (return s)))))
+            for encoding-str in encodings
+            for encoding = (intern (string-upcase encoding-str) 'keyword)
+            finally (return s)))))
 
 (defun decode-flexi-stream (headers stream)
   (declare (flexi-input-stream stream))
   "Perform all necessary decodings on the internal stream of a flexi-stream.
-Wrapper arround decode-response-stream which preserverves the external format of the
-flexi-stsream."
-  (let ((raw-stream (flexi-stream-stream stream))
-        (external-format (flexi-stream-external-format stream)))
-    (let ((result (decode-response-stream headers raw-stream)))
-      (setq result (make-flexi-stream result))
-      (setf (flexi-stream-external-format result) external-format)
-      result)))
-
+Wrapper around decode-response-stream which preserverves the external format of the
+flexi-stream."
+  (let* ((raw-stream (flexi-stream-stream stream))
+         (result (decode-response-stream headers raw-stream)))
+    (if (eq raw-stream result)
+        stream
+        (make-flexi-stream result
+                           :external-format
+                           (flexi-stream-external-format stream)
+                           :element-type
+                           (flexi-stream-element-type stream)))))
