@@ -127,7 +127,10 @@ body using the boundary BOUNDARY."
       (crlf))))
 
 (defun %read-body (stream element-type)
-  (declare (stream stream))
+  ;; On ABCL, a flexi-stream is not a normal stream. This is caused by
+  ;; a bug in ABCL which is supposedly quite difficult to fix. More
+  ;; details here: http://abcl.org/trac/ticket/377
+  #-abcl(declare (stream stream))
   "Helper function to read from stream into a buffer of element-type, which is returned."
   (let ((buffer (make-array +buffer-size+ :element-type element-type))
         (result (make-array 0 :element-type element-type :adjustable t)))
