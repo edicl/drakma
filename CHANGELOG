@@ -1,3 +1,8 @@
+Version 1.3.13
+2015-03-11
+Workaround for ABCL streams bug More information here: http://abcl.org/trac/ticket/377 (Elias Martenson)
+Fix code to generate version number in HTML docs (Hans Huebner)
+
 Version 1.3.12
 2015-01-15
 Preserve octet element-type with :force-binary t. (Jan Moringen)
