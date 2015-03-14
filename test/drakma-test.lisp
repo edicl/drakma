@@ -71,7 +71,7 @@
   (let ((drakma:*header-stream* *standard-output*)
         (drakma:*text-content-types* (cons '(nil . "json") drakma:*text-content-types*)))
     (multiple-value-bind (body-or-stream status-code)
-        (drakma:http-request "http://httpbin.org/gzip")
+        (drakma:http-request "http://httpbin.org/gzip" :decode-content t)
       (is (= 200 status-code))
       (is (typep body-or-stream 'string))
       (is (search "\"gzipped\": true" body-or-stream)))))
@@ -80,10 +80,29 @@
   (let ((drakma:*header-stream* *standard-output*)
         (drakma:*text-content-types* (cons '(nil . "json") drakma:*text-content-types*)))
     (multiple-value-bind (body-or-stream status-code)
-        (drakma:http-request "http://httpbin.org/deflate")
+        (drakma:http-request "http://httpbin.org/deflate" :decode-content t)
       (is (= 200 status-code))
       (is (typep body-or-stream 'string))
       (is (search "\"deflated\": true" body-or-stream)))))
+
+(test gzip-content-undecoded
+      (let ((drakma:*header-stream* *standard-output*))
+        (multiple-value-bind (body-or-stream status-code)
+            (drakma:http-request "http://httpbin.org/gzip")
+          (is (= 200 status-code))
+          (is (typep body-or-stream '(vector flexi-streams:octet)))
+          (is (> (length body-or-stream) 0))
+          (is (equalp #(#x1f #x8b)
+                      (subseq body-or-stream 0 2))))))
+
+(test deflate-content-undecoded
+      (let ((drakma:*header-stream* *standard-output*))
+        (multiple-value-bind (body-or-stream status-code)
+            (drakma:http-request "http://httpbin.org/deflate")
+          (is (= 200 status-code))
+          (is (typep body-or-stream '(vector flexi-streams:octet)))
+          (is (> (length body-or-stream) 0))
+          (is (equalp #x78 (aref body-or-stream 0))))))
 
 (test stream
   (multiple-value-bind (stream status-code)

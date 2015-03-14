@@ -66,10 +66,14 @@ Creates new chunked-stream."
   (let ((chunk-stream (make-chunked-stream stream)))
     (decode-stream :chunked chunk-stream)))
 
-(defun decode-response-stream (headers stream)
-  "Perform all necessary decodings on stream, from the Transfer-Encoding and Content-Encoding headers."
+(defun decode-response-stream (headers stream &key (decode-content t))
+  "Perform all necessary decodings on stream, from the Transfer-Encoding and
+Content-Encoding headers.
+
+If DECODE-CONTENT is nil, only the Transfer-Encoding headers will be used."
   (let ((transfer-encodings (header-value :transfer-encoding headers))
-        (content-encodings (header-value :content-encoding headers)))
+        (content-encodings (and decode-content
+                                (header-value :content-encoding headers))))
     (when transfer-encodings
       (setq transfer-encodings (split-tokens transfer-encodings)))
     (when content-encodings
@@ -82,13 +86,18 @@ Creates new chunked-stream."
             for encoding = (intern (string-upcase encoding-str) 'keyword)
             finally (return s)))))
 
-(defun decode-flexi-stream (headers stream)
+(defun decode-flexi-stream (headers stream &key (decode-content t))
   (declare (flexi-input-stream stream))
   "Perform all necessary decodings on the internal stream of a flexi-stream.
 Wrapper around decode-response-stream which preserverves the external format of the
-flexi-stream."
+flexi-stream.
+
+If DECODE-CONTENT is nil, the Content-Encoding header will not be used to
+determine which decoding mechanisms to use. Most servers use Content-Encoding
+to identify compression."
   (let* ((raw-stream (flexi-stream-stream stream))
-         (result (decode-response-stream headers raw-stream)))
+         (result (decode-response-stream headers raw-stream
+                                         :decode-content decode-content)))
     (if (eq raw-stream result)
         stream
         (make-flexi-stream result
