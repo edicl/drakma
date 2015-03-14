@@ -1114,6 +1114,16 @@ T</span>
             with a content-type of `multipart/form-data',
             <code xmlns=""><i>parameters</i></code> will not be used.
           </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            If <code xmlns=""><i>decode-content</i></code> is not
+            <code>NIL</code>, then the content will automatically be
+            decoded according to any encodings specified in the
+            Content-Encoding header. The actual decoding is done by
+            the <code xmlns=""><a href="#decode-stream">decode-stream</a></code> generic function,
+            and you can implement new methods to support additional
+            encodings.  Any encodings in Transfer-Encoding, such as
+            chunking, are always performed.
+          </p>
         </clix:description></blockquote></p>
 
       <p xmlns=""><a class="none" name="parameter-present-p"></a>
@@ -1155,6 +1165,29 @@ T</span>
             Returns a URL-encoded version of the string
             <code xmlns=""><i>string</i></code> using the external format
             <code xmlns=""><i>external-format</i></code>.
+          </p>
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="decode-stream"></a>
+          [Function]
+          <br><b>decode-stream</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">encoding-type stream</clix:lambda-list></i>
+            =&gt;
+            <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">stream</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Generic function to decode a stream.  This is a generic
+            function which decodes the stream based on the
+            encoding-type.  If a response contains one or more
+            transfer or content encodings, then decode-stream is
+            called for each encoding type in the correct order to
+            properly decode the stream to its original content.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <code xmlns=""><i>encoding-type</i></code> will be a keyword
+            created by upcasing and interning the encoding type from
+            the header.  <code xmlns=""><i>stream</i></code> will be the
+            stream that needs to be
+            decoded. <code xmlns=""><a href="#decode-stream">decode-stream</a></code> returns a new
+            stream from which you can read the decoded data.
           </p>
         </clix:description></blockquote></p>
 
@@ -1692,6 +1725,9 @@ Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 </li>
 <li>
 <code><a href="#cookie=">cookie=</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#decode-stream">decode-stream</a></code><span class="entry-type">Function</span>
 </li>
 <li>
 <code><a href="#delete-old-cookies">delete-old-cookies</a></code><span class="entry-type">Function</span>

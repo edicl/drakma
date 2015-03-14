@@ -1096,6 +1096,16 @@ T</span>
             with a content-type of `multipart/form-data',
             <clix:arg>parameters</clix:arg> will not be used.
           </p>
+          <p>
+            If <clix:arg>decode-content</clix:arg> is not
+            <code>NIL</code>, then the content will automatically be
+            decoded according to any encodings specified in the
+            Content-Encoding header. The actual decoding is done by
+            the <clix:ref>decode-stream</clix:ref> generic function,
+            and you can implement new methods to support additional
+            encodings.  Any encodings in Transfer-Encoding, such as
+            chunking, are always performed.
+          </p>
         </clix:description>
       </clix:function>
 
@@ -1137,6 +1147,29 @@ T</span>
             Returns a URL-encoded version of the string
             <clix:arg>string</clix:arg> using the external format
             <clix:arg>external-format</clix:arg>.
+          </p>
+        </clix:description>
+      </clix:function>
+
+      <clix:function name="decode-stream">
+        <clix:lambda-list>encoding-type stream</clix:lambda-list>
+        <clix:returns>stream</clix:returns>
+        <clix:description>
+          <p>
+            Generic function to decode a stream.  This is a generic
+            function which decodes the stream based on the
+            encoding-type.  If a response contains one or more
+            transfer or content encodings, then decode-stream is
+            called for each encoding type in the correct order to
+            properly decode the stream to its original content.
+          </p>
+          <p>
+            <clix:arg>encoding-type</clix:arg> will be a keyword
+            created by upcasing and interning the encoding type from
+            the header.  <clix:arg>stream</clix:arg> will be the
+            stream that needs to be
+            decoded. <clix:ref>decode-stream</clix:ref> returns a new
+            stream from which you can read the decoded data.
           </p>
         </clix:description>
       </clix:function>
