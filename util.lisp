@@ -308,7 +308,7 @@ which are not meant as separators."
 (defun make-ssl-stream (http-stream &key certificate key certificate-password verify (max-depth 10) ca-file ca-directory)
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
 \(which will not be equal to HTTP-STREAM)."
-  (declare (ignorable max-depth))
+  (declare (ignorable http-stream certificate-password max-depth ca-directory))
   (check-type verify (member nil :optional :required))
   (when (and certificate
              (not (probe-file certificate)))
