@@ -52,7 +52,7 @@ depending on the type of CONTENT."
     (cond ((stringp content)
            (setf (flexi-stream-external-format stream) external-format-out)
            (write-string content stream)
-           (setf (flexi-stream-external-format stream) +latin-1+))
+           (setf (flexi-stream-external-format stream) +utf-8+))
           ((or (arrayp content) (listp content))
            (write-sequence content stream))
           ((and (streamp content)
@@ -99,7 +99,7 @@ body using the boundary BOUNDARY."
                  (crlf) (crlf)
                  (setf (flexi-stream-external-format stream) external-format-out)
                  (format stream "~A" value)
-                 (setf (flexi-stream-external-format stream) +latin-1+))
+                 (setf (flexi-stream-external-format stream) +utf-8+))
                 ((and (listp value)
                       (first value)
                       (not (stringp (first value))))
@@ -588,7 +588,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                        (write-http-line "~A: ~?" name value-fmt value-args))
                      (wrap-stream (http-stream)
                        (make-flexi-stream (make-chunked-stream http-stream)
-                                          :external-format +latin-1+)))
+                                          :external-format +utf-8+)))
               (when (and use-ssl
                          ;; don't attach SSL to existing streams
                          (not stream))
@@ -606,7 +606,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
               (cond (stream
                      (setf (flexi-stream-element-type http-stream)
                            #+:lispworks 'lw:simple-char #-:lispworks 'character
-                           (flexi-stream-external-format http-stream) +latin-1+))
+                           (flexi-stream-external-format http-stream) +utf-8+))
                     (t
                      (setq http-stream (wrap-stream http-stream))))
               (when proxying-https-p
@@ -709,7 +709,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                   ;; in RAM
                   (setq content
                         (with-output-to-sequence (bin-out)
-                          (let ((out (make-flexi-stream bin-out :external-format +latin-1+)))
+                          (let ((out (make-flexi-stream bin-out :external-format +utf-8+)))
                             (send-content content out external-format-out)))))
                 (when (and (or (not content-length-provided-p)
                                (eq content-length t))
