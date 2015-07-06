@@ -50,7 +50,7 @@
                (:file "cookies")
                (:file "encoding")
                (:file "request"))
-  :depends-on (:puri
+  :depends-on (:quri
                :cl-base64
                :chunga
                :flexi-streams
