@@ -220,6 +220,8 @@ one to twelve."
   "Tries to interpret STRING as a time zone abbreviation which can
 either be something like \"PST\" or \"GMT\" with an offset like
 \"GMT-02:00\"."
+  (when-let (offset (ignore-errors (parse-integer string)))
+    (return-from interpret-as-time-zone offset))
   (when-let (zone (cdr (assoc string *time-zone-map* :test #'string=)))
     (return-from interpret-as-time-zone zone))
   (unless (and (= (length string) 9)
