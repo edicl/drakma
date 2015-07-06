@@ -96,18 +96,7 @@ PREFIX whereby the elements are compared using TEST."
 (defun url-encode (string external-format)
   "Returns a URL-encoded version of the string STRING using the
 external format EXTERNAL-FORMAT."
-  (with-output-to-string (out)
-    (loop for octet across (string-to-octets (or string "")
-                                             :external-format external-format)
-          for char = (code-char octet)
-          do (cond ((or (char<= #\0 char #\9)
-                        (char<= #\a char #\z)
-                        (char<= #\A char #\Z)
-                        (find char "$-_.!*'()," :test #'char=))
-                     (write-char char out))
-                   ((char= char #\Space)
-                     (write-char #\+ out))
-                   (t (format out "%~2,'0x" (char-code char)))))))
+  (quri:url-encode string :encoding external-format :space-to-plus t))
 
 (defun alist-to-url-encoded-string (alist external-format url-encoder)
   "ALIST is supposed to be an alist of name/value pairs where both
@@ -127,17 +116,17 @@ value with a #\\= character.  If the value is NIL, no #\\= is used."
                       (funcall url-encoder value external-format)))))
 
 (defun default-port (uri)
-  "Returns the default port number for the \(PURI) URI URI.
+  "Returns the default port number for the \(QURI) URI URI.
 Works only with the http and https schemes."
-  (ecase (puri:uri-scheme uri)
+  (ecase (quri:uri-scheme uri)
     (:http 80)
     (:https 443)))
 
 (defun non-default-port (uri)
-  "If the \(PURI) URI specifies an explicit port number which is
+  "If the \(QURI) URI specifies an explicit port number which is
 different from the default port its scheme, this port number is
 returned, otherwise NIL."
-  (when-let (port (puri:uri-port uri))
+  (when-let (port (quri:uri-port uri))
     (when (/= port (default-port uri))
       port)))
 
@@ -275,7 +264,7 @@ which are not meant as separators."
         (string-length (length string))
         search-start
         result)
-    (tagbody     
+    (tagbody
      ;; at this point we know that COOKIE-START is the start of a new
      ;; cookie (at the start of the string or behind a comma)
      next-cookie
@@ -291,7 +280,7 @@ which are not meant as separators."
             (equals-pos (and comma-pos (position #\= string :start comma-pos)))
             ;; check that (except for whitespace) there's only a token
             ;; (the name of the next cookie) between #\, and #\=
-            (new-cookie-start-p (and equals-pos                                     
+            (new-cookie-start-p (and equals-pos
                                      (every 'token-char-p
                                             (trim-whitespace string
                                                              :start (1+ comma-pos)
@@ -347,7 +336,7 @@ which are not meant as separators."
   (error "SSL not supported. Remove :drakma-no-ssl from *features* to enable SSL"))
 
 (defun dissect-query (query-string)
-  "Accepts a query string as in PURI:URI-QUERY and returns a
+  "Accepts a query string as in QURI:URI-QUERY and returns a
 corresponding alist of name/value pairs."
   (when query-string
     (loop for parameter-pair in (cl-ppcre:split "&" query-string)
