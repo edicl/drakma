@@ -234,7 +234,7 @@ headers of the chunked stream \(if any) as a second value."
                               &aux (unparsed-uri (if (stringp uri) (copy-seq uri) (quri:copy-uri uri))))
   "Sends a HTTP request to a web server and returns its reply.  URI
 is where the request is sent to, and it is either a string denoting a
-uniform resource identifier, a QURI:URI object.  The scheme of URI
+uniform resource identifier or a QURI:URI object.  The scheme of URI
 must be `http' or `https'.  The function returns SEVEN values - the
 body of the reply \(but see below), the status code as an integer, an
 alist of the headers sent by the server where for each element the car
