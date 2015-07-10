@@ -1,3 +1,9 @@
+Version 2.0.1
+2015-07-10
+Revert "Use quri instead of puri" (Hans Hübner)
+Merge pull request #56 from tmccombs/test-op (Hans Hübner)
+Add test-op to ASDF for drakma and drakma-test systems. (Thayne McCombs)
+
 Version 2.0.0
 2015-07-10
 Use quri instead of puri for URIs. (Thayne McCombs)
