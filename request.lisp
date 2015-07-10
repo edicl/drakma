@@ -231,10 +231,10 @@ headers of the chunked stream \(if any) as a second value."
                               (write-timeout 20 write-timeout-provided-p)
                               #+:openmcl
                               deadline
-                              &aux (unparsed-uri (if (stringp uri) (copy-seq uri) (puri:copy-uri uri))))
+                              &aux (unparsed-uri (if (stringp uri) (copy-seq uri) (quri:copy-uri uri))))
   "Sends a HTTP request to a web server and returns its reply.  URI
 is where the request is sent to, and it is either a string denoting a
-uniform resource identifier or a PURI:URI object.  The scheme of URI
+uniform resource identifier or a QURI:URI object.  The scheme of URI
 must be `http' or `https'.  The function returns SEVEN values - the
 body of the reply \(but see below), the status code as an integer, an
 alist of the headers sent by the server where for each element the car
@@ -480,12 +480,12 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
   (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory))
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
-  (setq uri (cond ((puri:uri-p uri) (puri:copy-uri uri))
-                  (t (puri:parse-uri uri))))
+  (setq uri (cond ((quri:uri-p uri) (quri:copy-uri uri))
+                  (t (quri:parse-uri uri))))
   (unless (member method +known-methods+ :test #'eq)
     (parameter-error "Don't know how to handle method ~S." method))
-  (unless (member (puri:uri-scheme uri) '(:http :https) :test #'eq)
-    (parameter-error "Don't know how to handle scheme ~S." (puri:uri-scheme uri)))
+  (unless (member (quri:uri-scheme uri) '(:http :https) :test #'eq)
+    (parameter-error "Don't know how to handle scheme ~S." (quri:uri-scheme uri)))
   (when (and close keep-alive)
     (parameter-error "CLOSE and KEEP-ALIVE must not be both true."))
   (when (and form-data (not (member method '(:post :report) :test #'eq)))
@@ -504,7 +504,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
     (when (atom proxy)
       (setq proxy (list proxy 80))))
   ;; Ignore the proxy for whitelisted hosts.
-  (when (member (puri:uri-host uri) no-proxy-domains :test #'string=)
+  (when (member (quri:uri-host uri) no-proxy-domains :test #'string=)
     (setq proxy '()))
   ;; make sure we don't get :CRLF on Windows
   (let ((*default-eol-style* :lf)
@@ -531,18 +531,18 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
               (t
                (setq content (alist-to-url-encoded-string parameters external-format-out url-encoder)
                      content-type "application/x-www-form-urlencoded")))))
-    (let ((proxying-https-p (and proxy (not stream) (eq :https (puri:uri-scheme uri))))
+    (let ((proxying-https-p (and proxy (not stream) (eq :https (quri:uri-scheme uri))))
            http-stream raw-http-stream must-close done)
       (unwind-protect
           (progn
             (let ((host (or (and proxy (first proxy))
-                            (puri:uri-host uri)))
+                            (quri:uri-host uri)))
                   (port (cond (proxy (second proxy))
-                              ((puri:uri-port uri))
+                              ((quri:uri-port uri))
                               (t (default-port uri))))
                   (use-ssl (and (not proxying-https-p)
                                 (or force-ssl
-                                    (eq (puri:uri-scheme uri) :https)))))
+                                    (eq (quri:uri-scheme uri) :https)))))
               #+(and :lispworks5.0 :mswindows
                      (not :lw-does-not-have-write-timeout))
               (when use-ssl
@@ -613,9 +613,9 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 ;; set up a tunnel through the proxy server to the
                 ;; final destination
                 (write-http-line "CONNECT ~A:~:[443~;~:*~A~] HTTP/1.1"
-                                 (puri:uri-host uri) (puri:uri-port uri))
+                                 (quri:uri-host uri) (quri:uri-port uri))
                 (write-http-line "Host: ~A:~:[443~;~:*~A~]"
-                                 (puri:uri-host uri) (puri:uri-port uri))
+                                 (quri:uri-host uri) (quri:uri-port uri))
                 (write-http-line "")
                 (force-output http-stream)
                 ;; check we get a 200 response before proceeding
@@ -630,33 +630,30 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 (setq http-stream (wrap-stream (make-ssl-stream raw-http-stream))))
               (when-let (all-get-parameters
                          (and (not preserve-uri)
-                              (append (dissect-query (puri:uri-query uri))
+                              (append (dissect-query (quri:uri-query uri))
                                       (and (not parameters-used-p) parameters))))
-                (setf (puri:uri-query uri)
+                (setf (quri:uri-query uri)
                       (alist-to-url-encoded-string all-get-parameters external-format-out url-encoder)))
               (when (eq method :options*)
                 ;; special pseudo-method
                 (setf method :options
-                      (puri:uri-path uri) "*"
-                      (puri:uri-query uri) nil))
+                      (quri:uri-path uri) "*"
+                      (quri:uri-query uri) nil))
               (write-http-line "~A ~A ~A"
                                (string-upcase method)
                                (if (and preserve-uri
                                         (stringp unparsed-uri))
                                    (trivial-uri-path unparsed-uri)
-                                   (puri:render-uri (if (and proxy
+                                   (quri:render-uri (if (and proxy
                                                              (null stream)
                                                              (not proxying-https-p)
                                                              (not real-host))
                                                         uri
-                                                        (make-instance 'puri:uri
-                                                                       :path (puri:uri-path uri)
-                                                                       :parsed-path (puri:uri-parsed-path uri)
-                                                                       :query (puri:uri-query uri)
-                                                                       :escaped t))
+                                                        (quri.uri:make-uri :path (quri:uri-path uri)
+                                                                           :query (quri:uri-query uri)))
                                                     nil))
                                (string-upcase protocol))
-              (write-header "Host" "~A~@[:~A~]" (puri:uri-host uri) (non-default-port uri))
+              (write-header "Host" "~A~@[:~A~]" (quri:uri-host uri) (non-default-port uri))
               (when user-agent
                 (write-header "User-Agent" "~A" (user-agent-string user-agent)))
               (when basic-authorization
@@ -772,14 +769,14 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                  (when auto-referer
                                    (setq additional-headers (set-referer uri additional-headers)))
                                  (let* ((location (header-value :location headers))
-                                        (new-uri (puri:merge-uris location uri))
+                                        (new-uri (quri:merge-uris location uri))
                                         ;; can we re-use the stream?
-                                        (old-server-p (and (string= (puri:uri-host new-uri)
-                                                                    (puri:uri-host uri))
-                                                           (eql (puri:uri-port new-uri)
-                                                                (puri:uri-port uri))
-                                                           (eq (puri:uri-scheme new-uri)
-                                                               (puri:uri-scheme uri)))))
+                                        (old-server-p (and (string= (quri:uri-host new-uri)
+                                                                    (quri:uri-host uri))
+                                                           (eql (quri:uri-port new-uri)
+                                                                (quri:uri-port uri))
+                                                           (eq (quri:uri-scheme new-uri)
+                                                               (quri:uri-scheme uri)))))
                                    (unless old-server-p
                                      (setq must-close t
                                            want-stream nil))
