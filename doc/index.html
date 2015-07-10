@@ -244,14 +244,14 @@ X-RateLimit-Remaining: 48
 X-RateLimit-Limit: 60
 Content-Length: 23
 X-Content-Type-Options: nosniff
-Cache-Control:
+Cache-Control: 
 </span>
 <span class="repl-output">#(123 34 109 101 115 115 97 103 101 34 58 34 78 111 116 32 70 111 117 110 100 34 125)
 404
 ((:SERVER . "nginx") (:DATE . "Fri, 28 Dec 2012 08:37:31 GMT") (:CONTENT-TYPE . "application/json; charset=utf-8")
  (:CONNECTION . "close") (:STATUS . "404 Not Found") (:X-GITHUB-MEDIA-TYPE . "github.beta") (:X-RATELIMIT-REMAINING . "48")
  (:X-RATELIMIT-LIMIT . "60") (:CONTENT-LENGTH . "23") (:X-CONTENT-TYPE-OPTIONS . "nosniff") (:CACHE-CONTROL . ""))
-#&lt;QURI:URI https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist&gt;
+#&lt;PURI:URI https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist&gt;
 #&lt;FLEXI-STREAMS:FLEXI-IO-STREAM {101C40C043}&gt;
 T
 "Not Found"</span>
@@ -343,7 +343,7 @@ Content-Length: 40
 </span>
 <span class="headers-in">HTTP/1.1 200 OK
 Date: Sun, 09 Dec 2012 08:25:13 GMT
-Server:
+Server:  
 X-Powered-By: PHP/5.2.17
 <b>Set-Cookie: PHPSESSID=vijk3706eojs7n8u5cdpi3ju05; path=/</b>
 Expires: Thu, 19 Nov 1981 08:52:00 GMT
@@ -363,7 +363,7 @@ Connection: close
 </span>
 <span class="headers-in">HTTP/1.1 200 OK
 Date: Sun, 09 Dec 2012 08:25:16 GMT
-Server:
+Server:  
 X-Powered-By: PHP/5.2.17
 Expires: Thu, 19 Nov 1981 08:52:00 GMT
 Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
@@ -723,7 +723,7 @@ T</span>
             request to a web server and returns its reply.
             <code xmlns=""><i>uri</i></code> is where the request is sent to,
             and it is either a string denoting a uniform resource
-            identifier or a <code>QURI:URI</code> object.  The scheme
+            identifier or a <code>PURI:URI</code> object.  The scheme
             of <code xmlns=""><i>uri</i></code> must be `http' or `https'.
             The function returns SEVEN values - the body of the
             reply<sup>0</sup> (but see below), the status
@@ -1405,7 +1405,7 @@ T</span>
             page</a> for the <code>HttpOnly</code> extension).
           </p>
           <pre xmlns="http://www.w3.org/1999/xhtml"><span class="repl-output">? </span><span class="repl-input">(make-instance 'drakma:cookie
-                 :name "Foo"
+                 :name "Foo" 
                  :value "Bar"
                  :expires (+ (get-universal-time) 3600)
                  :domain ".weitz.de")</span>

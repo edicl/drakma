@@ -93,7 +93,7 @@ which can be used for cookie headers."
               name (and (plusp (length value)) value)
               (and expires (render-cookie-date expires))
               path domain securep http-only-p))))
-
+              
 (defun normalize-cookie-domain (domain)
   "Adds a dot at the beginning of the string DOMAIN unless there
 is already one."
@@ -109,26 +109,26 @@ every domain name is considered acceptable."
       (> (count #\. (normalize-cookie-domain domain) :test #'char=) 1)))
 
 (defun cookie-domain-matches (domain uri)
-  "Checks if the domain DOMAIN \(a string) matches the \(QURI) URI URI."
-  (ends-with-p (normalize-cookie-domain (quri:uri-host uri))
+  "Checks if the domain DOMAIN \(a string) matches the \(PURI) URI URI."
+  (ends-with-p (normalize-cookie-domain (puri:uri-host uri))
                (normalize-cookie-domain domain)))
 
 (defun send-cookie-p (cookie uri force-ssl)
   "Checks if the cookie COOKIE should be sent to the server
-depending on the \(QURI) URI URI and the value of FORCE-SSL \(as
+depending on the \(PURI) URI URI and the value of FORCE-SSL \(as
 in HTTP-REQUEST)."
   (and ;; check domain
        (cookie-domain-matches (cookie-domain cookie) uri)
        ;; check path
-       (starts-with-p (or (quri:uri-path uri) "/") (cookie-path cookie))
+       (starts-with-p (or (puri:uri-path uri) "/") (cookie-path cookie))
        ;; check expiry date
        (let ((expires (cookie-expires cookie)))
          (or (null expires)
              (> expires (get-universal-time))))
-       ;; check if connection must be secure
+       ;; check if connection must be secure       
        (or (null (cookie-securep cookie))
            force-ssl
-           (eq (quri:uri-scheme uri) :https))))
+           (eq (puri:uri-scheme uri) :https))))
 
 (defun check-cookie (cookie)
   "Checks if the slots of the COOKIE object COOKIE have valid values
@@ -225,7 +225,7 @@ convenience function.
   ;; fails to parse some of the stuff you encounter in the wild; or we
   ;; could try to employ CL-PPCRE, but that'd add a new dependency
   ;; without making this code much cleaner
-  (handler-case
+  (handler-case 
       (let* ((last-space-pos
               (or (position #\Space string :test #'char= :from-end t)
                   (cookie-date-parse-error "Can't parse cookie date ~S, no space found." string)))
@@ -247,7 +247,7 @@ convenience function.
                   (t (cookie-date-parse-error "Can't parse cookie date ~S, confused by ~S part."
                                               string part))))
           (cond ((null day)
-                 (unless (setq day (safe-parse-integer part))
+                 (unless (setq day (safe-parse-integer part))               
                    (setq month (interpret-as-month part))))
                 ((null month)
                  (setq month (interpret-as-month part)))))
@@ -269,7 +269,7 @@ cookie, the value of the cookie, and an attribute/value list for
 the optional cookie parameters."
   (let ((*current-error-message* (format nil "While parsing cookie header ~S:" string))
         result)
-    (dolist (substring (split-set-cookie-string string))
+    (dolist (substring (split-set-cookie-string string))        
       (with-sequence-from-string (stream substring)
         (let* ((name/value (read-name-value-pair stream :cookie-syntax t))
                (parameters (read-name-value-pairs stream :value-required-p nil :cookie-syntax t)))
@@ -280,19 +280,19 @@ the optional cookie parameters."
   "Returns a list of COOKIE objects corresponding to the
 `Set-Cookie' header as found in HEADERS \(an alist as returned by
 HTTP-REQUEST).  Collects only cookies which match the domain of
-the \(QURI) URI URI."
+the \(PURI) URI URI."
   (loop with set-cookie-header = (header-value :set-cookie headers)
         with parsed-cookies = (and set-cookie-header (parse-set-cookie set-cookie-header))
         for (name value parameters) in parsed-cookies
         for expires = (parameter-value "expires" parameters)
-        for domain = (or (parameter-value "domain" parameters) (quri:uri-host uri))
+        for domain = (or (parameter-value "domain" parameters) (puri:uri-host uri))
         when (and (valid-cookie-domain-p domain)
                   (cookie-domain-matches domain uri))
         collect (make-instance 'cookie
                                :name name
                                :value value
                                :path (or (parameter-value "path" parameters)
-                                         (quri:uri-path uri)
+                                         (puri:uri-path uri)
                                          "/")
                                :expires (and expires
                                              (plusp (length expires))
