@@ -32,4 +32,6 @@
   :version "0.1"
   :depends-on (:drakma :fiveam)
   :pathname #P"test/"
-  :components ((:file "drakma-test")))
+  :components ((:file "drakma-test"))
+  :perform (test-op (o s)
+                    (uiop:symbol-call :fiveam '#:run! :drakma)))
