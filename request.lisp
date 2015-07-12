@@ -849,7 +849,9 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                            body)
                                        status-code
                                        headers
-                                       uri
+                                       (if *return-puri-uri*
+                                           (quri-to-puri uri)
+                                           uri)
                                        http-stream
                                        must-close
                                        status-text))))))
