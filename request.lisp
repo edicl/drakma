@@ -194,7 +194,7 @@ of the URI. Returns a new URI object that just has the path and query.
 This also ensures uses a path of '/' if there is no path on the URI."
   (let ((path (quri:uri-path uri))
         (query (quri:uri-query uri)))
-    (quri.uri:make-uri :path (or path "/")
+    (quri:make-uri :path (or path "/")
                        :query query)))
 
 (defun http-request (uri &rest args
@@ -242,7 +242,7 @@ This also ensures uses a path of '/' if there is no path on the URI."
                               (write-timeout 20 write-timeout-provided-p)
                               #+:openmcl
                               deadline
-                              &aux (unparsed-uri (if (stringp uri) (copy-seq uri) (quri:copy-uri uri))))
+                     &aux (unparsed-uri uri))
   "Sends a HTTP request to a web server and returns its reply.  URI
 is where the request is sent to, and it is either a string denoting a
 uniform resource identifier or a QURI:URI object.  The scheme of URI
