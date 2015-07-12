@@ -77,7 +77,7 @@
 </li>
 <li><a href="#index">Symbol index</a></li>
 </ol>
-    
+
   <h3 xmlns=""><a class="none" name="examples">Examples</a></h3>
 
     <style type="text/css">
@@ -722,8 +722,10 @@ T</span>
             Sends an <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">HTTP</a>
             request to a web server and returns its reply.
             <code xmlns=""><i>uri</i></code> is where the request is sent to,
-            and it is either a string denoting a uniform resource
-            identifier or a <code>QURI:URI</code> object.  The scheme
+            and it is a string denoting a uniform resource
+            identifier, a <code>QURI:URI</code> object, or a
+            <code>PURI:URI</code> object. Support for <code>PURI:URI</code>
+            is deprecated.  The scheme
             of <code xmlns=""><i>uri</i></code> must be `http' or `https'.
             The function returns SEVEN values - the body of the
             reply<sup>0</sup> (but see below), the status

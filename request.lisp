@@ -243,19 +243,20 @@ This also ensures uses a path of '/' if there is no path on the URI."
                               #+:openmcl
                               deadline
                      &aux (unparsed-uri uri))
-  "Sends a HTTP request to a web server and returns its reply.  URI
-is where the request is sent to, and it is either a string denoting a
-uniform resource identifier or a QURI:URI object.  The scheme of URI
-must be `http' or `https'.  The function returns SEVEN values - the
-body of the reply \(but see below), the status code as an integer, an
-alist of the headers sent by the server where for each element the car
-\(the name of the header) is a keyword and the cdr \(the value of the
-header) is a string, the URI the reply comes from \(which might be
-different from the URI the request was sent to in case of redirects),
-the stream the reply was read from, a generalized boolean which
-denotes whether the stream should be closed \(and which you can
-usually ignore), and finally the reason phrase from the status line as
-a string.
+  "Sends a HTTP request to a web server and returns its reply.  URI is
+where the request is sent to, and it is a string denoting a uniform
+resource identifier, a QURI:URI object, or a PURI:URI object. Support
+for PURI:URI is deprecated and new code should use QURI:URI instead.
+The scheme of URI must be `http' or `https'.  The function returns
+SEVEN values - the body of the reply \(but see below), the status code
+as an integer, an alist of the headers sent by the server where for
+each element the car \(the name of the header) is a keyword and the
+cdr \(the value of the header) is a string, the URI the reply comes
+from \(which might be different from the URI the request was sent to
+in case of redirects), the stream the reply was read from, a
+generalized boolean which denotes whether the stream should be closed
+\(and which you can usually ignore), and finally the reason phrase
+from the status line as a string.
 
 PROTOCOL is the HTTP protocol which is going to be used in the
 request line, it must be one of the keywords :HTTP/1.0 or
@@ -491,8 +492,10 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
   (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory))
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
-  (setq uri (cond ((quri:uri-p uri) (quri:copy-uri uri))
-                  (t (quri:uri uri))))
+  (setq uri (typecase uri
+              (quri:uri (quri:copy-uri uri))
+              (puri:uri (puri-to-quri uri))
+              (otherwise (quri:uri uri))))
   (unless (member method +known-methods+ :test #'eq)
     (parameter-error "Don't know how to handle method ~S." method))
   (unless (member (quri:uri-scheme uri) '("http" "https") :test #'string=)

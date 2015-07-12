@@ -38,7 +38,7 @@
 
   <clix:chapter name='contents' title='Contents'></clix:chapter>
   <clix:contents></clix:contents>
-    
+
   <clix:chapter name='examples' title='Examples'>
 
     <style type="text/css">
@@ -701,8 +701,10 @@ T</span>
             href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">HTTP</a>
             request to a web server and returns its reply.
             <clix:arg>uri</clix:arg> is where the request is sent to,
-            and it is either a string denoting a uniform resource
-            identifier or a <code>QURI:URI</code> object.  The scheme
+            and it is a string denoting a uniform resource
+            identifier, a <code>QURI:URI</code> object, or a
+            <code>PURI:URI</code> object. Support for <code>PURI:URI</code>
+            is deprecated.  The scheme
             of <clix:arg>uri</clix:arg> must be `http' or `https'.
             The function returns SEVEN values - the body of the
             reply<sup>0</sup> (but see below), the status

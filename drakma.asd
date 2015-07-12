@@ -51,6 +51,7 @@
                (:file "encoding")
                (:file "request"))
   :depends-on (:quri
+               :puri                    ; For backwards compatibility
                :cl-base64
                :chunga
                :flexi-streams

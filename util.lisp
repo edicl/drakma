@@ -335,3 +335,13 @@ corresponding alist of name/value pairs."
     (loop for parameter-pair in (cl-ppcre:split "&" query-string)
           for (name value) = (cl-ppcre:split "=" parameter-pair :limit 2)
           collect (cons name value))))
+
+(defun puri-to-quri (uri)
+  (declare (puri:uri uri))
+  "Convert a puri:uri to a quri:uri."
+  (quri:uri (puri:render-uri uri nil)))
+
+(defun quri-to-puri (uri)
+  (declare (quri:uri uri))
+  "Convert a quri:uri to a puri:uri."
+  (puri:parse-uri (quri:render-uri uri)))
