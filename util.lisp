@@ -328,14 +328,6 @@ which are not meant as separators."
   #+:drakma-no-ssl
   (error "SSL not supported. Remove :drakma-no-ssl from *features* to enable SSL"))
 
-(defun dissect-query (query-string)
-  "Accepts a query string as in QURI:URI-QUERY and returns a
-corresponding alist of name/value pairs."
-  (when query-string
-    (loop for parameter-pair in (cl-ppcre:split "&" query-string)
-          for (name value) = (cl-ppcre:split "=" parameter-pair :limit 2)
-          collect (cons name value))))
-
 (defun puri-to-quri (uri)
   (declare (puri:uri uri))
   "Convert a puri:uri to a quri:uri."

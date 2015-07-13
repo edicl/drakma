@@ -644,7 +644,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 (setq http-stream (wrap-stream (make-ssl-stream raw-http-stream))))
               (when-let (all-get-parameters
                          (and (not preserve-uri)
-                              (append (dissect-query (quri:uri-query uri))
+                              (append (quri:uri-query-params uri)
                                       (and (not parameters-used-p) parameters))))
                 (setf (quri:uri-query uri)
                       (alist-to-url-encoded-string all-get-parameters external-format-out url-encoder)))
