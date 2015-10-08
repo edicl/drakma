@@ -1,3 +1,7 @@
+Version 2.0.2
+2015-10-08
+Support SNI with cl+ssl. (Paul M. Rodriguez)
+
 Version 2.0.1
 2015-07-10
 Revert "Use quri instead of puri" (Hans Hübner)
