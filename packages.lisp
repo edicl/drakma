@@ -43,6 +43,7 @@
            #:*header-stream*
            #:*ignore-unparseable-cookie-dates-p*
            #:*text-content-types*
+           #:*return-puri-uri*
            #:cookie
            #:cookie-error
            #:cookie-error-cookie

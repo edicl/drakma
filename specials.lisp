@@ -258,6 +258,16 @@ it can be a list of two values - a string denoting the proxy server
 and an integer denoting the port to use \(which will default to 80
 otherwise).")
 
+(defvar *return-puri-uri* t
+  "Determines the type of the uri returned by HTTP-REQUEST (the fourth return value).
+If nil, then a QURI:URI is returned, if non-nil a PURI:URI is returned. This is
+for backwards compatibility, and use of the PURI return value is deprecated. New
+code should set this to nil, and a future release may change the default to nil.
+
+However, note that if you use a library that uses drakma, you may need to call
+functions in that library in a context with *RETURN-PURI-URI* set to T if it
+depends on receiving a PURI:URI.")
+
 ;; stuff for Nikodemus Siivola's HYPERDOC
 ;; see <http://common-lisp.net/project/hyperdoc/>
 ;; and <http://www.cliki.net/hyperdoc>
