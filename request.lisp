@@ -657,7 +657,8 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                                        :escaped t))
                                                     nil))
                                (string-upcase protocol))
-              (write-header "Host" "~A~@[:~A~]" (puri:uri-host uri) (non-default-port uri))
+              (when (not (assoc "Host" additional-headers :test #'string-equal))
+                (write-header "Host" "~A~@[:~A~]" (puri:uri-host uri) (non-default-port uri)))
               (when user-agent
                 (write-header "User-Agent" "~A" (user-agent-string user-agent)))
               (when basic-authorization
