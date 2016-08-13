@@ -281,8 +281,7 @@ CA-FILE and CA-DIRECTORY can be specified to set the certificate
 authority bundle file or directory to use for certificate validation.
 
 The CERTIFICATE, KEY, CERTIFICATE-PASSWORD, VERIFY, MAX-DEPTH, CA-FILE
-and CA-DIRECTORY parameters are ignored for non-SSL requests.  They
-are also ignored on LispWorks.
+and CA-DIRECTORY parameters are ignored for non-SSL requests.
 
 PARAMETERS is an alist of name/value pairs \(the car and the cdr each
 being a string) which denotes the parameters which are added to the
