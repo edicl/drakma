@@ -326,16 +326,25 @@ which are not meant as separators."
       (warn ":max-depth, :ca-file and :ca-directory arguments not available on this platform"))
     (rt:start-ssl http-stream :verify verify))
   #+(and (not :allegro) (not :mocl-ssl) (not :drakma-no-ssl))
-  (let ((s http-stream))
-    (when (or verify ca-file ca-directory)
-      (warn ":verify, :max-depth, :ca-file and :ca-directory arguments not available on this platform"))
-    (cl+ssl:make-ssl-client-stream
-     (cl+ssl:stream-fd s)
-     :hostname hostname
-     :close-callback (lambda () (close s))
-     :certificate certificate
-     :key key
-     :password certificate-password))
+  (let ((s http-stream)
+        (ctx (cl+ssl:make-context :verify-depth max-depth
+                                  :verify-mode (if (eql verify :required)
+                                                   cl+ssl:+ssl-verify-peer+
+                                                   cl+ssl:+ssl-verify-none+)
+                                  :verify-location (or (and ca-file ca-directory
+                                                            (list ca-file ca-directory))
+                                                       ca-file ca-directory
+                                                       :default))))
+    (cl+ssl:with-global-context (ctx)
+      (cl+ssl:make-ssl-client-stream
+       (cl+ssl:stream-fd s)
+       :hostname hostname
+       :close-callback (lambda ()
+                         (close s)
+                         (cl+ssl:ssl-ctx-free ctx))
+       :certificate certificate
+       :key key
+       :password certificate-password)))
   #+:drakma-no-ssl
   (error "SSL not supported. Remove :drakma-no-ssl from *features* to enable SSL"))
 
