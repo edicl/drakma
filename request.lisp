@@ -194,7 +194,7 @@ headers of the chunked stream \(if any) as a second value."
                               key
                               certificate-password
                               verify
-                              max-depth
+                              (max-depth 10)
                               ca-file
                               ca-directory
                               parameters
