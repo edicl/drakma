@@ -531,7 +531,9 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
               (t
                (setq content (alist-to-url-encoded-string parameters external-format-out url-encoder)
                      content-type "application/x-www-form-urlencoded")))))
-    (let ((proxying-https-p (and proxy (not stream) (eq :https (puri:uri-scheme uri))))
+    (let ((proxying-https-p (and proxy (not stream)
+                                 (or force-ssl
+                                     (eq :https (puri:uri-scheme uri)))))
            http-stream raw-http-stream must-close done)
       (unwind-protect
           (progn
@@ -628,7 +630,16 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 #+:lispworks
                 (comm:attach-ssl raw-http-stream :ssl-side :client)
                 #-:lispworks
-                (setq http-stream (wrap-stream (make-ssl-stream raw-http-stream))))
+                (setq http-stream (wrap-stream
+                                   (make-ssl-stream raw-http-stream
+                                                    :hostname host
+                                                    :certificate certificate
+                                                    :key key
+                                                    :certificate-password certificate-password
+                                                    :verify verify
+                                                    :max-depth max-depth
+                                                    :ca-file ca-file
+                                                    :ca-directory ca-directory))))
               (when-let (all-get-parameters
                          (and (not preserve-uri)
                               (append (dissect-query (puri:uri-query uri))
