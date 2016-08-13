@@ -281,7 +281,8 @@ CA-FILE and CA-DIRECTORY can be specified to set the certificate
 authority bundle file or directory to use for certificate validation.
 
 The CERTIFICATE, KEY, CERTIFICATE-PASSWORD, VERIFY, MAX-DEPTH, CA-FILE
-and CA-DIRECTORY parameters are ignored for non-SSL requests.
+and CA-DIRECTORY parameters are ignored for non-SSL requests.  They
+are also ignored on LispWorks.
 
 PARAMETERS is an alist of name/value pairs \(the car and the cdr each
 being a string) which denotes the parameters which are added to the
@@ -475,6 +476,8 @@ decoded according to any encodings specified in the Content-Encoding
 header. The actual decoding is done by the DECODE-STREAM generic function,
 and you can implement new methods to support additional encodings.
 Any encodings in Transfer-Encoding, such as chunking, are always performed."
+  #+lispworks
+  (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory))
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
   (setq uri (cond ((puri:uri-p uri) (puri:copy-uri uri))
@@ -591,6 +594,9 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
               (when (and use-ssl
                          ;; don't attach SSL to existing streams
                          (not stream))
+                #+:lispworks
+                (comm:attach-ssl http-stream :ssl-side :client)
+                #-:lispworks
                 (setq http-stream (make-ssl-stream http-stream
                                                    :hostname host
                                                    :certificate certificate
@@ -621,6 +627,9 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 ;; got a connection; we have to read a blank line,
                 ;; turn on SSL, and then we can transmit
                 (read-line* http-stream)
+                #+:lispworks
+                (comm:attach-ssl raw-http-stream :ssl-side :client)
+                #-:lispworks
                 (setq http-stream (wrap-stream
                                    (make-ssl-stream raw-http-stream
                                                     :hostname host

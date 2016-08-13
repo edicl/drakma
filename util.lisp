@@ -295,6 +295,7 @@ which are not meant as separators."
          (setq cookie-start (1+ end-pos))
          (go next-cookie))))))
 
+#-:lispworks
 (defun make-ssl-stream (http-stream &key certificate key certificate-password verify (max-depth 10) ca-file ca-directory
                                          hostname)
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
@@ -319,7 +320,12 @@ which are not meant as separators."
                                  :max-depth max-depth
                                  :ca-file ca-file
                                  :ca-directory ca-directory)
-  #+(and (not :allegro) (not :drakma-no-ssl))
+  #+(and :mocl-ssl (not :drakma-no-ssl))
+  (progn
+    (when (or ca-file ca-directory)
+      (warn ":max-depth, :ca-file and :ca-directory arguments not available on this platform"))
+    (rt:start-ssl http-stream :verify verify))
+  #+(and (not :allegro) (not :mocl-ssl) (not :drakma-no-ssl))
   (let ((s http-stream)
         (ctx (cl+ssl:make-context :verify-depth max-depth
                                   :verify-mode (if (eql verify :required)
