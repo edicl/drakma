@@ -311,7 +311,7 @@ which are not meant as separators."
   (when (and ca-file
              (not (probe-file ca-file)))
     (error "ca file ~A not found" ca-file))
-  #+(and :allegro (not :drakma-no-ssl))
+  #+(and :allegro (not :allegro-cl-express) (not :drakma-no-ssl))
   (socket:make-ssl-client-stream http-stream
                                  :certificate certificate
                                  :key key
@@ -325,7 +325,7 @@ which are not meant as separators."
     (when (or ca-file ca-directory)
       (warn ":max-depth, :ca-file and :ca-directory arguments not available on this platform"))
     (rt:start-ssl http-stream :verify verify))
-  #+(and (not :allegro) (not :mocl-ssl) (not :drakma-no-ssl))
+  #+(and (or :allegro-cl-express (not :allegro)) (not :mocl-ssl) (not :drakma-no-ssl))
   (let ((s http-stream)
         (ctx (cl+ssl:make-context :verify-depth max-depth
                                   :verify-mode (if (eql verify :required)
