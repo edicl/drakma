@@ -134,6 +134,10 @@ body using the boundary BOUNDARY."
   #-abcl
   (declare (stream stream))
   #+(and ccl 32-bit-host)
+  ;; In 32-bit Clozure-CL the maximum array size limit  
+  ;; is (expt 2 24) elements. 
+  ;; See: http://ccl.clozure.com/manual/chapter4.7.html
+  ;; Use a list as buffer instead 
   (progn
     (when (>= buffer-size array-total-size-limit)
       (setq buffer-size (- array-total-size-limit 1)))
