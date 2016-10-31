@@ -134,8 +134,8 @@ body using the boundary BOUNDARY."
   (declare (stream stream))
   #+(and ccl 32-bit-host)
   (progn
-    (when (> buffer-size 16777215)
-      (setq buffer-size 16777215))
+    (when (> buffer-size (- array-total-size-limit 1))
+      (setq buffer-size (- array-total-size-limit 1)))
     (let ((buffer (make-array buffer-size :element-type element-type))
           (result ()))
       (loop :for index = 0 :then (+ index pos)
