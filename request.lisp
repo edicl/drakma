@@ -127,6 +127,7 @@ body using the boundary BOUNDARY."
       (crlf))))
 
 (defun %read-body (stream element-type &key (buffer-size +buffer-size+))
+  "Helper function to read from stream into a buffer of element-type, which is returned."
   ;; On ABCL, a flexi-stream is not a normal stream. This is caused by
   ;; a bug in ABCL which is supposedly quite difficult to fix. More
   ;; details here: http://abcl.org/trac/ticket/377
@@ -134,7 +135,7 @@ body using the boundary BOUNDARY."
   (declare (stream stream))
   #+(and ccl 32-bit-host)
   (progn
-    (when (> buffer-size (- array-total-size-limit 1))
+    (when (>= buffer-size array-total-size-limit)
       (setq buffer-size (- array-total-size-limit 1)))
     (let ((buffer (make-array buffer-size :element-type element-type))
           (result ()))
@@ -144,7 +145,6 @@ body using the boundary BOUNDARY."
             :while (= pos buffer-size))
       (nreverse result)))
   #-(and ccl 32-bit-host)
-  "Helper function to read from stream into a buffer of element-type, which is returned."
   (let ((buffer (make-array buffer-size :element-type element-type))
         (result (make-array 0 :element-type element-type :adjustable t)))
         (loop :for index = 0 :then (+ index pos)
@@ -478,7 +478,7 @@ time units.  If the server fails to respond until that time, a
 COMMUNICATION-DEADLINE-EXPIRED condition is signalled.  DEADLINE is
 only available on CCL 1.2 and later.
 
-BUFFER-SIZE is the size of the buffer used for reading from the 
+BUFFER-SIZE is the size of the buffer used for reading from the
 HTTP-stream and writing to it.
 
 If PRESERVE-URI is not NIL, the given URI will not be processed. This
