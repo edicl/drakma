@@ -45,7 +45,7 @@ more info."
       (drakma-warn "Problems determining charset \(falling back to binary):~%~A"
                    condition))))
 
-(defun send-content (content stream &optional external-format-out)
+(defun send-content (content stream &key external-format-out (buffer-size +buffer-size+))
   "Sends CONTENT to the stream STREAM as part of the request body
 depending on the type of CONTENT."
   (when content
@@ -59,7 +59,7 @@ depending on the type of CONTENT."
                 (input-stream-p content)
                 (open-stream-p content)
                 (subtypep (stream-element-type content) 'octet))
-           (let ((buf (make-array +buffer-size+ :element-type 'octet)))
+           (let ((buf (make-array buffer-size :element-type 'octet)))
              (loop
               (let ((pos (read-sequence buf content)))
                 (when (zerop pos) (return))
@@ -67,14 +67,14 @@ depending on the type of CONTENT."
           ((pathnamep content)
            (with-open-file (from content :element-type 'octet)
              ;; calls itself with a stream now
-             (send-content from stream)))
+             (send-content from stream :buffer-size buffer-size)))
           ((or (functionp content)
                (and (symbolp content)
                     (fboundp content)))
            (funcall content stream))
           (t (parameter-error "Don't know how to send content ~S to server." content)))))
 
-(defun make-form-data-function (parameters boundary external-format-out)
+(defun make-form-data-function (parameters boundary external-format-out &key (buffer-size +buffer-size+))
   "Creates and returns a closure which can be used as an argument for
 SEND-CONTENT to send PARAMETERS as a `multipart/form-data' request
 body using the boundary BOUNDARY."
@@ -118,7 +118,7 @@ body using the boundary BOUNDARY."
                    (format stream "Content-Type: ~A" content-type)
                    (crlf) (crlf)
                    ;; use SEND-CONTENT to send file as binary data
-                   (send-content file-source stream)))
+                   (send-content file-source stream :buffer-size buffer-size)))
                 (t (parameter-error
                     "Don't know what to do with name/value pair (~S . ~S) in multipart/form-data body."
                     name value)))
@@ -126,23 +126,23 @@ body using the boundary BOUNDARY."
       (format stream "--~A--" boundary)
       (crlf))))
 
-(defun %read-body (stream element-type)
+(defun %read-body (stream element-type &key (buffer-size +buffer-size+))
   ;; On ABCL, a flexi-stream is not a normal stream. This is caused by
   ;; a bug in ABCL which is supposedly quite difficult to fix. More
   ;; details here: http://abcl.org/trac/ticket/377
   #-abcl
   (declare (stream stream))
   "Helper function to read from stream into a buffer of element-type, which is returned."
-  (let ((buffer (make-array +buffer-size+ :element-type element-type))
+  (let ((buffer (make-array buffer-size :element-type element-type))
         (result (make-array 0 :element-type element-type :adjustable t)))
-        (loop for index = 0 then (+ index pos)
-           for pos = (read-sequence buffer stream)
-           do (adjust-array result (+ index pos))
-             (replace result buffer :start1 index :end2 pos)
-           while (= pos +buffer-size+))
+        (loop :for index = 0 :then (+ index pos)
+              :for pos = (read-sequence buffer stream :start 0 :end buffer-size)
+              :do (adjust-array result (+ index pos))
+                  (replace result buffer :start1 index :end2 pos)
+              :while (= pos buffer-size))
         result))
 
-(defun read-body (stream headers textp &key (decode-content t))
+(defun read-body (stream headers textp &key (decode-content t) (buffer-size +buffer-size+))
   "Reads the message body from the HTTP stream STREAM using the
 information contained in HEADERS \(as produced by HTTP-REQUEST).  If
 TEXTP is true, the body is assumed to be of content type `text' and
@@ -164,7 +164,7 @@ headers of the chunked stream \(if any) as a second value."
                      (read-sequence result stream)
                      (when (and decode-content (header-value :content-encoding headers))
                        (setq result (with-input-from-sequence (s result)
-                                      (%read-body (decode-response-stream headers s) 'octet))))
+                                      (%read-body (decode-response-stream headers s) 'octet :buffer-size buffer-size))))
                      (when textp
                        (setf result
                              (octets-to-string result :external-format (flexi-stream-external-format stream))
@@ -177,7 +177,8 @@ headers of the chunked stream \(if any) as a second value."
                    (setf (flexi-stream-element-type stream) element-type)
                    (%read-body (decode-flexi-stream headers stream
                                                     :decode-content decode-content)
-                               element-type)))
+                               element-type
+                               :buffer-size buffer-size)))
             (chunked-input-stream-trailers (flexi-stream-stream stream)))))
 
 (defun trivial-uri-path (uri-string)
@@ -231,6 +232,7 @@ headers of the chunked stream \(if any) as a second value."
                               (write-timeout 20 write-timeout-provided-p)
                               #+:openmcl
                               deadline
+                              (buffer-size +buffer-size+)
                               &aux (unparsed-uri (if (stringp uri) (copy-seq uri) (puri:copy-uri uri))))
   "Sends a HTTP request to a web server and returns its reply.  URI
 is where the request is sent to, and it is either a string denoting a
@@ -463,6 +465,9 @@ request should be finished.  The deadline is specified in internal
 time units.  If the server fails to respond until that time, a
 COMMUNICATION-DEADLINE-EXPIRED condition is signalled.  DEADLINE is
 only available on CCL 1.2 and later.
+
+BUFFER-SIZE is the size of the buffer used for reading from the 
+HTTP-stream and writing to it.
 
 If PRESERVE-URI is not NIL, the given URI will not be processed. This
 means that the URI will be sent as-is to the remote server and it is
@@ -723,7 +728,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                   (setq content
                         (with-output-to-sequence (bin-out)
                           (let ((out (make-flexi-stream bin-out :external-format +latin-1+)))
-                            (send-content content out external-format-out)))))
+                            (send-content content out :external-format-out external-format-out :buffer-size buffer-size)))))
                 (when (and (or (not content-length-provided-p)
                                (eq content-length t))
                            (typep content '(or (vector octet) list)))
@@ -741,7 +746,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 (setf (chunked-stream-output-chunking-p
                        (flexi-stream-stream http-stream)) t))
               (labels ((finish-request (content &optional continuep)
-                         (send-content content http-stream external-format-out)
+                         (send-content content http-stream :external-format-out external-format-out :buffer-size buffer-size)
                          (when continuep
                            (force-output http-stream)
                            (return-from finish-request))
@@ -841,7 +846,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                  (let (trailers)
                                    (multiple-value-setq (body trailers)
                                      (read-body http-stream headers external-format-body
-                                                :decode-content decode-content))
+                                                :decode-content decode-content :buffer-size buffer-size))
                                    (when trailers
                                      (drakma-warn "Adding trailers from chunked encoding to HTTP headers.")
                                      (setq headers (nconc headers trailers)))))

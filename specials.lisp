@@ -71,7 +71,8 @@
   "A list of HTTP methods that should be changed to GET in case of redirect
 (see http://en.wikipedia.org/wiki/Post/Redirect/Get).")
 
-(defconstant +buffer-size+ 8192)
+(defconstant +buffer-size+ 8192
+  "The size of the buffer used for reading and writing to the HTTP-stream.")
 
 (defvar *drakma-default-external-format* ':latin-1
   "The default value for the external format keyword arguments of
