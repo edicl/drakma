@@ -132,6 +132,18 @@ body using the boundary BOUNDARY."
   ;; details here: http://abcl.org/trac/ticket/377
   #-abcl
   (declare (stream stream))
+  #+(and ccl 32-bit-host)
+  (progn
+    (when (> buffer-size 16777215)
+      (setq buffer-size 16777215))
+    (let ((buffer (make-array buffer-size :element-type element-type))
+          (result ()))
+      (loop :for index = 0 :then (+ index pos)
+            :for pos = (read-sequence buffer stream :start 0 :end buffer-size)
+            :do (dotimes (i pos) (push (aref buffer i) result))
+            :while (= pos buffer-size))
+      (nreverse result)))
+  #-(and ccl 32-bit-host)
   "Helper function to read from stream into a buffer of element-type, which is returned."
   (let ((buffer (make-array buffer-size :element-type element-type))
         (result (make-array 0 :element-type element-type :adjustable t)))
