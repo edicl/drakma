@@ -133,11 +133,10 @@ body using the boundary BOUNDARY."
   ;; details here: http://abcl.org/trac/ticket/377
   #-abcl
   (declare (stream stream))
-  #+(and ccl 32-bit-host)
-  ;; In 32-bit Clozure-CL the maximum array size limit  
-  ;; is (expt 2 24) elements. 
+  ;; In 32-bit Clozure-CL the maximum array size limit
+  ;; is (expt 2 24) elements.
   ;; See: http://ccl.clozure.com/manual/chapter4.7.html
-  ;; Use a list as buffer instead 
+  ;; Use a list as buffer
   (progn
     (when (>= buffer-size array-total-size-limit)
       (setq buffer-size (- array-total-size-limit 1)))
@@ -147,22 +146,13 @@ body using the boundary BOUNDARY."
             :for pos = (read-sequence buffer stream :start 0 :end buffer-size)
             :do (dotimes (i pos) (push (aref buffer i) result))
             :while (= pos buffer-size))
-      (nreverse result)))
-  #-(and ccl 32-bit-host)
-  (let ((buffer (make-array buffer-size :element-type element-type))
-        (result (make-array 0 :element-type element-type :adjustable t)))
-        (loop :for index = 0 :then (+ index pos)
-              :for pos = (read-sequence buffer stream :start 0 :end buffer-size)
-              :do (adjust-array result (+ index pos))
-                  (replace result buffer :start1 index :end2 pos)
-              :while (= pos buffer-size))
-        result))
+      (nreverse result))))
 
 (defun read-body (stream headers textp &key (decode-content t) (buffer-size +buffer-size+))
   "Reads the message body from the HTTP stream STREAM using the
 information contained in HEADERS \(as produced by HTTP-REQUEST).  If
 TEXTP is true, the body is assumed to be of content type `text' and
-will be returned as a string.  Otherwise an array of octets \(or NIL
+will be returned as a string.  Otherwise a sequence of octets \(or NIL
 for an empty body) is returned.  Returns the optional `trailer' HTTP
 headers of the chunked stream \(if any) as a second value."
   (let ((content-length (when-let (value (and (not (header-value :transfer-encoding headers)) ;; see RFC 2616, section 4.4, 3.
@@ -440,11 +430,11 @@ will try to return it as a Lisp string.  It'll first check if the
 `Content-Type' header denotes an encoding to be used, or otherwise it
 will use the EXTERNAL-FORMAT-IN argument.  The body is decoded using
 FLEXI-STREAMS.  If FLEXI-STREAMS doesn't know the external format, the
-body is returned as an array of octets.  If the body is empty, Drakma
+body is returned as a sequence of octets.  If the body is empty, Drakma
 will return NIL.
 
 If the message body doesn't have a text content type or if
-FORCE-BINARY is true, the body is always returned as an array of
+FORCE-BINARY is true, the body is always returned as a sequence of
 octets.
 
 If WANT-STREAM is true, the message body is NOT read and instead the
