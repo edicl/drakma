@@ -137,16 +137,21 @@ body using the boundary BOUNDARY."
   ;; is (expt 2 24) elements.
   ;; See: http://ccl.clozure.com/manual/chapter4.7.html
   ;; Use a list as buffer
-  (progn
-    (when (>= buffer-size array-total-size-limit)
-      (setq buffer-size (- array-total-size-limit 1)))
-    (let ((buffer (make-array buffer-size :element-type element-type))
-          (result ()))
-      (loop :for index = 0 :then (+ index pos)
-            :for pos = (read-sequence buffer stream :start 0 :end buffer-size)
-            :do (dotimes (i pos) (push (aref buffer i) result))
-            :while (= pos buffer-size))
-      (nreverse result))))
+  (let ((result ()))
+    (loop with array-size = (if (>= buffer-size array-total-size-limit)
+                                (- array-total-size-limit 1)
+                                buffer-size)
+          with buffer = (make-array array-size :element-type element-type)
+          for index = 0 then (+ index pos)
+          for pos = (read-sequence buffer stream :start 0 :end array-size)
+          do (dotimes (i pos)
+               (push (aref buffer i) result))
+          while (= pos array-size))
+    (setq result
+          (nreverse result))
+    (if (typep element-type 'character)
+        (coerce result 'string)
+        result)))
 
 (defun read-body (stream headers textp &key (decode-content t) (buffer-size +buffer-size+))
   "Reads the message body from the HTTP stream STREAM using the
