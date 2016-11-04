@@ -126,6 +126,42 @@ body using the boundary BOUNDARY."
       (format stream "--~A--" boundary)
       (crlf))))
 
+(declaim (inline %read-body-into-list))
+(defun %read-body-into-list (stream element-type buffer-size)
+  "Helper function for cases where array-total-size-limit could be
+smaller than the number of elements that can be read from stream"
+  (let ((result ()))
+    (declare (type sequence result))
+    (loop with buffer = (make-array buffer-size :element-type element-type)
+          with result = ()
+          for index = 0 then (+ index pos)
+          for pos = (read-sequence buffer stream :start 0 :end buffer-size)
+          do (dotimes (i pos)
+               (push (aref buffer i) result))
+          while (= pos buffer-size))
+    (setq result
+          (nreverse result))
+    ;; element-type character -> return a string
+    (when (subtypep element-type 'character)
+      (if (>= (length result) array-total-size-limit)
+          (warn "Maximum possible string length exceeded! Returning a list of characters instead.")
+          (setq result
+                (coerce result 'string))))
+    result))
+
+(declaim (inline %read-body-into-array))
+(defun %read-body-into-array (stream element-type buffer-size)
+   "Helper function for cases where buffer-size does not exceed
+the array size limit"
+  (loop with buffer = (make-array buffer-size :element-type element-type)
+        with result = (make-array 0 :element-type element-type :adjustable t)
+        for index = 0 then (+ index pos)
+        for pos = (read-sequence buffer stream)
+        do (adjust-array result (+ index pos))
+           (replace result buffer :start1 index :end2 pos)
+        while (= pos buffer-size)
+        finally (return result)))
+
 (defun %read-body (stream element-type &key (buffer-size +buffer-size+))
   "Helper function to read from stream into a buffer of element-type, which is returned."
   ;; On ABCL, a flexi-stream is not a normal stream. This is caused by
@@ -133,25 +169,13 @@ body using the boundary BOUNDARY."
   ;; details here: http://abcl.org/trac/ticket/377
   #-abcl
   (declare (stream stream))
-  ;; In 32-bit Clozure-CL the maximum array size limit
-  ;; is (expt 2 24) elements.
-  ;; See: http://ccl.clozure.com/manual/chapter4.7.html
-  ;; Use a list as buffer
-  (let ((result ()))
-    (loop with array-size = (if (>= buffer-size array-total-size-limit)
-                                (- array-total-size-limit 1)
-                                buffer-size)
-          with buffer = (make-array array-size :element-type element-type)
-          for index = 0 then (+ index pos)
-          for pos = (read-sequence buffer stream :start 0 :end array-size)
-          do (dotimes (i pos)
-               (push (aref buffer i) result))
-          while (= pos array-size))
-    (setq result
-          (nreverse result))
-    (if (subtypep element-type 'character)
-        (coerce result 'string)
-        result)))
+  (if *limited-array-size*
+      ;; correctly deal with limited array size
+      (%read-body-into-list stream
+                            element-type
+                            (min (- array-total-size-limit 1) buffer-size))
+      ;; fast path for documents smaller than array-total-size-limit
+      (%read-body-into-array stream element-type buffer-size)))
 
 (defun read-body (stream headers textp &key (decode-content t) (buffer-size +buffer-size+))
   "Reads the message body from the HTTP stream STREAM using the

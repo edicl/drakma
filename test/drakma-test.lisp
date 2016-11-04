@@ -121,3 +121,15 @@
     (is (subtypep (stream-element-type stream) 'flexi-streams:octet))
     (let ((buffer (make-array 1 :element-type 'flexi-streams:octet)))
       (read-sequence buffer stream))))
+
+(test read-stream
+  (let ((*limited-array-size* nil))
+    (flexi-streams:with-input-from-sequence (str #(0 1 2 3))
+      (is (equalp (drakma::%read-body str 'flexi-streams:octet) #(0 1 2 3))))
+    (with-input-from-string (str "test-string")
+      (is (string-equal (drakma::%read-body str 'character) "test-string"))))
+  (let ((*limited-array-size* t))
+    (flexi-streams:with-input-from-sequence (str #(0 1 2 3))
+      (is (equalp (drakma::%read-body str 'flexi-streams:octet) #(0 1 2 3))))
+    (with-input-from-string (str "test-string")
+      (is (string-equal (drakma::%read-body str 'character) "test-string")))))
