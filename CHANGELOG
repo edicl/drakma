@@ -1,3 +1,10 @@
+Version 2.0.3
+2016-12-19
+Allegro CL Express SSL fix (Chris Riesbeck)
+Use force-ssl, verify and other SSL settings when using proxy (lsxvdqe)
+verify, ca-path, ca-directory and max-depth for CL+SSL (lsxvdqe)
+Using host from :additional-headers when specified (Azamat S. Kalimoulline)
+
 Version 2.0.2
 2015-10-08
 Support SNI with cl+ssl. (Paul M. Rodriguez)
