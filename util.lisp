@@ -336,6 +336,7 @@ which are not meant as separators."
                                                        ca-file ca-directory
                                                        :default))))
     (cl+ssl:with-global-context (ctx)
+      (setf (cl+ssl:ssl-check-verify-p) (and verify t))
       (cl+ssl:make-ssl-client-stream
        (cl+ssl:stream-fd s)
        :hostname hostname
