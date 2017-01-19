@@ -71,7 +71,8 @@
   "A list of HTTP methods that should be changed to GET in case of redirect
 (see http://en.wikipedia.org/wiki/Post/Redirect/Get).")
 
-(defconstant +buffer-size+ 8192)
+(defconstant +buffer-size+ 8192
+  "The size of the buffer used for reading and writing to the HTTP-stream.")
 
 (defvar *drakma-default-external-format* ':latin-1
   "The default value for the external format keyword arguments of
@@ -126,6 +127,14 @@ Management Mechanism, section 4.3.3 Cookie Management:
     is the same as a pre-existing cookie, and whose Domain and Path
     attribute values exactly \(string) match those of a pre-existing
     cookie, the new cookie supersedes the old.")
+
+(defvar *limited-array-size* nil
+  "Switch that enables the download of documents whose size exceeds
+array-total-size-limit in CL implementations. Defaults to NIL.
+
+In 32-bit Clozure-CL, for example, the maximum array size limit
+is (expt 2 24) elements. Lists have no such size limit.
+See: http://ccl.clozure.com/manual/chapter4.7.html")
 
 (defvar *text-content-types* '(("text" . nil))
   "A list of conses which are used by the default value of
