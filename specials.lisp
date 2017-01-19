@@ -127,7 +127,19 @@ Management Mechanism, section 4.3.3 Cookie Management:
     attribute values exactly \(string) match those of a pre-existing
     cookie, the new cookie supersedes the old.")
 
-(defvar *text-content-types* '(("text" . nil))
+(defvar *text-content-types* '(("text" . nil)
+                               ("application" . "json")
+                               ("application" . "javascript")
+                               ("application" . "ecmascript")
+                               ("application" . "xml")
+                               ("application" . "xml-dtd")
+                               ("application" . "atom+xml")
+                               ("application" . "rss+xml")
+                               ("application" . "soap+xml")
+                               ("application" . "xhtml+xml")
+                               ("image" . "svg+xml"))
+  
+  
   "A list of conses which are used by the default value of
 *BODY-FORMAT-FUNCTION* to decide whether a 'Content-Type' header
 denotes text content.  The car and cdr of each cons should each be a
@@ -139,10 +151,21 @@ to the cdr or if the cdr is NIL.
 
 The initial value of this variable is the list
 
-\((\"text\" . nil))
+\((\"text\" . nil)
+  (\"application\" . \"json\")
+  (\"application\" . \"javascript\")
+  (\"application\" . \"ecmascript\")
+  (\"application\" . \"xml\")
+  (\"application\" . \"xml-dtd\")
+  (\"application\" . \"atom+xml\")
+  (\"application\" . \"rss+xml\")
+  (\"application\" . \"soap+xml\")
+  (\"application\" . \"xhtml+xml\")
+  (\"image\" . \"svg+xml\"))
 
 which means that every content type that starts with \"text/\" is
-regarded as text, no matter what the subtype is.")
+regarded as text, no matter what the subtype is, and other specific
+types such as \"application/json\" are regarded as text as well.")
 
 (defvar *body-format-function* 'determine-body-format
   "A function which determines whether the content body returned by
