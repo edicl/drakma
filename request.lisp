@@ -193,7 +193,7 @@ headers of the chunked stream \(if any) as a second value."
                               certificate
                               key
                               certificate-password
-                              verify
+                              (verify :required)
                               (max-depth 10)
                               ca-file
                               ca-directory
@@ -272,7 +272,8 @@ is presented by the server in an SSL connection.  It can be specified
 either as NIL if no check should be performed, :OPTIONAL to verify the
 server's certificate if it presented one or :REQUIRED to verify the
 server's certificate and fail if an invalid or no certificate was
-presented.
+presented. Verification does not work when using mocl or Allegro,
+please note that it DOES work for Allegro CL Express.
 
 MAX-DEPTH can be specified to change the maximum allowed certificate
 signing depth that is accepted.  The default is 10.
