@@ -48,6 +48,15 @@
       (is (> (length body-or-stream) 0))
       (is (= 200 status-code)))))
 
+(test ssl-verify
+  (let ((drakma:*header-stream* *standard-output*))
+    (multiple-value-bind (body-or-stream status-code)
+        (drakma:http-request "https://self-signed.badssl.com/" :verify :optional)
+      (is (> (length body-or-stream) 0))
+      (is (= 200 status-code)))
+    (signals cl+ssl:ssl-error-verify
+      (drakma:http-request "https://self-signed.badssl.com"))))
+
 (test post-google
   (let ((drakma:*header-stream* *standard-output*))
     (multiple-value-bind (body-or-stream status-code headers uri stream must-close reason-phrase)
