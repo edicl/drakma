@@ -2,7 +2,7 @@
 <?xml-stylesheet type="text/xsl" href="clixdoc.xsl" ?>
 
 <clix:documentation xmlns='http://www.w3.org/1999/xhtml' xmlns:clix='http://bknr.net/clixdoc'>
-  <clix:title>DRAKMA - A Common Lisp HTTP client</clix:title>
+  <clix:title>Drakma - A Common Lisp HTTP client</clix:title>
   <clix:short-description>
     Drakma is a full-featured HTTP client implemented in Common Lisp.
     It knows how to handle <a href="#chunked">HTTP/1.1 chunking</a>,
@@ -14,7 +14,7 @@
     href="#arg-cookie-jar">cookies</a>, and more.
   </clix:short-description>
 
-  <h2>DRAKMA - A Common Lisp HTTP client</h2>
+  <h2>Drakma - A Common Lisp HTTP client</h2>
 
   <blockquote>
     <clix:chapter name='abstract' title='Abstract'>
@@ -193,7 +193,7 @@ IĲJ : U+0132"</span>
       <p>
         For non-textual content types, a vector of octets is returned.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist" :external-format :utf-8)</span>
+      <pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist")</span>
 <span class="headers-out">GET /repos/edicl/drakma/git/tags/tag-does-not-exist HTTP/1.1
 Host: api.github.com
 User-Agent: Drakma/1.3.0 (SBCL 1.1.1.31.master.2-9fac43f-dirty; Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -614,22 +614,13 @@ T</span>
 
   <clix:chapter name="patches" title="Development and patches">
     <p>
-      For discussions and questions regarding Drakma please use the <a
-      href="http://common-lisp.net/mailman/listinfo/drakma-devel">drakma-devel
-      mailing list</a>. If you want to be notified about future
-      releases subscribe to the <a
-      href="http://common-lisp.net/mailman/listinfo/drakma-announce">drakma-announce
-      mailing list</a>. These mailing lists were made available thanks
-      to the services of <a
-      href="http://common-lisp.net/">common-lisp.net</a>.
-    </p>
-    <p>
       The development version of Drakma can be found <a
       href="https://github.com/edicl/drakma" target="_new">on
       github</a>.  Please use the github issue tracking system to
-      submit bug reports.  Patches are welcome, github pull requests
-      are preferred to mailed patches.  If you want to send patches,
-      please <a href="http://weitz.de/patches.html" target="_new">read this
+      submit bug reports.  Patches are welcome, please use <a
+      href="https://github.com/edicl/drakma/pulls">GitHub pull
+      requests</a>.  If you want to make a change, please <a
+      href="http://weitz.de/patches.html" target="_new">read this
       first</a>.
     </p>
   </clix:chapter>
@@ -796,7 +787,7 @@ T</span>
             <clix:arg>max-depth</clix:arg>,
             <clix:arg>ca-file</clix:arg> and
             <clix:arg>ca-directory</clix:arg> parameters are ignored
-            for non-SSL requests.
+            for non-SSL requests.  They are also ignored on LispWorks.
           </p>
           <p>
             <a name="arg-parameters"/>
@@ -834,9 +825,11 @@ T</span>
             <clix:arg>url-encoder</clix:arg> specifies a custom URL
             encoder function which will be used by drakma to
             URL-encode parameter names and values.  It needs to be a
-            function of one argument.  The argument is the string to
-            encode, the return value must be the URL-encoded string.
-            This can be used if specific encoding rules are required.
+            function of two arguments.  The arguments are the string
+            to encode and the external format to use (as accepted by
+            FLEXI-STREAMS:STRING-TO-OCTETS).  The return value must be
+            the URL-encoded string.  This can be used if specific
+            encoding rules are required.
           </p>
           <p>
             <a name="arg-content"/>
@@ -957,10 +950,21 @@ T</span>
             the request should be sent.  Or it can be a list of two
             values - a string denoting the proxy server and an integer
             denoting the port to use (which will default to 80
-            otherwise).
+            otherwise).  Defaults to
+            <clix:arg>*default-http-proxy*</clix:arg>.
             <clix:arg>proxy-basic-authorization</clix:arg> is used
             like <clix:arg>basic-authorization</clix:arg>, but for the
-            proxy, and only if <clix:arg>proxy</clix:arg> is true.
+            proxy, and only if <clix:arg>proxy</clix:arg> is true.  If
+            the host portion of the uri is present in the
+            <clix:ref>*NO-PROXY-DOMAINS*</clix:ref> or the
+            <clix:arg>NO-PROXY-DOMAINS</clix:arg> list then the proxy
+            setting will be ignored for this request.
+          </p>
+          <p>
+            If <clix:arg>NO-PROXY-DOMAINS</clix:arg> is set then it
+            will supersede the <clix:ref>*NO-PROXY-DOMAINS*</clix:ref>
+            variable. Inserting domains into this list will allow them
+            to ignore the proxy setting.
           </p>
           <p>
             <a name="arg-real-host"/>
@@ -1092,6 +1096,16 @@ T</span>
             with a content-type of `multipart/form-data',
             <clix:arg>parameters</clix:arg> will not be used.
           </p>
+          <p>
+            If <clix:arg>decode-content</clix:arg> is not
+            <code>NIL</code>, then the content will automatically be
+            decoded according to any encodings specified in the
+            Content-Encoding header. The actual decoding is done by
+            the <clix:ref>decode-stream</clix:ref> generic function,
+            and you can implement new methods to support additional
+            encodings.  Any encodings in Transfer-Encoding, such as
+            chunking, are always performed.
+          </p>
         </clix:description>
       </clix:function>
 
@@ -1137,6 +1151,29 @@ T</span>
         </clix:description>
       </clix:function>
 
+      <clix:function name="decode-stream">
+        <clix:lambda-list>encoding-type stream</clix:lambda-list>
+        <clix:returns>stream</clix:returns>
+        <clix:description>
+          <p>
+            Generic function to decode a stream.  This is a generic
+            function which decodes the stream based on the
+            encoding-type.  If a response contains one or more
+            transfer or content encodings, then decode-stream is
+            called for each encoding type in the correct order to
+            properly decode the stream to its original content.
+          </p>
+          <p>
+            <clix:arg>encoding-type</clix:arg> will be a keyword
+            created by upcasing and interning the encoding type from
+            the header.  <clix:arg>stream</clix:arg> will be the
+            stream that needs to be
+            decoded. <clix:ref>decode-stream</clix:ref> returns a new
+            stream from which you can read the decoded data.
+          </p>
+        </clix:description>
+      </clix:function>
+
       <clix:special-variable name="*body-format-function*">
         <clix:description>
           <p>
@@ -1168,6 +1205,28 @@ T</span>
             determine whether the body is text and then proceeds as
             described in the <clix:ref>HTTP-REQUEST</clix:ref>
             documentation entry.
+          </p>
+        </clix:description>
+      </clix:special-variable>
+
+      <clix:special-variable name="*default-http-proxy*">
+        <clix:description>
+          <p>
+	    HTTP proxy to be used as default for the proxy keyword
+	    argument of <clix:ref>HTTP-REQUEST</clix:ref>. If not
+	    <code>NIL</code>, it should be a string denoting a proxy
+	    server through which the request should be sent.  Or it
+	    can be a list of two values - a string denoting the proxy
+	    server and an integer denoting the port to use (which
+	    will default to 80 otherwise).
+          </p>
+        </clix:description>
+      </clix:special-variable>
+
+      <clix:special-variable name="*no-proxy-domains*">
+        <clix:description>
+          <p>
+            A list of domains for which a proxy should not be used.
           </p>
         </clix:description>
       </clix:special-variable>

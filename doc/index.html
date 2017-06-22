@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Strict//EN">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta><title>DRAKMA - A Common Lisp HTTP client</title><meta name="description" content="
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta><title>Drakma - A Common Lisp HTTP client</title><meta name="description" content="
     Drakma is a full-featured HTTP client implemented in Common Lisp.
     It knows how to handle HTTP/1.1 chunking,
     persistent connections, re-usable sockets, SSL, continuable uploads, file uploads, cookies, and more.
@@ -25,7 +25,7 @@
   
   
 
-  <h2>DRAKMA - A Common Lisp HTTP client</h2>
+  <h2>Drakma - A Common Lisp HTTP client</h2>
 
   <blockquote>
     <h3 xmlns=""><a class="none" name="abstract">Abstract</a></h3>
@@ -226,7 +226,7 @@ IĲJ : U+0132"</span>
       <p>
         For non-textual content types, a vector of octets is returned.
       </p>
-      <pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist" :external-format :utf-8)</span>
+      <pre><span class="repl-output">? </span><span class="repl-input">(<a href="#http-request">drakma:http-request</a> "https://api.github.com/repos/edicl/drakma/git/tags/tag-does-not-exist")</span>
 <span class="headers-out">GET /repos/edicl/drakma/git/tags/tag-does-not-exist HTTP/1.1
 Host: api.github.com
 User-Agent: Drakma/1.3.0 (SBCL 1.1.1.31.master.2-9fac43f-dirty; Darwin; 12.2.0; http://weitz.de/drakma/)
@@ -633,7 +633,7 @@ T</span>
     <p>
       Drakma depends on a number of open source libraries, so the
       preferred method to download, compile and load it is via <a href="http://www.quicklisp.org/">Quicklisp</a>.  Drakma's
-      current version number is 1.3.2.
+      current version number is 2.0.3.
     </p>
     <p>
       The canonical location for the latest version of Drakma is <a href="http://weitz.de/files/drakma.tar.gz">http://weitz.de/files/drakma.tar.gz</a>.
@@ -642,18 +642,10 @@ T</span>
 
   <h3 xmlns=""><a class="none" name="patches">Development and patches</a></h3>
     <p>
-      For discussions and questions regarding Drakma please use the <a href="http://common-lisp.net/mailman/listinfo/drakma-devel">drakma-devel
-      mailing list</a>. If you want to be notified about future
-      releases subscribe to the <a href="http://common-lisp.net/mailman/listinfo/drakma-announce">drakma-announce
-      mailing list</a>. These mailing lists were made available thanks
-      to the services of <a href="http://common-lisp.net/">common-lisp.net</a>.
-    </p>
-    <p>
       The development version of Drakma can be found <a href="https://github.com/edicl/drakma" target="_new">on
       github</a>.  Please use the github issue tracking system to
-      submit bug reports.  Patches are welcome, github pull requests
-      are preferred to mailed patches.  If you want to send patches,
-      please <a href="http://weitz.de/patches.html" target="_new">read this
+      submit bug reports.  Patches are welcome, please use <a href="https://github.com/edicl/drakma/pulls">GitHub pull
+      requests</a>.  If you want to make a change, please <a href="http://weitz.de/patches.html" target="_new">read this
       first</a>.
     </p>
   
@@ -815,7 +807,7 @@ T</span>
             <code xmlns=""><i>max-depth</i></code>,
             <code xmlns=""><i>ca-file</i></code> and
             <code xmlns=""><i>ca-directory</i></code> parameters are ignored
-            for non-SSL requests.
+            for non-SSL requests.  They are also ignored on LispWorks.
           </p>
           <p xmlns="http://www.w3.org/1999/xhtml">
             <a name="arg-parameters"></a>
@@ -853,9 +845,11 @@ T</span>
             <code xmlns=""><i>url-encoder</i></code> specifies a custom URL
             encoder function which will be used by drakma to
             URL-encode parameter names and values.  It needs to be a
-            function of one argument.  The argument is the string to
-            encode, the return value must be the URL-encoded string.
-            This can be used if specific encoding rules are required.
+            function of two arguments.  The arguments are the string
+            to encode and the external format to use (as accepted by
+            FLEXI-STREAMS:STRING-TO-OCTETS).  The return value must be
+            the URL-encoded string.  This can be used if specific
+            encoding rules are required.
           </p>
           <p xmlns="http://www.w3.org/1999/xhtml">
             <a name="arg-content"></a>
@@ -976,10 +970,21 @@ T</span>
             the request should be sent.  Or it can be a list of two
             values - a string denoting the proxy server and an integer
             denoting the port to use (which will default to 80
-            otherwise).
+            otherwise).  Defaults to
+            <code xmlns=""><i>*default-http-proxy*</i></code>.
             <code xmlns=""><i>proxy-basic-authorization</i></code> is used
             like <code xmlns=""><i>basic-authorization</i></code>, but for the
-            proxy, and only if <code xmlns=""><i>proxy</i></code> is true.
+            proxy, and only if <code xmlns=""><i>proxy</i></code> is true.  If
+            the host portion of the uri is present in the
+            <code xmlns=""><a href="#*no-proxy-domains*">*NO-PROXY-DOMAINS*</a></code> or the
+            <code xmlns=""><i>NO-PROXY-DOMAINS</i></code> list then the proxy
+            setting will be ignored for this request.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            If <code xmlns=""><i>NO-PROXY-DOMAINS</i></code> is set then it
+            will supersede the <code xmlns=""><a href="#*no-proxy-domains*">*NO-PROXY-DOMAINS*</a></code>
+            variable. Inserting domains into this list will allow them
+            to ignore the proxy setting.
           </p>
           <p xmlns="http://www.w3.org/1999/xhtml">
             <a name="arg-real-host"></a>
@@ -1109,6 +1114,16 @@ T</span>
             with a content-type of `multipart/form-data',
             <code xmlns=""><i>parameters</i></code> will not be used.
           </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            If <code xmlns=""><i>decode-content</i></code> is not
+            <code>NIL</code>, then the content will automatically be
+            decoded according to any encodings specified in the
+            Content-Encoding header. The actual decoding is done by
+            the <code xmlns=""><a href="#decode-stream">decode-stream</a></code> generic function,
+            and you can implement new methods to support additional
+            encodings.  Any encodings in Transfer-Encoding, such as
+            chunking, are always performed.
+          </p>
         </clix:description></blockquote></p>
 
       <p xmlns=""><a class="none" name="parameter-present-p"></a>
@@ -1153,6 +1168,29 @@ T</span>
           </p>
         </clix:description></blockquote></p>
 
+      <p xmlns=""><a class="none" name="decode-stream"></a>
+          [Function]
+          <br><b>decode-stream</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">encoding-type stream</clix:lambda-list></i>
+            =&gt;
+            <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">stream</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Generic function to decode a stream.  This is a generic
+            function which decodes the stream based on the
+            encoding-type.  If a response contains one or more
+            transfer or content encodings, then decode-stream is
+            called for each encoding type in the correct order to
+            properly decode the stream to its original content.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <code xmlns=""><i>encoding-type</i></code> will be a keyword
+            created by upcasing and interning the encoding type from
+            the header.  <code xmlns=""><i>stream</i></code> will be the
+            stream that needs to be
+            decoded. <code xmlns=""><a href="#decode-stream">decode-stream</a></code> returns a new
+            stream from which you can read the decoded data.
+          </p>
+        </clix:description></blockquote></p>
+
       <p xmlns=""><a class="none" name="*body-format-function*"></a>
       [Special variable]
       <br><b>*body-format-function*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
@@ -1183,6 +1221,28 @@ T</span>
             determine whether the body is text and then proceeds as
             described in the <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code>
             documentation entry.
+          </p>
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="*default-http-proxy*"></a>
+      [Special variable]
+      <br><b>*default-http-proxy*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+	    HTTP proxy to be used as default for the proxy keyword
+	    argument of <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code>. If not
+	    <code>NIL</code>, it should be a string denoting a proxy
+	    server through which the request should be sent.  Or it
+	    can be a list of two values - a string denoting the proxy
+	    server and an integer denoting the port to use (which
+	    will default to 80 otherwise).
+          </p>
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="*no-proxy-domains*"></a>
+      [Special variable]
+      <br><b>*no-proxy-domains*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            A list of domains for which a proxy should not be used.
           </p>
         </clix:description></blockquote></p>
 
@@ -1604,6 +1664,9 @@ Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 <code><a href="#*body-format-function*">*body-format-function*</a></code><span class="entry-type">Special variable</span>
 </li>
 <li>
+<code><a href="#*default-http-proxy*">*default-http-proxy*</a></code><span class="entry-type">Special variable</span>
+</li>
+<li>
 <code><a href="#*drakma-default-external-format*">*drakma-default-external-format*</a></code><span class="entry-type">Special variable</span>
 </li>
 <li>
@@ -1611,6 +1674,9 @@ Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 </li>
 <li>
 <code><a href="#*ignore-unparseable-cookie-dates-p*">*ignore-unparseable-cookie-dates-p*</a></code><span class="entry-type">Special variable</span>
+</li>
+<li>
+<code><a href="#*no-proxy-domains*">*no-proxy-domains*</a></code><span class="entry-type">Special variable</span>
 </li>
 <li>
 <code><a href="#*remove-duplicate-cookies-p*">*remove-duplicate-cookies-p*</a></code><span class="entry-type">Special variable</span>
@@ -1659,6 +1725,9 @@ Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 </li>
 <li>
 <code><a href="#cookie=">cookie=</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#decode-stream">decode-stream</a></code><span class="entry-type">Function</span>
 </li>
 <li>
 <code><a href="#delete-old-cookies">delete-old-cookies</a></code><span class="entry-type">Function</span>

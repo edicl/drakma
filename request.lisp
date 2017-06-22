@@ -34,25 +34,13 @@
 body is to be read.  See the docstring of *BODY-FORMAT-FUNCTION* for
 more info."
   (handler-case
-      (let ((transfer-encodings (header-value :transfer-encoding headers))
-            (content-encodings (header-value :content-encoding headers)))
-        (when transfer-encodings
-          (setq transfer-encodings (split-tokens transfer-encodings)))
-        (when content-encodings
-          (setq content-encodings (split-tokens content-encodings)))
-        (multiple-value-bind (type subtype params)
-            (get-content-type headers)
-          (when (and (text-content-type-p type subtype)
-                     (null (set-difference transfer-encodings
-                                           '("chunked" "identity")
-                                           :test #'equalp))
-                     (null (set-difference content-encodings
-                                           '("identity")
-                                           :test #'equalp)))
-            (let* ((charset (parameter-value "charset" params))
-                   (name (cond (charset (as-keyword charset))
-                               (t external-format-in))))
-              (make-external-format name :eol-style :lf)))))
+      (multiple-value-bind (type subtype params)
+          (get-content-type headers)
+        (when (text-content-type-p type subtype)
+          (let* ((charset (parameter-value "charset" params))
+                 (name (cond (charset (as-keyword charset))
+                             (t external-format-in))))
+            (make-external-format name :eol-style :lf))))
     (error (condition)
       (drakma-warn "Problems determining charset \(falling back to binary):~%~A"
                    condition))))
@@ -86,7 +74,7 @@ depending on the type of CONTENT."
            (funcall content stream))
           (t (parameter-error "Don't know how to send content ~S to server." content)))))
 
-(defun make-form-data-function (parameters boundary)
+(defun make-form-data-function (parameters boundary external-format-out)
   "Creates and returns a closure which can be used as an argument for
 SEND-CONTENT to send PARAMETERS as a `multipart/form-data' request
 body using the boundary BOUNDARY."
@@ -106,8 +94,12 @@ body using the boundary BOUNDARY."
           (crlf)
           (format stream "Content-Disposition: form-data; name=\"~A\"" name)
           (cond ((stringp value)
+                 (crlf)
+                 (format stream "Content-Type: text/plain; charset=~a" external-format-out)
                  (crlf) (crlf)
-                 (format stream "~A" value))
+                 (setf (flexi-stream-external-format stream) external-format-out)
+                 (format stream "~A" value)
+                 (setf (flexi-stream-external-format stream) +latin-1+))
                 ((and (listp value)
                       (first value)
                       (not (stringp (first value))))
@@ -134,47 +126,58 @@ body using the boundary BOUNDARY."
       (format stream "--~A--" boundary)
       (crlf))))
 
-(defun read-body (stream headers must-close textp)
+(defun %read-body (stream element-type)
+  ;; On ABCL, a flexi-stream is not a normal stream. This is caused by
+  ;; a bug in ABCL which is supposedly quite difficult to fix. More
+  ;; details here: http://abcl.org/trac/ticket/377
+  #-abcl
+  (declare (stream stream))
+  "Helper function to read from stream into a buffer of element-type, which is returned."
+  (let ((buffer (make-array +buffer-size+ :element-type element-type))
+        (result (make-array 0 :element-type element-type :adjustable t)))
+        (loop for index = 0 then (+ index pos)
+           for pos = (read-sequence buffer stream)
+           do (adjust-array result (+ index pos))
+             (replace result buffer :start1 index :end2 pos)
+           while (= pos +buffer-size+))
+        result))
+
+(defun read-body (stream headers textp &key (decode-content t))
   "Reads the message body from the HTTP stream STREAM using the
 information contained in HEADERS \(as produced by HTTP-REQUEST).  If
 TEXTP is true, the body is assumed to be of content type `text' and
 will be returned as a string.  Otherwise an array of octets \(or NIL
 for an empty body) is returned.  Returns the optional `trailer' HTTP
 headers of the chunked stream \(if any) as a second value."
-  (let ((content-length (when-let (value (header-value :content-length headers))
+  (let ((content-length (when-let (value (and (not (header-value :transfer-encoding headers)) ;; see RFC 2616, section 4.4, 3.
+                                              (header-value :content-length headers)))
                           (parse-integer value)))
         (element-type (if textp
                         #+:lispworks 'lw:simple-char #-:lispworks 'character
-                        'octet))
-        (chunkedp (chunked-stream-input-chunking-p (flexi-stream-stream stream))))
+                        'octet)))
     (values (cond ((eql content-length 0) nil)
                   (content-length
-                   (when chunkedp
-                     ;; see RFC 2616, section 4.4
-                     (syntax-error "Got Content-Length header although input chunking is on."))
                    (setf (flexi-stream-element-type stream) 'octet)
                    (let ((result (make-array content-length :element-type 'octet)))
                      #+:clisp
                      (setf (flexi-stream-element-type stream) 'octet)
                      (read-sequence result stream)
+                     (when (and decode-content (header-value :content-encoding headers))
+                       (setq result (with-input-from-sequence (s result)
+                                      (%read-body (decode-response-stream headers s) 'octet))))
                      (when textp
                        (setf result
                              (octets-to-string result :external-format (flexi-stream-external-format stream))
                              #+:clisp (flexi-stream-element-type stream)
                              #+:clisp element-type))
                      result))
-                  ((or chunkedp must-close)
+                  (t
                    ;; no content length, read until EOF (or end of chunking)
                    #+:clisp
                    (setf (flexi-stream-element-type stream) element-type)
-                   (let ((buffer (make-array +buffer-size+ :element-type element-type))
-                         (result (make-array 0 :element-type element-type :adjustable t)))
-                     (loop for index = 0 then (+ index pos)
-                           for pos = (read-sequence buffer stream)
-                           do (adjust-array result (+ index pos))
-                           (replace result buffer :start1 index :end2 pos)
-                           while (= pos +buffer-size+))
-                     result)))
+                   (%read-body (decode-flexi-stream headers stream
+                                                    :decode-content decode-content)
+                               element-type)))
             (chunked-input-stream-trailers (flexi-stream-stream stream)))))
 
 (defun trivial-uri-path (uri-string)
@@ -191,7 +194,7 @@ headers of the chunked stream \(if any) as a second value."
                               key
                               certificate-password
                               verify
-                              max-depth
+                              (max-depth 10)
                               ca-file
                               ca-directory
                               parameters
@@ -205,7 +208,8 @@ headers of the chunked stream \(if any) as a second value."
                               (user-agent :drakma)
                               (accept "*/*")
                               range
-                              proxy
+                              (proxy *default-http-proxy*)
+                              (no-proxy-domains *no-proxy-domains*)
                               proxy-basic-authorization
                               real-host
                               additional-headers
@@ -219,6 +223,7 @@ headers of the chunked stream \(if any) as a second value."
                               want-stream
                               stream
                               preserve-uri
+                              decode-content ; default to nil for backwards compatibility
                               #+(or abcl clisp lispworks mcl openmcl sbcl)
                               (connection-timeout 20)
                               #+:lispworks (read-timeout 20)
@@ -276,7 +281,8 @@ CA-FILE and CA-DIRECTORY can be specified to set the certificate
 authority bundle file or directory to use for certificate validation.
 
 The CERTIFICATE, KEY, CERTIFICATE-PASSWORD, VERIFY, MAX-DEPTH, CA-FILE
-and CA-DIRECTORY parameters are ignored for non-SSL requests.
+and CA-DIRECTORY parameters are ignored for non-SSL requests.  They
+are also ignored on LispWorks.
 
 PARAMETERS is an alist of name/value pairs \(the car and the cdr each
 being a string) which denotes the parameters which are added to the
@@ -375,9 +381,16 @@ If PROXY is not NIL, it should be a string denoting a proxy
 server through which the request should be sent.  Or it can be a
 list of two values - a string denoting the proxy server and an
 integer denoting the port to use \(which will default to 80
-otherwise).  PROXY-BASIC-AUTHORIZATION is used like
+otherwise).  Defaults to *default-http-proxy*.
+PROXY-BASIC-AUTHORIZATION is used like
 BASIC-AUTHORIZATION, but for the proxy, and only if PROXY is
-true.
+true. If the host portion of the uri is present in the
+*no-proxy-domains* or the NO-PROXY-DOMAINS list then the proxy
+setting will be ignored for this request.
+
+If NO-PROXY-DOMAINS is set then it will supersede the
+*no-proxy-domains* variable. Inserting domains into this list will
+allow them to ignore the proxy setting.
 
 If REAL-HOST is not NIL, request is sent to the denoted host instead
 of the URI host.  When specified, REAL-HOST supersedes PROXY.
@@ -456,15 +469,23 @@ means that the URI will be sent as-is to the remote server and it is
 the responsibility of the client to make sure that all parameters are
 encoded properly. Note that if this parameter is given, and the
 request is not a POST with a content-type of `multipart/form-data',
-PARAMETERS will not be used."
+PARAMETERS will not be used.
+
+If DECODE-CONTENT is not NIL, then the content will automatically be
+decoded according to any encodings specified in the Content-Encoding
+header. The actual decoding is done by the DECODE-STREAM generic function,
+and you can implement new methods to support additional encodings.
+Any encodings in Transfer-Encoding, such as chunking, are always performed."
+  #+lispworks
+  (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory))
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
-  (setq uri (cond ((uri-p uri) (copy-uri uri))
-                  (t (parse-uri uri))))
+  (setq uri (cond ((puri:uri-p uri) (puri:copy-uri uri))
+                  (t (puri:parse-uri uri))))
   (unless (member method +known-methods+ :test #'eq)
     (parameter-error "Don't know how to handle method ~S." method))
-  (unless (member (uri-scheme uri) '(:http :https) :test #'eq)
-    (parameter-error "Don't know how to handle scheme ~S." (uri-scheme uri)))
+  (unless (member (puri:uri-scheme uri) '(:http :https) :test #'eq)
+    (parameter-error "Don't know how to handle scheme ~S." (puri:uri-scheme uri)))
   (when (and close keep-alive)
     (parameter-error "CLOSE and KEEP-ALIVE must not be both true."))
   (when (and form-data (not (member method '(:post :report) :test #'eq)))
@@ -482,6 +503,9 @@ PARAMETERS will not be used."
   (when proxy
     (when (atom proxy)
       (setq proxy (list proxy 80))))
+  ;; Ignore the proxy for whitelisted hosts.
+  (when (member (puri:uri-host uri) no-proxy-domains :test #'string=)
+    (setq proxy '()))
   ;; make sure we don't get :CRLF on Windows
   (let ((*default-eol-style* :lf)
         (file-parameters-p (find-if-not (lambda (thing)
@@ -500,25 +524,27 @@ PARAMETERS will not be used."
         (setq parameters-used-p t)
         (cond ((or form-data file-parameters-p)
                (let ((boundary (format nil "----------~A" (make-random-string))))
-                 (setq content (make-form-data-function parameters boundary)
+                 (setq content (make-form-data-function parameters boundary external-format-out)
                        content-type (format nil "multipart/form-data; boundary=~A" boundary)))
                (unless (or file-parameters-p content-length-provided-p)
                  (setq content-length (or content-length t))))
               (t
                (setq content (alist-to-url-encoded-string parameters external-format-out url-encoder)
                      content-type "application/x-www-form-urlencoded")))))
-    (let ((proxying-https-p (and proxy (not stream) (eq :https (puri:uri-scheme uri))))
+    (let ((proxying-https-p (and proxy (not stream)
+                                 (or force-ssl
+                                     (eq :https (puri:uri-scheme uri)))))
            http-stream raw-http-stream must-close done)
       (unwind-protect
           (progn
             (let ((host (or (and proxy (first proxy))
-                            (uri-host uri)))
+                            (puri:uri-host uri)))
                   (port (cond (proxy (second proxy))
-                              ((uri-port uri))
+                              ((puri:uri-port uri))
                               (t (default-port uri))))
                   (use-ssl (and (not proxying-https-p)
                                 (or force-ssl
-                                    (eq (uri-scheme uri) :https)))))
+                                    (eq (puri:uri-scheme uri) :https)))))
               #+(and :lispworks5.0 :mswindows
                      (not :lw-does-not-have-write-timeout))
               (when use-ssl
@@ -572,6 +598,7 @@ PARAMETERS will not be used."
                 (comm:attach-ssl http-stream :ssl-side :client)
                 #-:lispworks
                 (setq http-stream (make-ssl-stream http-stream
+                                                   :hostname host
                                                    :certificate certificate
                                                    :key key
                                                    :certificate-password certificate-password
@@ -589,9 +616,9 @@ PARAMETERS will not be used."
                 ;; set up a tunnel through the proxy server to the
                 ;; final destination
                 (write-http-line "CONNECT ~A:~:[443~;~:*~A~] HTTP/1.1"
-                                 (uri-host uri) (uri-port uri))
+                                 (puri:uri-host uri) (puri:uri-port uri))
                 (write-http-line "Host: ~A:~:[443~;~:*~A~]"
-                                 (uri-host uri) (uri-port uri))
+                                 (puri:uri-host uri) (puri:uri-port uri))
                 (write-http-line "")
                 (force-output http-stream)
                 ;; check we get a 200 response before proceeding
@@ -603,36 +630,46 @@ PARAMETERS will not be used."
                 #+:lispworks
                 (comm:attach-ssl raw-http-stream :ssl-side :client)
                 #-:lispworks
-                (setq http-stream (wrap-stream (make-ssl-stream raw-http-stream))))
+                (setq http-stream (wrap-stream
+                                   (make-ssl-stream raw-http-stream
+                                                    :hostname host
+                                                    :certificate certificate
+                                                    :key key
+                                                    :certificate-password certificate-password
+                                                    :verify verify
+                                                    :max-depth max-depth
+                                                    :ca-file ca-file
+                                                    :ca-directory ca-directory))))
               (when-let (all-get-parameters
                          (and (not preserve-uri)
-                              (append (dissect-query (uri-query uri))
+                              (append (dissect-query (puri:uri-query uri))
                                       (and (not parameters-used-p) parameters))))
-                (setf (uri-query uri)
+                (setf (puri:uri-query uri)
                       (alist-to-url-encoded-string all-get-parameters external-format-out url-encoder)))
               (when (eq method :options*)
                 ;; special pseudo-method
                 (setf method :options
-                      (uri-path uri) "*"
-                      (uri-query uri) nil))
+                      (puri:uri-path uri) "*"
+                      (puri:uri-query uri) nil))
               (write-http-line "~A ~A ~A"
                                (string-upcase method)
                                (if (and preserve-uri
                                         (stringp unparsed-uri))
                                    (trivial-uri-path unparsed-uri)
-                                   (render-uri (cond
-                                                 ((and proxy
-                                                       (null stream)
-                                                       (not proxying-https-p)
-                                                       (not real-host))
-                                                  uri)
-                                                 (t
-                                                  (make-instance 'uri
-                                                                 :path (or (uri-path uri) "/")
-                                                                 :query (uri-query uri))))
-                                               nil))
+                                   (puri:render-uri (if (and proxy
+                                                             (null stream)
+                                                             (not proxying-https-p)
+                                                             (not real-host))
+                                                        uri
+                                                        (make-instance 'puri:uri
+                                                                       :path (puri:uri-path uri)
+                                                                       :parsed-path (puri:uri-parsed-path uri)
+                                                                       :query (puri:uri-query uri)
+                                                                       :escaped t))
+                                                    nil))
                                (string-upcase protocol))
-              (write-header "Host" "~A~@[:~A~]" (uri-host uri) (non-default-port uri))
+              (when (not (assoc "Host" additional-headers :test #'string-equal))
+                (write-header "Host" "~A~@[:~A~]" (puri:uri-host uri) (non-default-port uri)))
               (when user-agent
                 (write-header "User-Agent" "~A" (user-agent-string user-agent)))
               (when basic-authorization
@@ -735,7 +772,8 @@ PARAMETERS will not be used."
                                (when cookie-jar
                                  (update-cookies (get-cookies headers uri) cookie-jar))
                                (when (and redirect
-                                          (member status-code +redirect-codes+))
+                                          (member status-code +redirect-codes+)
+                                          (header-value :location headers))
                                  (unless (or (eq redirect t)
                                              (and (integerp redirect)
                                                   (plusp redirect)))
@@ -747,21 +785,14 @@ PARAMETERS will not be used."
                                  (when auto-referer
                                    (setq additional-headers (set-referer uri additional-headers)))
                                  (let* ((location (header-value :location headers))
-                                        (new-uri (merge-uris
-                                                  (cond ((or (null location)
-                                                             (zerop (length location)))
-                                                         (drakma-warn
-                                                          "Empty `Location' header, assuming \"/\".")
-                                                         "/")
-                                                        (t location))
-                                                  uri))
+                                        (new-uri (puri:merge-uris location uri))
                                         ;; can we re-use the stream?
-                                        (old-server-p (and (string= (uri-host new-uri)
-                                                                    (uri-host uri))
-                                                           (eql (uri-port new-uri)
-                                                                (uri-port uri))
-                                                           (eq (uri-scheme new-uri)
-                                                               (uri-scheme uri)))))
+                                        (old-server-p (and (string= (puri:uri-host new-uri)
+                                                                    (puri:uri-host uri))
+                                                           (eql (puri:uri-port new-uri)
+                                                                (puri:uri-port uri))
+                                                           (eq (puri:uri-scheme new-uri)
+                                                               (puri:uri-scheme uri)))))
                                    (unless old-server-p
                                      (setq must-close t
                                            want-stream nil))
@@ -809,13 +840,16 @@ PARAMETERS will not be used."
                                (unless (or want-stream (eq method :head))
                                  (let (trailers)
                                    (multiple-value-setq (body trailers)
-                                       (read-body http-stream headers must-close external-format-body))
+                                     (read-body http-stream headers external-format-body
+                                                :decode-content decode-content))
                                    (when trailers
                                      (drakma-warn "Adding trailers from chunked encoding to HTTP headers.")
                                      (setq headers (nconc headers trailers)))))
                                (setq done t)
-                               (values (cond (want-stream http-stream)
-                                             (t body))
+                               (values (if want-stream
+                                           (decode-flexi-stream headers http-stream
+                                                                :decode-content decode-content)
+                                           body)
                                        status-code
                                        headers
                                        uri

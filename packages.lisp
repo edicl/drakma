@@ -30,13 +30,15 @@
 (in-package :cl-user)
 
 (defpackage :drakma
-  (:use :cl :puri :flexi-streams :chunga)
+  (:use :cl :flexi-streams :chunga)
   ;; the variable defined in the ASDF system definition
-  (:import-from :drakma-asd #:*drakma-version-string*)
   (:shadow #:syntax-error #:parameter-error)
-  (:export #:*allow-dotless-cookie-domains-p*
+  (:export #:*drakma-version*
+           #:*allow-dotless-cookie-domains-p*
            #:*body-format-function*
            #:*remove-duplicate-cookies-p*
+           #:*default-http-proxy*
+           #:*no-proxy-domains*
            #:*drakma-default-external-format*
            #:*header-stream*
            #:*ignore-unparseable-cookie-dates-p*
@@ -56,6 +58,7 @@
            #:cookie-value
            #:cookie=
            #:delete-old-cookies
+           #:decode-stream
            #:drakma-condition
            #:drakma-error
            #:drakma-warning

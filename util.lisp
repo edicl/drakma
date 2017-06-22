@@ -129,7 +129,7 @@ value with a #\\= character.  If the value is NIL, no #\\= is used."
 (defun default-port (uri)
   "Returns the default port number for the \(PURI) URI URI.
 Works only with the http and https schemes."
-  (ecase (uri-scheme uri)
+  (ecase (puri:uri-scheme uri)
     (:http 80)
     (:https 443)))
 
@@ -137,7 +137,7 @@ Works only with the http and https schemes."
   "If the \(PURI) URI specifies an explicit port number which is
 different from the default port its scheme, this port number is
 returned, otherwise NIL."
-  (when-let (port (uri-port uri))
+  (when-let (port (puri:uri-port uri))
     (when (/= port (default-port uri))
       port)))
 
@@ -148,7 +148,7 @@ Returns TOKEN itself otherwise."
   (case token
     (:drakma
      (format nil "Drakma/~A (~A~@[ ~A~]; ~A;~@[ ~A;~] http://weitz.de/drakma/)"
-             *drakma-version-string*
+             *drakma-version*
              (or (lisp-implementation-type) "Common Lisp")
              (or (lisp-implementation-version) "")
              (or #-:clisp (software-type)
@@ -220,20 +220,11 @@ one to twelve."
   "Tries to interpret STRING as a time zone abbreviation which can
 either be something like \"PST\" or \"GMT\" with an offset like
 \"GMT-02:00\"."
-  (when-let (zone (cdr (assoc string *time-zone-map* :test #'string=)))
-    (return-from interpret-as-time-zone zone))
-  (unless (and (= (length string) 9)
-               (starts-with-p string "GMT")
-               (find (char string 3) "+-" :test #'char=)
-               (char= (char string 6) #\:)
-               (every (lambda (pos)
-                        (digit-char-p (char string pos)))
-                      '(4 5 7 8)))
-    (cookie-date-parse-error "Can't interpret ~S as a time zone." string))
-  (let ((hours (parse-integer string :start 4 :end 6))
-        (minutes (parse-integer string :start 7 :end 9)))
-    (* (if (char= (char string 3) #\+) -1 1)
-       (+ hours (/ minutes 60)))))
+  (or (cdr (assoc string *time-zone-map* :test #'string=))
+      (cl-ppcre:register-groups-bind (sign hours minutes) ("(?:GMT|)\\s*([+-]?)(\\d\\d):?(\\d\\d)" string)
+        (* (if (equal sign "-") 1 -1)
+           (+ (parse-integer hours) (/ (parse-integer minutes) 60))))
+      (cookie-date-parse-error "Can't interpret ~S as a time zone." string)))
 
 (defun set-referer (referer-uri &optional alist)
   "Returns a fresh copy of the HTTP header list ALIST with the
@@ -305,10 +296,11 @@ which are not meant as separators."
          (go next-cookie))))))
 
 #-:lispworks
-(defun make-ssl-stream (http-stream &key certificate key certificate-password verify (max-depth 10) ca-file ca-directory)
+(defun make-ssl-stream (http-stream &key certificate key certificate-password verify (max-depth 10) ca-file ca-directory
+                                         hostname)
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
 \(which will not be equal to HTTP-STREAM)."
-  (declare (ignorable max-depth))
+  (declare (ignorable http-stream certificate-password max-depth ca-directory hostname))
   (check-type verify (member nil :optional :required))
   (when (and certificate
              (not (probe-file certificate)))
@@ -319,7 +311,7 @@ which are not meant as separators."
   (when (and ca-file
              (not (probe-file ca-file)))
     (error "ca file ~A not found" ca-file))
-  #+(and :allegro (not :drakma-no-ssl))
+  #+(and :allegro (not :allegro-cl-express) (not :drakma-no-ssl))
   (socket:make-ssl-client-stream http-stream
                                  :certificate certificate
                                  :key key
@@ -328,16 +320,31 @@ which are not meant as separators."
                                  :max-depth max-depth
                                  :ca-file ca-file
                                  :ca-directory ca-directory)
-  #+(and (not :allegro) (not :drakma-no-ssl))
-  (let ((s http-stream))
-    (when (or verify ca-file ca-directory)
-      (warn ":verify, :max-depth, :ca-file and :ca-directory arguments not available on this platform"))
-    (cl+ssl:make-ssl-client-stream
-     (cl+ssl:stream-fd s)
-     :close-callback (lambda () (close s))
-     :certificate certificate
-     :key key
-     :password certificate-password))
+  #+(and :mocl-ssl (not :drakma-no-ssl))
+  (progn
+    (when (or ca-file ca-directory)
+      (warn ":max-depth, :ca-file and :ca-directory arguments not available on this platform"))
+    (rt:start-ssl http-stream :verify verify))
+  #+(and (or :allegro-cl-express (not :allegro)) (not :mocl-ssl) (not :drakma-no-ssl))
+  (let ((s http-stream)
+        (ctx (cl+ssl:make-context :verify-depth max-depth
+                                  :verify-mode (if (eql verify :required)
+                                                   cl+ssl:+ssl-verify-peer+
+                                                   cl+ssl:+ssl-verify-none+)
+                                  :verify-location (or (and ca-file ca-directory
+                                                            (list ca-file ca-directory))
+                                                       ca-file ca-directory
+                                                       :default))))
+    (cl+ssl:with-global-context (ctx)
+      (cl+ssl:make-ssl-client-stream
+       (cl+ssl:stream-fd s)
+       :hostname hostname
+       :close-callback (lambda ()
+                         (close s)
+                         (cl+ssl:ssl-ctx-free ctx))
+       :certificate certificate
+       :key key
+       :password certificate-password)))
   #+:drakma-no-ssl
   (error "SSL not supported. Remove :drakma-no-ssl from *features* to enable SSL"))
 
