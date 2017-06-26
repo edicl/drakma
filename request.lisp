@@ -229,6 +229,7 @@ headers of the chunked stream \(if any) as a second value."
                               #+:lispworks (read-timeout 20)
                               #+(and :lispworks (not :lw-does-not-have-write-timeout))
                               (write-timeout 20 write-timeout-provided-p)
+                              #+sbcl (io-timeout 20)
                               #+:openmcl
                               deadline
                               &aux (unparsed-uri (if (stringp uri) (copy-seq uri) (puri:copy-uri uri))))
@@ -574,6 +575,10 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                              connection-timeout
                                                              :nodelay :if-supported)))
                     raw-http-stream http-stream)
+              #+sbcl
+              (when io-timeout
+                (setf (sb-impl::fd-stream-timeout http-stream) 
+                        (coerce io-timeout 'single-float)))
               #+:openmcl
               (when deadline
                 ;; it is correct to set the deadline here even though
