@@ -121,3 +121,34 @@
     (is (subtypep (stream-element-type stream) 'flexi-streams:octet))
     (let ((buffer (make-array 1 :element-type 'flexi-streams:octet)))
       (read-sequence buffer stream))))
+
+(test verify.wrong.host
+  (signals error
+    (drakma:http-request "https://wrong.host.badssl.com/" :verify :required))
+  (signals error
+    (drakma:http-request "https://wrong.host.badssl.com/" :verify :optional))
+  (finishes
+    (drakma:http-request "https://wrong.host.badssl.com//" :verify nil)))
+
+(test verify.expired
+  (signals error
+    (drakma:http-request "https://expired.badssl.com//" :verify :required))
+  (signals error
+    (drakma:http-request "https://expired.badssl.com/" :verify :optional))
+  (finishes
+    (drakma:http-request "https://expired.badssl.com/" :verify nil)))
+
+(test verify.self-signed
+  (signals error
+    (drakma:http-request "https://self-signed.badssl.com/" :verify :required)))
+
+(test verify.untrusted-root
+  (signals error
+    (drakma:http-request "https://untrusted-root.badssl.com/" :verify :required)))
+
+(test verify.null
+  (signals error
+    (drakma:http-request "https://null.badssl.com/" :verify :required))
+  (finishes
+    (drakma:http-request "https://null.badssl.com/" :verify :optional)))
+

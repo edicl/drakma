@@ -328,9 +328,8 @@ which are not meant as separators."
   #+(and (or :allegro-cl-express (not :allegro)) (not :mocl-ssl) (not :drakma-no-ssl))
   (let ((s http-stream)
         (ctx (cl+ssl:make-context :verify-depth max-depth
-                                  :verify-mode (if (eql verify :required)
-                                                   cl+ssl:+ssl-verify-peer+
-                                                   cl+ssl:+ssl-verify-none+)
+                                  :verify-mode cl+ssl:+ssl-verify-none+
+                                  :verify-callback nil
                                   :verify-location (or (and ca-file ca-directory
                                                             (list ca-file ca-directory))
                                                        ca-file ca-directory
@@ -338,6 +337,7 @@ which are not meant as separators."
     (cl+ssl:with-global-context (ctx)
       (cl+ssl:make-ssl-client-stream
        (cl+ssl:stream-fd s)
+       :verify verify
        :hostname hostname
        :close-callback (lambda ()
                          (close s)
