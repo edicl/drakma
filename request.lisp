@@ -598,7 +598,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 (comm:attach-ssl http-stream :ssl-side :client)
                 #-:lispworks
                 (setq http-stream (make-ssl-stream http-stream
-                                                   :hostname host
+                                                   :hostname (puri:uri-host uri)
                                                    :certificate certificate
                                                    :key key
                                                    :certificate-password certificate-password
@@ -632,7 +632,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 #-:lispworks
                 (setq http-stream (wrap-stream
                                    (make-ssl-stream raw-http-stream
-                                                    :hostname host
+                                                    :hostname (puri:uri-host uri)
                                                     :certificate certificate
                                                     :key key
                                                     :certificate-password certificate-password
