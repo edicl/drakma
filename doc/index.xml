@@ -1238,7 +1238,7 @@ T</span>
             arguments of <clix:ref>HTTP-REQUEST</clix:ref>.  The value
             of this variable will be interpreted by <a
             href="http://weitz.de/flexi-streams/">FLEXI-STREAMS</a>.
-            The initial value is the keyword <code>:LATIN-1</code>.
+            The initial value is the keyword <code>:UTF-8</code>.
             (Note that Drakma binds <a
             href="http://weitz.de/flexi-streams/#*default-eol-style*"><code>*DEFAULT-EOL-STYLE*</code></a>
             to <code>:LF</code>).

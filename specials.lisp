@@ -38,7 +38,7 @@
   `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)
      ,@(when doc (list doc))))
 
-(define-constant +latin-1+ (make-external-format :latin-1 :eol-style :lf)
+(define-constant +utf-8+ (make-external-format :utf-8 :eol-style :lf)
   "Default external format when reading headers.")
 
 (define-constant +redirect-codes+ '(301 302 303 307)
@@ -73,10 +73,10 @@
 
 (defconstant +buffer-size+ 8192)
 
-(defvar *drakma-default-external-format* ':latin-1
+(defvar *drakma-default-external-format* ':utf-8
   "The default value for the external format keyword arguments of
 HTTP-REQUEST.  The value of this variable will be interpreted by
-FLEXI-STREAMS.  The initial value is the keyword :LATIN-1.
+FLEXI-STREAMS.  The initial value is the keyword :UTF-8.
 (Note that Drakma binds *DEFAULT-EOL-STYLE* to :LF).")
 
 (defvar *header-stream* nil
