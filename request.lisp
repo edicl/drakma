@@ -771,7 +771,30 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                    (setq must-close t)))
                                (when cookie-jar
                                  (update-cookies (get-cookies headers uri) cookie-jar))
-                               (when (and redirect
+			       (flet ((fix-stream-type ()
+					(let ((transfer-encodings (header-value :transfer-encoding headers)))
+					  (when transfer-encodings
+					    (setq transfer-encodings (split-tokens transfer-encodings)))
+					  (when (member "chunked" transfer-encodings :test #'equalp)
+					    (setf (chunked-stream-input-chunking-p
+						   (flexi-stream-stream http-stream)) t)))
+					(when (setq external-format-body
+						    (and (not force-binary)
+							 (funcall *body-format-function*
+								  headers external-format-in)))
+					  (setf (flexi-stream-external-format http-stream)
+						external-format-body))
+					(when force-binary
+					  (setf (flexi-stream-element-type http-stream) 'octet)))
+				      (read-body-from-stream ()
+					(let (trailers)
+					  (multiple-value-setq (body trailers)
+					    (read-body http-stream headers external-format-body
+						       :decode-content decode-content))
+					  (when trailers
+					    (drakma-warn "Adding trailers from chunked encoding to HTTP headers.")
+					    (setq headers (nconc headers trailers))))))
+				 (when (and redirect
                                           (member status-code +redirect-codes+)
                                           (header-value :location headers))
                                  (unless (or (eq redirect t)
@@ -802,9 +825,15 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                    (let ((re-use-stream (and old-server-p
                                                              (not must-close)
                                                              (not force-ssl))))
-                                     ;; close stream if we can't re-use it
-                                     (unless re-use-stream
-                                       (ignore-errors (close http-stream)))
+                                     ;; close stream if we can't re-use it, read body otherwise
+                                     (cond ((and re-use-stream (eq method :head)))
+					   ;; All responses to the HEAD request method MUST NOT
+					   ;; include a message-body
+					   (re-use-stream 
+					     (fix-stream-type)
+					     (read-body-from-stream))
+					    (t
+					     (ignore-errors (close http-stream))))
                                      (setq done t)
                                      (return-from http-request
                                        (let ((method (if (and (member status-code +redirect-to-get-codes+)
@@ -823,28 +852,9 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                                nil
                                                                form-data)
                                                 args))))))
-                               (let ((transfer-encodings (header-value :transfer-encoding headers)))
-                                 (when transfer-encodings
-                                   (setq transfer-encodings (split-tokens transfer-encodings)))
-                                 (when (member "chunked" transfer-encodings :test #'equalp)
-                                   (setf (chunked-stream-input-chunking-p
-                                          (flexi-stream-stream http-stream)) t)))
-                               (when (setq external-format-body
-                                           (and (not force-binary)
-                                                (funcall *body-format-function*
-                                                         headers external-format-in)))
-                                 (setf (flexi-stream-external-format http-stream)
-                                       external-format-body))
-                               (when force-binary
-                                 (setf (flexi-stream-element-type http-stream) 'octet))
-                               (unless (or want-stream (eq method :head))
-                                 (let (trailers)
-                                   (multiple-value-setq (body trailers)
-                                     (read-body http-stream headers external-format-body
-                                                :decode-content decode-content))
-                                   (when trailers
-                                     (drakma-warn "Adding trailers from chunked encoding to HTTP headers.")
-                                     (setq headers (nconc headers trailers)))))
+				 (fix-stream-type)
+				 (unless (or want-stream (eq method :head))
+				   (read-body-from-stream)))
                                (setq done t)
                                (values (if want-stream
                                            (decode-flexi-stream headers http-stream
