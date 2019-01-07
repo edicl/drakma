@@ -1,4 +1,4 @@
-;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: DRAKMA; Base: 10 -*-
+;;; -*- Mode: LISP; Syntax: ANSI-COMMON-LISP; Package: DRAKMA; Base: 10 -*-
 ;;; $Header: /usr/local/cvsrep/drakma/specials.lisp,v 1.19 2008/01/14 01:57:02 edi Exp $
 
 ;;; Copyright (c) 2006-2012, Dr. Edmund Weitz.  All rights reserved.
@@ -38,7 +38,7 @@
   `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)
      ,@(when doc (list doc))))
 
-(define-constant +latin-1+ (make-external-format :latin-1 :eol-style :lf)
+(define-constant +latin-1+ (make-external-format :latin-1 :eol-style #-genera :lf #+genera :cr)
   "Default external format when reading headers.")
 
 (define-constant +redirect-codes+ '(301 302 303 307)
