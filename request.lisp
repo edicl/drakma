@@ -785,7 +785,8 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                  (when auto-referer
                                    (setq additional-headers (set-referer uri additional-headers)))
                                  (let* ((location (header-value :location headers))
-                                        (new-uri (puri:merge-uris location uri))
+                                        (new-uri (let (puri:*strict-parse*)
+                                                   (puri:merge-uris location uri)))
                                         ;; can we re-use the stream?
                                         (old-server-p (and (string= (puri:uri-host new-uri)
                                                                     (puri:uri-host uri))
