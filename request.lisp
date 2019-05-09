@@ -595,7 +595,9 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                          ;; don't attach SSL to existing streams
                          (not stream))
                 #+:lispworks
-                (comm:attach-ssl http-stream :ssl-side :client)
+                (comm:attach-ssl http-stream
+                                 :ssl-side :client
+                                 :tlsext-host-name (puri:uri-host uri))
                 #-:lispworks
                 (setq http-stream (make-ssl-stream http-stream
                                                    :hostname (puri:uri-host uri)
@@ -628,7 +630,9 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 ;; turn on SSL, and then we can transmit
                 (read-line* http-stream)
                 #+:lispworks
-                (comm:attach-ssl raw-http-stream :ssl-side :client)
+                (comm:attach-ssl raw-http-stream
+                                 :ssl-side :client
+                                 :tlsext-host-name (puri:uri-host uri))
                 #-:lispworks
                 (setq http-stream (wrap-stream
                                    (make-ssl-stream raw-http-stream
