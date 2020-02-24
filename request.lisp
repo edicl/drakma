@@ -134,13 +134,18 @@ body using the boundary BOUNDARY."
   (declare (stream stream))
   "Helper function to read from stream into a buffer of element-type, which is returned."
   (let ((buffer (make-array +buffer-size+ :element-type element-type))
-        (result (make-array 0 :element-type element-type :adjustable t)))
-        (loop for index = 0 then (+ index pos)
-           for pos = (read-sequence buffer stream)
-           do (adjust-array result (+ index pos))
-             (replace result buffer :start1 index :end2 pos)
-           while (= pos +buffer-size+))
-        result))
+        (result (make-array +buffer-size+ :element-type element-type :adjustable t))
+        (result-length +buffer-size+))
+    (loop for index = 0 then size
+          for pos = (read-sequence buffer stream)
+          for size = (+ index pos)
+          do
+          (when (>= size result-length)
+            (adjust-array result (setf result-length (* result-length 2))))
+          (replace result buffer :start1 index :end2 pos)
+          while (= pos +buffer-size+)
+          finally (adjust-array result size))
+    result))
 
 (defun read-body (stream headers textp &key (decode-content t))
   "Reads the message body from the HTTP stream STREAM using the
