@@ -100,6 +100,7 @@ body using the boundary BOUNDARY."
                  (setf (flexi-stream-external-format stream) external-format-out)
                  (format stream "~A" value)
                  (setf (flexi-stream-external-format stream) +latin-1+))
+                ((null value))
                 ((and (listp value)
                       (first value)
                       (not (stringp (first value))))
