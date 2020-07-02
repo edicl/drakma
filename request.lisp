@@ -834,7 +834,8 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                 :redirect (cond ((integerp redirect) (1- redirect))
                                                                 (t redirect))
                                                 :stream (and re-use-stream http-stream)
-                                                :additional-headers additional-headers
+                                                :additional-headers (remove "Authorization" additional-headers
+                                                                            :test 'string-equal :key 'car)
                                                 :parameters parameters
                                                 :preserve-uri t
                                                 :form-data (if (eq method :get)
