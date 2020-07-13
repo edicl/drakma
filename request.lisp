@@ -856,7 +856,9 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                        external-format-body))
                                (when force-binary
                                  (setf (flexi-stream-element-type http-stream) 'octet))
-                               (unless (or want-stream (eq method :head))
+                               (unless (or want-stream
+                                           (eq method :head)
+                                           (= status-code 204))
                                  (let (trailers)
                                    (multiple-value-setq (body trailers)
                                      (read-body http-stream headers external-format-body
