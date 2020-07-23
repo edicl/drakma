@@ -538,7 +538,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
               (t
                (setq content (alist-to-url-encoded-string parameters external-format-out url-encoder)
                      content-type "application/x-www-form-urlencoded")))))
-    (let ((proxying-https-p (and proxy (not stream)
+    (let ((proxying-https-p (and proxy (not stream) (not real-host)
                                  (or force-ssl
                                      (eq :https (puri:uri-scheme uri)))))
            http-stream raw-http-stream must-close done)
@@ -546,7 +546,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
           (progn
             (let ((host (or (and proxy (first proxy))
                             (puri:uri-host uri)))
-                  (port (cond (proxy (second proxy))
+                  (port (cond ((and proxy (not real-host)) (second proxy))
                               ((puri:uri-port uri))
                               (t (default-port uri))))
                   (use-ssl (and (not proxying-https-p)
