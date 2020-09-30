@@ -629,8 +629,11 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 ;; final destination
                 (write-http-line "CONNECT ~A:~:[443~;~:*~A~] HTTP/1.1"
                                  (puri:uri-host uri) (puri:uri-port uri))
-                (write-http-line "Host: ~A:~:[443~;~:*~A~]"
-                                 (puri:uri-host uri) (puri:uri-port uri))
+                (write-http-line "Host: ~@[[~*~]~A~@[]~*~]:~:[443~;~:*~A~]"
+                                 (puri:uri-is-ip6 uri)
+                                 (puri:uri-host uri)
+                                 (puri:uri-is-ip6 uri)
+                                 (puri:uri-port uri))
                 (write-http-line "")
                 (force-output http-stream)
                 ;; check we get a 200 response before proceeding
@@ -686,7 +689,11 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                     nil))
                                (string-upcase protocol))
               (when (not (assoc "Host" additional-headers :test #'string-equal))
-                (write-header "Host" "~A~@[:~A~]" (puri:uri-host uri) (non-default-port uri)))
+                (write-header "Host" "~@[[~*~]~A~@[]~*~]~@[:~A~]"
+                              (puri:uri-is-ip6 uri)
+                              (puri:uri-host uri)
+                              (puri:uri-is-ip6 uri)
+                              (non-default-port uri)))
               (when user-agent
                 (write-header "User-Agent" "~A" (user-agent-string user-agent)))
               (when basic-authorization
