@@ -17,7 +17,7 @@ env:
     - LISP=abcl
     - LISP=cmu-bin
     - LISP=allegro
- install:
+install:
   - if [ $LISP = abcl ]; then sudo apt-get install maven; fi
   - curl -L https://raw.githubusercontent.com/snmsts/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
 
@@ -44,5 +44,3 @@ script:
               (5am:explain! results)
               (unless (5am:results-status results)
                 (uiop:quit 1)))'"
-
-# re-build test
