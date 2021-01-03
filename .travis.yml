@@ -1,0 +1,46 @@
+language: common-lisp
+sudo: false # lets try new infrastructure
+os: linux
+dist: bionic
+arch: amd64
+env:
+  global:
+    - PATH=~/.roswell/bin:$PATH
+    - ROSWELL_BRANCH=release
+    - ROSWELL_INSTALL_DIR=$HOME/.roswell
+    - COVERAGE_EXCLUDE=test
+  matrix:
+    - LISP=sbcl-bin
+    - LISP=ccl-bin
+    - LISP=clisp
+    - LISP=ecl
+    - LISP=abcl
+    - LISP=cmu-bin
+    - LISP=allegro
+ install:
+  - if [ $LISP = abcl ]; then sudo apt-get install maven; fi
+  - curl -L https://raw.githubusercontent.com/snmsts/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
+
+#  cache:
+#    directories:
+#      - $HOME/.roswell
+#      - $HOME/.config/common-lisp
+
+script:
+  - "ros -e '(progn
+               (format t \"(lisp-implementation-type): ~A~%\" (lisp-implementation-type))
+               (format t \"(lisp-implementation-version): ~A~%\" (lisp-implementation-version))
+               (format t \"*features*: ~A~%\" *features*)
+               (format t \"(asdf:asdf-version): ~A~%\" (asdf:asdf-version)))'
+         -e '(ql:quickload :drakma-test)'
+         -e '(format t \"drakma-test loaded.~%\")'
+         -e '(let ((results
+                  #+ sbcl
+                  (coveralls:with-coveralls (:exclude \"test\")
+                     (5am:run :drakma))
+                  #- sbcl
+                  (5am:run :drakma)
+                  ))
+              (5am:explain! results)
+              (unless (5am:results-status results)
+                (uiop:quit 1)))'"
