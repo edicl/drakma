@@ -44,3 +44,5 @@ script:
               (5am:explain! results)
               (unless (5am:results-status results)
                 (uiop:quit 1)))'"
+
+# re-build test
