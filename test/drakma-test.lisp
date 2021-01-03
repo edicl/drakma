@@ -145,10 +145,3 @@
 (test verify.untrusted-root
   (signals error
     (drakma:http-request "https://untrusted-root.badssl.com/" :verify :required)))
-
-(test verify.null
-  (signals error
-    (drakma:http-request "https://null.badssl.com/" :verify :required))
-  (finishes
-    (drakma:http-request "https://null.badssl.com/" :verify :optional)))
-
