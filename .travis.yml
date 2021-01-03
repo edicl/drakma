@@ -10,7 +10,7 @@ env:
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
     - COVERAGE_EXCLUDE=test
   matrix:
-    - LISP=sbcl-bin
+    - LISP=sbcl-bin COVERALLS=true
     - LISP=ccl-bin
     - LISP=clisp
     - LISP=ecl
