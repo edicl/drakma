@@ -634,6 +634,12 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                  (puri:uri-host uri)
                                  (puri:uri-is-ip6 uri)
                                  (puri:uri-port uri))
+                (when (and proxy proxy-basic-authorization)
+                  (write-header "Proxy-Authorization" "Basic ~A"
+                                (base64:string-to-base64-string
+                                 (format nil "~A:~A"
+                                         (first proxy-basic-authorization)
+                                         (second proxy-basic-authorization)))))
                 (write-http-line "")
                 (force-output http-stream)
                 ;; check we get a 200 response before proceeding
@@ -702,7 +708,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                (format nil "~A:~A"
                                        (first basic-authorization)
                                        (second basic-authorization)))))
-              (when (and proxy proxy-basic-authorization)
+              (when (and proxy proxy-basic-authorization (not proxying-https-p))
                 (write-header "Proxy-Authorization" "Basic ~A"
                               (base64:string-to-base64-string
                                (format nil "~A:~A"
