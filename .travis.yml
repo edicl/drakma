@@ -35,7 +35,7 @@ install:
 
 script:
   - "ros  -e '(when (member :allegro *features*)
-                (setq *readtable* (copy-readtable))' # Allegro's readtable is read-only during -e execution, which breaks drama's dependency puri
+                (setq *readtable* (copy-readtable)))' # Allegro's *readtable* is read-only during -e execution, which breaks drakma's dependency puri
           -e '(progn
                (format t \"(lisp-implementation-type): ~A~%\" (lisp-implementation-type))
                (format t \"(lisp-implementation-version): ~A~%\" (lisp-implementation-version))
