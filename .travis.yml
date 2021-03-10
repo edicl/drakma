@@ -12,7 +12,8 @@ env:
   matrix:
     - LISP=sbcl-bin COVERALLS=true
     - LISP=ccl-bin
-    - LISP=clisp
+    # currently roswell fails to install CLISP, https://github.com/roswell/roswell/issues/449
+    #- LISP=clisp
     - LISP=ecl
     - LISP=abcl
     - LISP=cmu-bin
