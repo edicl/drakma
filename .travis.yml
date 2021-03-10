@@ -19,7 +19,9 @@ env:
     - LISP=allegro
 install:
   - if [ $LISP = abcl ]; then sudo apt-get install maven; fi
-  - curl -L https://raw.githubusercontent.com/snmsts/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
+  # - curl -L https://raw.githubusercontent.com/snmsts/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
+  # Use previous release of roswell, because the current release fails to install on Travis CI, see https://github.com/roswell/roswell/issues/463
+  - curl -L https://raw.githubusercontent.com/roswell/roswell/a8fd8a3c33078d6f06e6cda9d099dcba6fbefcb7/scripts/install-for-ci.sh | sh
 
 #  cache:
 #    directories:
