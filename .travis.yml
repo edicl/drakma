@@ -17,8 +17,10 @@ env:
     # currently roswell fails to install CLISP, https://github.com/roswell/roswell/issues/449
     #- LISP=clisp
     - LISP=ecl
-    - LISP=abcl
-    - LISP=cmu-bin
+    # ABCL is not supported by drakma's dependency chipz (would be good to migrate chipz to trivial-gray-streams)
+    #- LISP=abcl
+    # CMUCL requires 32-bit OpenSSL libraries, need to learn how to install them on Travis CI
+    #- LISP=cmu-bin
     - LISP=allegro
 install:
   - if [ $LISP = abcl ]; then sudo apt-get install maven; fi
