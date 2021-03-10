@@ -10,7 +10,9 @@ env:
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
     - COVERAGE_EXCLUDE=test
   matrix:
-    - LISP=sbcl-bin COVERALLS=true
+    # Disable coveralls until https://github.com/fukamachi/cl-coveralls/pull/15 is released to Quicklisp
+    #- LISP=sbcl-bin COVERALLS=true
+    - LISP=sbcl-bin
     - LISP=ccl-bin
     # currently roswell fails to install CLISP, https://github.com/roswell/roswell/issues/449
     #- LISP=clisp
