@@ -128,6 +128,27 @@ body using the boundary BOUNDARY."
       (format stream "--~A--" boundary)
       (crlf))))
 
+#+lispworks
+(defun lw-attach-ssl (stream verify &rest args)
+  "Wrap COMM:ATTACH-SSL to create a version that can understand the
+VERIFY argument to enable certification verification. By default
+COMM:ATTACH-SSL does not verify certificates, at least on LispWorks 7."
+  (apply #'comm:attach-ssl stream
+           :ssl-configure-callback (lambda (ssl)
+                                     (comm:set-verification-mode
+                                      ssl :client
+                                      (case verify
+                                        (:required
+                                         :always)
+                                        (:optional
+                                         ;; There's no obvious equivalent to this on LispWorks, so
+                                         ;; we'll treat it the same as :required
+                                         :always)
+                                        (t
+                                         :never))
+                                      nil))
+           args))
+
 (defun %read-body (stream element-type)
   ;; On ABCL, a flexi-stream is not a normal stream. This is caused by
   ;; a bug in ABCL which is supposedly quite difficult to fix. More
@@ -484,7 +505,8 @@ header. The actual decoding is done by the DECODE-STREAM generic function,
 and you can implement new methods to support additional encodings.
 Any encodings in Transfer-Encoding, such as chunking, are always performed."
   #+lispworks
-  (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory))
+  (declare (ignore certificate key certificate-password max-depth ca-file ca-directory)
+           (ignorable write-timeout-provided-p))
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
   (setq uri (cond ((puri:uri-p uri) (puri:copy-uri uri))
@@ -602,15 +624,13 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                          ;; don't attach SSL to existing streams
                          (not stream))
                 #+:lispworks
-                (let ((ctx (comm:make-ssl-ctx :ssl-side :client)))
-                  (comm:set-verification-mode ctx :client :always nil)
-                  (comm:attach-ssl http-stream
-                                   :ssl-ctx ctx
-                                   :ssl-side :client
-                                   #-(or lispworks4 lispworks5 lispworks6)
-                                   :tlsext-host-name
-                                   #-(or lispworks4 lispworks5 lispworks6)
-                                   (puri:uri-host uri)))
+                (lw-attach-ssl http-stream
+                               verify
+                               :ssl-side :client
+                               #-(or lispworks4 lispworks5 lispworks6)
+                                         :tlsext-host-name
+                                         #-(or lispworks4 lispworks5 lispworks6)
+                                         (puri:uri-host uri))
                 #-:lispworks
                 (setq http-stream (make-ssl-stream http-stream
                                                    :hostname (puri:uri-host uri)
@@ -646,15 +666,13 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 ;; turn on SSL, and then we can transmit
                 (read-line* http-stream)
                 #+:lispworks
-                (let ((ctx (comm:make-ssl-ctx :ssl-side :client)))
-                  (comm:set-verification-mode ctx :client :always nil)
-                  (comm:attach-ssl raw-http-stream
-                                   :ssl-ctx ctx
-                                   :ssl-side :client
-                                   #-(or lispworks4 lispworks5 lispworks6)
-                                             :tlsext-host-name
-                                             #-(or lispworks4 lispworks5 lispworks6)
-                                             (puri:uri-host uri)))
+                (lw-attach-ssl raw-http-stream
+                               verify
+                               :ssl-side :client
+                               #-(or lispworks4 lispworks5 lispworks6)
+                                         :tlsext-host-name
+                                         #-(or lispworks4 lispworks5 lispworks6)
+                                         (puri:uri-host uri))
                 #-:lispworks
                 (setq http-stream (wrap-stream
                                    (make-ssl-stream raw-http-stream
