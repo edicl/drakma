@@ -133,21 +133,19 @@ body using the boundary BOUNDARY."
   "Wrap COMM:ATTACH-SSL to create a version that can understand the
 VERIFY argument to enable certification verification. By default
 COMM:ATTACH-SSL does not verify certificates, at least on LispWorks 7."
-  (apply #'comm:attach-ssl stream
-           :ssl-configure-callback (lambda (ssl)
-                                     (comm:set-verification-mode
-                                      ssl :client
-                                      (case verify
-                                        (:required
-                                         :always)
-                                        (:optional
-                                         ;; There's no obvious equivalent to this on LispWorks, so
-                                         ;; we'll treat it the same as :required
-                                         :always)
-                                        (t
-                                         :never))
-                                      nil))
-           args))
+  (flet ((callback (ssl)
+           (comm:set-verification-mode ssl :client
+            (case verify
+              (:required :always)
+              (:optional
+               ;; There's no obvious equivalent to this on LispWorks, so
+               ;; we'll treat it the same as :required
+               :always)
+              (t :never))
+            nil)))
+   (apply #'comm:attach-ssl stream
+            :ssl-configure-callback #'callback
+            args)))
 
 (defun %read-body (stream element-type)
   ;; On ABCL, a flexi-stream is not a normal stream. This is caused by
