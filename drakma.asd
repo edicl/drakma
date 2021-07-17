@@ -43,7 +43,7 @@
   :author "Dr. Edi Weitz"
   :license "BSD"
   :serial t
-  :version "2.0.7"
+  :version "2.0.8"
   :components ((:file "packages")
                (:file "specials")
                (:file "conditions")
