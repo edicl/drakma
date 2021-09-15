@@ -160,7 +160,7 @@ headers of the chunked stream \(if any) as a second value."
                                               (header-value :content-length headers)))
                           (parse-integer value)))
         (element-type (if textp
-                        #+:lispworks 'lw:simple-char #-:lispworks 'character
+                        #+:lispworks7.1 'lw:simple-char #-:lispworks7.1 'character
                         'octet)))
     (values (cond ((eql content-length 0) nil)
                   (content-length
@@ -233,8 +233,8 @@ headers of the chunked stream \(if any) as a second value."
                               decode-content ; default to nil for backwards compatibility
                               #+(or abcl clisp lispworks mcl openmcl sbcl)
                               (connection-timeout 20)
-                              #+:lispworks (read-timeout 20)
-                              #+(and :lispworks (not :lw-does-not-have-write-timeout))
+                              #+:lispworks7.1 (read-timeout 20)
+                              #+(and :lispworks7.1 (not :lw-does-not-have-write-timeout))
                               (write-timeout 20 write-timeout-provided-p)
                               #+:openmcl
                               deadline
@@ -483,7 +483,7 @@ decoded according to any encodings specified in the Content-Encoding
 header. The actual decoding is done by the DECODE-STREAM generic function,
 and you can implement new methods to support additional encodings.
 Any encodings in Transfer-Encoding, such as chunking, are always performed."
-  #+lispworks
+  #+lispworks7.1
   (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory))
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
@@ -559,7 +559,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                   (drakma-warn "Disabling WRITE-TIMEOUT because it doesn't mix well with SSL."))
                 (setq write-timeout nil))
               (setq http-stream (or stream
-                                    #+:lispworks
+                                    #+:lispworks7.1
                                     (comm:open-tcp-stream host port
                                                           :element-type 'octet
                                                           :timeout connection-timeout
@@ -569,7 +569,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                           #-:lw-does-not-have-write-timeout
                                                           write-timeout
                                                           :errorp t)
-                                    #-:lispworks
+                                    #-:lispworks7.1
                                     (usocket:socket-stream
                                      (usocket:socket-connect host port
                                                              :element-type 'octet
@@ -601,14 +601,14 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
               (when (and use-ssl
                          ;; don't attach SSL to existing streams
                          (not stream))
-                #+:lispworks
+                #+:lispworks7.1
                 (comm:attach-ssl http-stream
                                  :ssl-side :client
                                  #-(or lispworks4 lispworks5 lispworks6)
                                  :tlsext-host-name
                                  #-(or lispworks4 lispworks5 lispworks6)
                                  (puri:uri-host uri))
-                #-:lispworks
+                #-:lispworks7.1
                 (setq http-stream (make-ssl-stream http-stream
                                                    :hostname (puri:uri-host uri)
                                                    :certificate certificate
@@ -620,7 +620,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                    :ca-directory ca-directory)))
               (cond (stream
                      (setf (flexi-stream-element-type http-stream)
-                           #+:lispworks 'lw:simple-char #-:lispworks 'character
+                           #+:lispworks6 'lw:simple-char #-:lispworks6 'character
                            (flexi-stream-external-format http-stream) +latin-1+))
                     (t
                      (setq http-stream (wrap-stream http-stream))))
@@ -642,14 +642,14 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 ;; got a connection; we have to read a blank line,
                 ;; turn on SSL, and then we can transmit
                 (read-line* http-stream)
-                #+:lispworks
+                #+:lispworks7.1
                 (comm:attach-ssl raw-http-stream
                                  :ssl-side :client
                                  #-(or lispworks4 lispworks5 lispworks6)
                                  :tlsext-host-name
                                  #-(or lispworks4 lispworks5 lispworks6)
                                  (puri:uri-host uri))
-                #-:lispworks
+                #-:lispworks7.1
                 (setq http-stream (wrap-stream
                                    (make-ssl-stream raw-http-stream
                                                     :hostname (puri:uri-host uri)
