@@ -266,7 +266,7 @@ which are not meant as separators."
         (string-length (length string))
         search-start
         result)
-    (tagbody     
+    (tagbody
      ;; at this point we know that COOKIE-START is the start of a new
      ;; cookie (at the start of the string or behind a comma)
      next-cookie
@@ -282,7 +282,7 @@ which are not meant as separators."
             (equals-pos (and comma-pos (position #\= string :start comma-pos)))
             ;; check that (except for whitespace) there's only a token
             ;; (the name of the next cookie) between #\, and #\=
-            (new-cookie-start-p (and equals-pos                                     
+            (new-cookie-start-p (and equals-pos
                                      (every 'token-char-p
                                             (trim-whitespace string
                                                              :start (1+ comma-pos)
@@ -334,14 +334,12 @@ which are not meant as separators."
                                                             (list ca-file ca-directory))
                                                        ca-file ca-directory
                                                        :default))))
-    (cl+ssl:with-global-context (ctx)
+    (cl+ssl:with-global-context (ctx :auto-free-p t)
       (cl+ssl:make-ssl-client-stream
        (cl+ssl:stream-fd s)
        :verify verify
        :hostname hostname
-       :close-callback (lambda ()
-                         (close s)
-                         (cl+ssl:ssl-ctx-free ctx))
+       :close-callback (lambda () (close s))
        :certificate certificate
        :key key
        :password certificate-password)))
