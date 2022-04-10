@@ -344,7 +344,7 @@ which are not meant as separators."
                (cl+ssl:stream-fd s)
                :verify verify
                :hostname hostname
-               :close-callback #'cleanup-callback
+               :close-callback (lambda () (cleanup-callback s ctx))
                :certificate certificate
                :key key
                :password certificate-password))
