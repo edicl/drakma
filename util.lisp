@@ -334,15 +334,23 @@ which are not meant as separators."
                                                             (list ca-file ca-directory))
                                                        ca-file ca-directory
                                                        :default))))
-    (cl+ssl:with-global-context (ctx :auto-free-p t)
-      (cl+ssl:make-ssl-client-stream
-       (cl+ssl:stream-fd s)
-       :verify verify
-       :hostname hostname
-       :close-callback (lambda () (close s))
-       :certificate certificate
-       :key key
-       :password certificate-password)))
+    (flet ((cleanup-callback (stream ssl-context)
+             (close stream)
+             (cl+ssl:ssl-ctx-free ssl-context)))
+      (cl+ssl:with-global-context (ctx)
+        (handler-case
+            (progn
+              (cl+ssl:make-ssl-client-stream
+               (cl+ssl:stream-fd s)
+               :verify verify
+               :hostname hostname
+               :close-callback #'cleanup-callback
+               :certificate certificate
+               :key key
+               :password certificate-password))
+          (error (e)
+            (cleanup-callback s ctx)
+            (error e))))))
   #+:drakma-no-ssl
   (error "SSL not supported. Remove :drakma-no-ssl from *features* to enable SSL"))
 
