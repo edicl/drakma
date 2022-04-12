@@ -336,10 +336,9 @@ which are not meant as separators."
                                                        :default))))
     (cl+ssl:with-global-context (ctx :auto-free-p t)
       (cl+ssl:make-ssl-client-stream
-       (cl+ssl:stream-fd s)
+       s
        :verify verify
        :hostname hostname
-       :close-callback (lambda () (close s))
        :certificate certificate
        :key key
        :password certificate-password)))
