@@ -649,7 +649,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                  :tlsext-host-name
                                  #-(or lispworks4 lispworks5 lispworks6)
                                  (puri:uri-host uri))
-                #+(or :lispworks7.1 :lispworks8)
+                #-(or :lispworks7.1 :lispworks8)
                 (setq http-stream (wrap-stream
                                    (make-ssl-stream raw-http-stream
                                                     :hostname (puri:uri-host uri)
