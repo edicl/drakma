@@ -295,12 +295,13 @@ which are not meant as separators."
          (setq cookie-start (1+ end-pos))
          (go next-cookie))))))
 
-#-:lispworks7.1
+#-(or :lispworks7.1 :lispworks8)
 (defun make-ssl-stream (http-stream &key certificate key certificate-password verify (max-depth 10) ca-file ca-directory
                                          hostname)
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
 \(which will not be equal to HTTP-STREAM)."
-  (declare (ignorable http-stream certificate-password max-depth ca-directory hostname))
+  (declare (ignorable http-stream certificate-password max-depth ca-directory hostname)
+           (optimize (debug 3) (speed 0)))
   (check-type verify (member nil :optional :required))
   (when (and certificate
              (not (probe-file certificate)))
