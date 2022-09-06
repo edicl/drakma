@@ -41,12 +41,27 @@
       (is (> (length body-or-stream) 0))
       (is (= 200 status-code)))))
 
+#-:drakma-no-chipz
 (test get-google-gzip
   (let ((drakma:*header-stream* *standard-output*))
     (multiple-value-bind (body-or-stream status-code)
-        (drakma:http-request "http://www.google.com/"
+        (drakma:http-request "https://www.google.com/"
                              :additional-headers '(("Accept-Encoding" . "gzip"))
                              :decode-content t)
+      (is (> (length body-or-stream) 0))
+      (is (= 200 status-code)))))
+
+#-:drakma-no-chipz
+(test get-google-gzip-no-close
+  (let ((drakma:*header-stream* *standard-output*))
+    (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
+        (drakma:http-request "https://www.google.com/"
+                             :additional-headers '(("Accept-Encoding" . "gzip"))
+                             :decode-content t
+                             :close nil)
+      (declare (ignore headers uri))
+      (unless must-close
+        (close stream))
       (is (> (length body-or-stream) 0))
       (is (= 200 status-code)))))
 
