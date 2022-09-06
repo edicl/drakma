@@ -41,6 +41,15 @@
       (is (> (length body-or-stream) 0))
       (is (= 200 status-code)))))
 
+(test get-google-gzip
+  (let ((drakma:*header-stream* *standard-output*))
+    (multiple-value-bind (body-or-stream status-code)
+        (drakma:http-request "http://www.google.com/"
+                             :additional-headers '(("Accept-Encoding" . "gzip"))
+                             :decode-content t)
+      (is (> (length body-or-stream) 0))
+      (is (= 200 status-code)))))
+
 (test get-google-ssl
   (let ((drakma:*header-stream* *standard-output*))
     (multiple-value-bind (body-or-stream status-code)

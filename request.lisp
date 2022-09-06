@@ -182,9 +182,15 @@ headers of the chunked stream \(if any) as a second value."
                    ;; no content length, read until EOF (or end of chunking)
                    #+:clisp
                    (setf (flexi-stream-element-type stream) element-type)
-                   (%read-body (decode-flexi-stream headers stream
-                                                    :decode-content decode-content)
-                               element-type)))
+                   ;; Help the streams on top of chunked streams
+                   ;; detect EOF at the end of chunking without trying
+                   ;; to reading extra data.
+                   (setf (chunked-input-stream-eof-after-last-chunk (flexi-stream-stream stream)) t)
+                   (unwind-protect
+                        (%read-body (decode-flexi-stream headers stream
+                                                         :decode-content decode-content)
+                                    element-type)
+                     (setf (chunked-input-stream-eof-after-last-chunk (flexi-stream-stream stream)) nil))))
             (chunked-input-stream-trailers (flexi-stream-stream stream)))))
 
 (defun trivial-uri-path (uri-string)
