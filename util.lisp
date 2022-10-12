@@ -295,7 +295,7 @@ which are not meant as separators."
          (setq cookie-start (1+ end-pos))
          (go next-cookie))))))
 
-#-:lispworks7.1
+#+(or :lispworks4 :lispworks5 :lispworks6 :lispworks7.0)
 (defun make-ssl-stream (http-stream &key certificate key certificate-password verify (max-depth 10) ca-file ca-directory
                                          hostname)
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
