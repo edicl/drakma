@@ -612,14 +612,27 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 #+:lw-use-comm
                 (comm:attach-ssl http-stream
                                  :ssl-side :client
-                                 :ssl-ctx (comm:create-ssl-client-context
-                                           :verify-callback (ecase verify
-                                                              ((nil) nil)
-                                                              ((:optional) :try)
-                                                              ((:required) t)))
-                                 #-(or lispworks4 lispworks5 lispworks6)
+                                 :ssl-ctx
+                                 #-:lispworks7
+                                 (comm:create-ssl-client-context
+                                  :verify-callback (ecase verify
+                                                     ((nil) nil)
+                                                     ((:optional) :try)
+                                                     ((:required) t)))
+                                 #+:lispworks7
+                                 (progn
+                                   (let ((ctx
+                                          (comm:make-ssl-ctx :ssl-side :client)))
+                                     (when verify
+                                       (comm:set-verification-mode
+                                        ctx :client
+                                        (ecase verify
+                                          ;;; not quite correct: we should validate certificate
+                                          ;;; if one is provided
+                                          ((:optional) nil)
+                                          ((:required) :always))))
+                                     ctx))
                                  :tlsext-host-name
-                                 #-(or lispworks4 lispworks5 lispworks6)
                                  (puri:uri-host uri))
                 #-:lw-use-comm
                 (setq http-stream (make-ssl-stream http-stream
@@ -659,9 +672,27 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 #+:lw-use-comm
                 (comm:attach-ssl raw-http-stream
                                  :ssl-side :client
-                                 #-(or lispworks4 lispworks5 lispworks6)
+                                 :ssl-ctx
+                                 #-:lispworks7
+                                 (comm:create-ssl-client-context
+                                  :verify-callback (ecase verify
+                                                     ((nil) nil)
+                                                     ((:optional) :try)
+                                                     ((:required) t)))
+                                 #+:lispworks7
+                                 (progn
+                                   (let ((ctx
+                                          (comm:make-ssl-ctx :ssl-side :client)))
+                                     (when verify
+                                       (comm:set-verification-mode
+                                        ctx :client
+                                        (ecase verify
+                                          ;;; not quite correct: we should validate certificate
+                                          ;;; if one is provided
+                                          ((:optional) nil)
+                                          ((:required) :always))))
+                                     ctx))
                                  :tlsext-host-name
-                                 #-(or lispworks4 lispworks5 lispworks6)
                                  (puri:uri-host uri))
                 #-:lw-use-comm
                 (setq http-stream (wrap-stream
