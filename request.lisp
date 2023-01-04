@@ -223,6 +223,7 @@ headers of the chunked stream \(if any) as a second value."
                               want-stream
                               stream
                               preserve-uri
+                              (encode-unicode-path-p t)
                               decode-content ; default to nil for backwards compatibility
                               #+(or abcl clisp lispworks mcl openmcl sbcl)
                               (connection-timeout 20)
@@ -658,20 +659,28 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                       (puri:uri-query uri) nil))
               (write-http-line "~A ~A ~A"
                                (string-upcase method)
-                               (if (and preserve-uri
-                                        (stringp unparsed-uri))
-                                   (trivial-uri-path unparsed-uri)
-                                   (puri:render-uri (if (and proxy
-                                                             (null stream)
-                                                             (not proxying-https-p)
-                                                             (not real-host))
-                                                        uri
-                                                        (make-instance 'puri:uri
-                                                                       :path (puri:uri-path uri)
-                                                                       :parsed-path (puri:uri-parsed-path uri)
-                                                                       :query (puri:uri-query uri)
-                                                                       :escaped t))
-                                                    nil))
+                               (let ((uri-string (if (and preserve-uri
+                                                          (stringp unparsed-uri))
+                                                     (trivial-uri-path unparsed-uri)
+                                                     (puri:render-uri (if (and proxy
+                                                                               (null stream)
+                                                                               (not proxying-https-p)
+                                                                               (not real-host))
+                                                                          uri
+                                                                          (make-instance 'puri:uri
+                                                                             :path (puri:uri-path uri)
+                                                                             :parsed-path (puri:uri-parsed-path uri)
+                                                                             :query (puri:uri-query uri)
+                                                                             :escaped t))
+                                                                      nil))))
+                                 (if encode-unicode-path-p
+                                     (with-output-to-string (*standard-output*)
+                                       (loop for c across uri-string
+                                             if (> (char-code c) 255)
+                                               ;; It's not a latin-1 character, so we need to encode it.
+                                               do (write-string (funcall url-encoder (format nil "~c" c) external-format-in))
+                                             else do (write-char c)))
+                                     uri-string))
                                (string-upcase protocol))
               (when (not (assoc "Host" additional-headers :test #'string-equal))
                 (write-header "Host" "~A~@[:~A~]" (puri:uri-host uri) (non-default-port uri)))
