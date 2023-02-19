@@ -501,7 +501,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
     (parameter-error "Don't know how to handle scheme ~S." (puri:uri-scheme uri)))
   (when (and close keep-alive)
     (parameter-error "CLOSE and KEEP-ALIVE must not be both true."))
-  (when (and form-data (not (member method '(:post :report) :test #'eq)))
+  (when (and form-data (not (member method '(:post :put :report) :test #'eq)))
     (parameter-error "FORM-DATA only makes sense with POST requests."))
   (when range
     (unless (and (listp range)
@@ -526,10 +526,13 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                               (null thing)))
                                         parameters :key #'cdr))
         parameters-used-p)
-    (when (and file-parameters-p (not (eq method :post)))
-      (parameter-error "Don't know how to handle parameters in ~S, as this is not a POST request."
+    (when (and file-parameters-p (not (or (eq method :post)
+                                          (eq method :put))))
+      (parameter-error "Don't know how to handle parameters in ~S, as this is not a POST or PUT request."
                        parameters))
-    (when (eq method :post)
+    (when (or (eq method :post)
+              (eq method :put) ; make Drakma more flexible towards wrongly implemented endpoints
+              )
       ;; create content body for POST unless it was provided
       (unless content
         ;; mark PARAMETERS argument as used up, so we don't use it
