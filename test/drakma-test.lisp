@@ -34,10 +34,50 @@
 (def-suite :drakma)
 (in-suite :drakma)
 
+(defparameter *http-server* nil)
+
+(def-fixture init-destroy-httpd ()
+  (unwind-protect
+       (progn
+         (setf *http-server*
+               (make-instance 'easy-routes:easy-routes-acceptor
+                              :port 10456
+                              :address "127.0.0.1"))
+         (hunchentoot:start *http-server*)
+         (&body))
+    (progn
+      (when *http-server*
+        (hunchentoot:stop *http-server*)
+        (setf *http-server* nil)))))
+
 (test get-google
   (let ((drakma:*header-stream* *standard-output*))
     (multiple-value-bind (body-or-stream status-code)
         (drakma:http-request "http://google.com/")
+      (is (> (length body-or-stream) 0))
+      (is (= 200 status-code)))))
+
+#-:drakma-no-chipz
+(test get-google-gzip
+  (let ((drakma:*header-stream* *standard-output*))
+    (multiple-value-bind (body-or-stream status-code)
+        (drakma:http-request "https://www.google.com/"
+                             :additional-headers '(("Accept-Encoding" . "gzip"))
+                             :decode-content t)
+      (is (> (length body-or-stream) 0))
+      (is (= 200 status-code)))))
+
+#-:drakma-no-chipz
+(test get-google-gzip-no-close
+  (let ((drakma:*header-stream* *standard-output*))
+    (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
+        (drakma:http-request "https://www.google.com/"
+                             :additional-headers '(("Accept-Encoding" . "gzip"))
+                             :decode-content t
+                             :close nil)
+      (declare (ignore headers uri))
+      (unless must-close
+        (close stream))
       (is (> (length body-or-stream) 0))
       (is (= 200 status-code)))))
 
@@ -66,6 +106,49 @@
       (is (= 405 status-code))
       (is (string= "Method Not Allowed" reason-phrase)))))
 
+(test post-x-www-form
+  (with-fixture init-destroy-httpd ()
+    (let ((drakma:*header-stream* *standard-output*))
+      (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
+          (drakma:http-request "http://127.0.0.1:10456/x-www-form/post"
+                               :method :post :parameters '(("a" . "b")))
+        (declare (ignore headers uri stream must-close))
+        (is (= (length body-or-stream) 0))
+        (is (= 201 status-code))))))
+
+(test put-x-www-form
+  "Beware, we just support this because it happens in the wild.
+But this is not according to HTTP spec."
+  (with-fixture init-destroy-httpd ()
+    (let ((drakma:*header-stream* *standard-output*))
+      (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
+          (drakma:http-request "http://127.0.0.1:10456/x-www-form/put"
+                               :method :put :parameters '(("a" . "b")))
+        (declare (ignore headers uri stream must-close))
+        (is (= (length body-or-stream) 0))
+        (is (= 200 status-code))))))
+
+(test post-multipart-form
+  (with-fixture init-destroy-httpd ()
+    (let ((drakma:*header-stream* *standard-output*))
+      (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
+          (drakma:http-request "http://127.0.0.1:10456/multipart-form/post"
+                               :method :post :parameters '(("a" . #P"README.md")))
+        (declare (ignore headers uri stream must-close))
+        (is (= (length body-or-stream) 0))
+        (is (= 201 status-code))))))
+
+(test put-multipart-form
+  "Beware, we just support this because it happens in the wild.
+But this is not according to HTTP spec."
+  (with-fixture init-destroy-httpd ()
+    (let ((drakma:*header-stream* *standard-output*))
+      (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
+          (drakma:http-request "http://127.0.0.1:10456/multipart-form/put"
+                               :method :put :parameters '(("a" . #P"README.md")))
+        (declare (ignore headers uri stream must-close))
+        (is (= (length body-or-stream) 0))
+        (is (= 200 status-code))))))
 
 (test gzip-content
   (let ((drakma:*header-stream* *standard-output*)
@@ -121,3 +204,79 @@
     (is (subtypep (stream-element-type stream) 'flexi-streams:octet))
     (let ((buffer (make-array 1 :element-type 'flexi-streams:octet)))
       (read-sequence buffer stream))))
+
+(test verify.wrong.host
+  (signals error
+    (drakma:http-request "https://wrong.host.badssl.com/" :verify :required))
+  (signals error
+    (drakma:http-request "https://wrong.host.badssl.com/" :verify :optional))
+  (finishes
+    (drakma:http-request "https://wrong.host.badssl.com//" :verify nil)))
+
+(test verify.expired
+  (signals error
+    (drakma:http-request "https://expired.badssl.com//" :verify :required))
+  (signals error
+    (drakma:http-request "https://expired.badssl.com/" :verify :optional))
+  (finishes
+    (drakma:http-request "https://expired.badssl.com/" :verify nil)))
+
+(test verify.self-signed
+  (signals error
+    (drakma:http-request "https://self-signed.badssl.com/" :verify :required)))
+
+(test verify.untrusted-root
+  (signals error
+    (drakma:http-request "https://untrusted-root.badssl.com/" :verify :required)))
+
+
+;; ------------------- server routes --------------------
+
+(defun content-type-eq-p (expected-content-type header)
+  (string= header
+           expected-content-type
+           :end1 (length expected-content-type)))
+
+(easy-routes:defroute x-www-form-post ("/x-www-form/post" :method :post) ()
+  (let ((expected-content-type "application/x-www-form-urlencoded"))
+    (assert (content-type-eq-p
+             expected-content-type
+             (hunchentoot:header-in "Content-Type" hunchentoot:*request*)))
+    (assert (equalp '(("a" . "b")) (hunchentoot:post-parameters*))))
+  (setf (hunchentoot:return-code hunchentoot:*reply*) 201)
+  "")
+
+(easy-routes:defroute x-www-form-put ("/x-www-form/put" :method :put) ()
+  (let ((expected-content-type "application/x-www-form-urlencoded")
+        (raw-body (hunchentoot:raw-post-data :force-text t)))
+    (assert (content-type-eq-p
+             expected-content-type
+             (hunchentoot:header-in "Content-Type" hunchentoot:*request*)))
+    (assert (string= "a=b" raw-body)))
+  (setf (hunchentoot:return-code hunchentoot:*reply*) 200)
+  "")
+
+(easy-routes:defroute multipart-form-post ("/multipart-form/post" :method :post) ()
+  (let ((expected-content-type "multipart/form-data")
+        (post-param (car (hunchentoot:post-parameters*))))
+    (assert (content-type-eq-p
+             expected-content-type
+             (hunchentoot:header-in "Content-Type" hunchentoot:*request*)))
+    (assert (string= "a" (first post-param)))
+    (assert (string= "README.md" (third post-param)))
+    (assert (string= "application/octet-stream" (fourth post-param))))
+  (setf (hunchentoot:return-code hunchentoot:*reply*) 201)
+  "")
+
+(easy-routes:defroute multipart-form-put ("/multipart-form/put" :method :put) ()
+  (let ((expected-content-type "multipart/form-data")
+        (raw-body (hunchentoot:raw-post-data :force-text t)))
+    (assert (content-type-eq-p
+             expected-content-type
+             (hunchentoot:header-in "Content-Type" hunchentoot:*request*)))
+    (assert (ppcre:scan "Content-Disposition: form-data; name=\"a\"; filename=\"README.md\""
+                        raw-body))
+    (assert (ppcre:scan "Content-Type: application/octet-stream"
+                        raw-body)))
+  (setf (hunchentoot:return-code hunchentoot:*reply*) 200)
+  "")

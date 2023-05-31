@@ -40,8 +40,10 @@
 
 (defsystem :drakma
   :description "Full-featured http/https client based on usocket"
+  :author "Dr. Edi Weitz"
+  :license "BSD"
   :serial t
-  :version "2.0.3"
+  :version "2.0.9"
   :components ((:file "packages")
                (:file "specials")
                (:file "conditions")
@@ -57,7 +59,7 @@
                :cl-ppcre
                #-:drakma-no-chipz :chipz
                #-:lispworks :usocket
-               #-(or :lispworks (and :allegro (not :allegro-cl-express)) :mocl-ssl :drakma-no-ssl) :cl+ssl)
+               #-(or :lispworks7.1 (and :allegro (not :allegro-cl-express)) :mocl-ssl :drakma-no-ssl) :cl+ssl)
   :perform (test-op (o s)
                     (asdf:load-system :drakma-test)
                     (asdf:perform 'asdf:test-op :drakma-test)))

@@ -100,6 +100,8 @@ body using the boundary BOUNDARY."
                  (setf (flexi-stream-external-format stream) external-format-out)
                  (format stream "~A" value)
                  (setf (flexi-stream-external-format stream) +latin-1+))
+                ((null value)
+                 (crlf))
                 ((and (listp value)
                       (first value)
                       (not (stringp (first value))))
@@ -134,13 +136,18 @@ body using the boundary BOUNDARY."
   (declare (stream stream))
   "Helper function to read from stream into a buffer of element-type, which is returned."
   (let ((buffer (make-array +buffer-size+ :element-type element-type))
-        (result (make-array 0 :element-type element-type :adjustable t)))
-        (loop for index = 0 then (+ index pos)
-           for pos = (read-sequence buffer stream)
-           do (adjust-array result (+ index pos))
-             (replace result buffer :start1 index :end2 pos)
-           while (= pos +buffer-size+))
-        result))
+        (result (make-array +buffer-size+ :element-type element-type :adjustable t))
+        (result-length +buffer-size+))
+    (loop for index = 0 then size
+          for pos = (read-sequence buffer stream)
+          for size = (+ index pos)
+          do
+          (when (>= size result-length)
+            (adjust-array result (setf result-length (* result-length 2))))
+          (replace result buffer :start1 index :end2 pos)
+          while (= pos +buffer-size+)
+          finally (adjust-array result size))
+    result))
 
 (defun read-body (stream headers textp &key (decode-content t))
   "Reads the message body from the HTTP stream STREAM using the
@@ -153,7 +160,7 @@ headers of the chunked stream \(if any) as a second value."
                                               (header-value :content-length headers)))
                           (parse-integer value)))
         (element-type (if textp
-                        #+:lispworks 'lw:simple-char #-:lispworks 'character
+                        #+:lispworks7.1 'lw:simple-char #-:lispworks7.1 'character
                         'octet)))
     (values (cond ((eql content-length 0) nil)
                   (content-length
@@ -175,9 +182,15 @@ headers of the chunked stream \(if any) as a second value."
                    ;; no content length, read until EOF (or end of chunking)
                    #+:clisp
                    (setf (flexi-stream-element-type stream) element-type)
-                   (%read-body (decode-flexi-stream headers stream
-                                                    :decode-content decode-content)
-                               element-type)))
+                   ;; Help the streams on top of chunked streams
+                   ;; detect EOF at the end of chunking without trying
+                   ;; to reading extra data.
+                   (setf (chunked-input-stream-eof-after-last-chunk (flexi-stream-stream stream)) t)
+                   (unwind-protect
+                        (%read-body (decode-flexi-stream headers stream
+                                                         :decode-content decode-content)
+                                    element-type)
+                     (setf (chunked-input-stream-eof-after-last-chunk (flexi-stream-stream stream)) nil))))
             (chunked-input-stream-trailers (flexi-stream-stream stream)))))
 
 (defun trivial-uri-path (uri-string)
@@ -227,8 +240,8 @@ headers of the chunked stream \(if any) as a second value."
                               decode-content ; default to nil for backwards compatibility
                               #+(or abcl clisp lispworks mcl openmcl sbcl)
                               (connection-timeout 20)
-                              #+:lispworks (read-timeout 20)
-                              #+(and :lispworks (not :lw-does-not-have-write-timeout))
+                              #+:lispworks7.1 (read-timeout 20)
+                              #+(and :lispworks7.1 (not :lw-does-not-have-write-timeout))
                               (write-timeout 20 write-timeout-provided-p)
                               #+sbcl (io-timeout 20)
                               #+:openmcl
@@ -478,7 +491,7 @@ decoded according to any encodings specified in the Content-Encoding
 header. The actual decoding is done by the DECODE-STREAM generic function,
 and you can implement new methods to support additional encodings.
 Any encodings in Transfer-Encoding, such as chunking, are always performed."
-  #+lispworks
+  #+lispworks7.1
   (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory))
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
@@ -490,7 +503,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
     (parameter-error "Don't know how to handle scheme ~S." (puri:uri-scheme uri)))
   (when (and close keep-alive)
     (parameter-error "CLOSE and KEEP-ALIVE must not be both true."))
-  (when (and form-data (not (member method '(:post :report) :test #'eq)))
+  (when (and form-data (not (member method '(:post :put :report) :test #'eq)))
     (parameter-error "FORM-DATA only makes sense with POST requests."))
   (when range
     (unless (and (listp range)
@@ -515,10 +528,13 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                               (null thing)))
                                         parameters :key #'cdr))
         parameters-used-p)
-    (when (and file-parameters-p (not (eq method :post)))
-      (parameter-error "Don't know how to handle parameters in ~S, as this is not a POST request."
+    (when (and file-parameters-p (not (or (eq method :post)
+                                          (eq method :put))))
+      (parameter-error "Don't know how to handle parameters in ~S, as this is not a POST or PUT request."
                        parameters))
-    (when (eq method :post)
+    (when (or (eq method :post)
+              (eq method :put) ; make Drakma more flexible towards wrongly implemented endpoints
+              )
       ;; create content body for POST unless it was provided
       (unless content
         ;; mark PARAMETERS argument as used up, so we don't use it
@@ -533,7 +549,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
               (t
                (setq content (alist-to-url-encoded-string parameters external-format-out url-encoder)
                      content-type "application/x-www-form-urlencoded")))))
-    (let ((proxying-https-p (and proxy (not stream)
+    (let ((proxying-https-p (and proxy (not stream) (not real-host)
                                  (or force-ssl
                                      (eq :https (puri:uri-scheme uri)))))
            http-stream raw-http-stream must-close done)
@@ -541,7 +557,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
           (progn
             (let ((host (or (and proxy (first proxy))
                             (puri:uri-host uri)))
-                  (port (cond (proxy (second proxy))
+                  (port (cond ((and proxy (not real-host)) (second proxy))
                               ((puri:uri-port uri))
                               (t (default-port uri))))
                   (use-ssl (and (not proxying-https-p)
@@ -554,7 +570,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                   (drakma-warn "Disabling WRITE-TIMEOUT because it doesn't mix well with SSL."))
                 (setq write-timeout nil))
               (setq http-stream (or stream
-                                    #+:lispworks
+                                    #+:lispworks7.1
                                     (comm:open-tcp-stream host port
                                                           :element-type 'octet
                                                           :timeout connection-timeout
@@ -564,7 +580,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                           #-:lw-does-not-have-write-timeout
                                                           write-timeout
                                                           :errorp t)
-                                    #-:lispworks
+                                    #-:lispworks7.1
                                     (usocket:socket-stream
                                      (usocket:socket-connect host port
                                                              :element-type 'octet
@@ -600,11 +616,16 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
               (when (and use-ssl
                          ;; don't attach SSL to existing streams
                          (not stream))
-                #+:lispworks
-                (comm:attach-ssl http-stream :ssl-side :client)
-                #-:lispworks
+                #+:lispworks7.1
+                (comm:attach-ssl http-stream
+                                 :ssl-side :client
+                                 #-(or lispworks4 lispworks5 lispworks6)
+                                 :tlsext-host-name
+                                 #-(or lispworks4 lispworks5 lispworks6)
+                                 (puri:uri-host uri))
+                #-:lispworks7.1
                 (setq http-stream (make-ssl-stream http-stream
-                                                   :hostname host
+                                                   :hostname (puri:uri-host uri)
                                                    :certificate certificate
                                                    :key key
                                                    :certificate-password certificate-password
@@ -614,7 +635,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                    :ca-directory ca-directory)))
               (cond (stream
                      (setf (flexi-stream-element-type http-stream)
-                           #+:lispworks 'lw:simple-char #-:lispworks 'character
+                           #+:lispworks6 'lw:simple-char #-:lispworks6 'character
                            (flexi-stream-external-format http-stream) +latin-1+))
                     (t
                      (setq http-stream (wrap-stream http-stream))))
@@ -623,8 +644,11 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 ;; final destination
                 (write-http-line "CONNECT ~A:~:[443~;~:*~A~] HTTP/1.1"
                                  (puri:uri-host uri) (puri:uri-port uri))
-                (write-http-line "Host: ~A:~:[443~;~:*~A~]"
-                                 (puri:uri-host uri) (puri:uri-port uri))
+                (write-http-line "Host: ~@[[~*~]~A~@[]~*~]:~:[443~;~:*~A~]"
+                                 (puri:uri-is-ip6 uri)
+                                 (puri:uri-host uri)
+                                 (puri:uri-is-ip6 uri)
+                                 (puri:uri-port uri))
                 (write-http-line "")
                 (force-output http-stream)
                 ;; check we get a 200 response before proceeding
@@ -633,12 +657,17 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 ;; got a connection; we have to read a blank line,
                 ;; turn on SSL, and then we can transmit
                 (read-line* http-stream)
-                #+:lispworks
-                (comm:attach-ssl raw-http-stream :ssl-side :client)
-                #-:lispworks
+                #+:lispworks7.1
+                (comm:attach-ssl raw-http-stream
+                                 :ssl-side :client
+                                 #-(or lispworks4 lispworks5 lispworks6)
+                                 :tlsext-host-name
+                                 #-(or lispworks4 lispworks5 lispworks6)
+                                 (puri:uri-host uri))
+                #-:lispworks7.1
                 (setq http-stream (wrap-stream
                                    (make-ssl-stream raw-http-stream
-                                                    :hostname host
+                                                    :hostname (puri:uri-host uri)
                                                     :certificate certificate
                                                     :key key
                                                     :certificate-password certificate-password
@@ -683,7 +712,11 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                      uri-string))
                                (string-upcase protocol))
               (when (not (assoc "Host" additional-headers :test #'string-equal))
-                (write-header "Host" "~A~@[:~A~]" (puri:uri-host uri) (non-default-port uri)))
+                (write-header "Host" "~@[[~*~]~A~@[]~*~]~@[:~A~]"
+                              (puri:uri-is-ip6 uri)
+                              (puri:uri-host uri)
+                              (puri:uri-is-ip6 uri)
+                              (non-default-port uri)))
               (when user-agent
                 (write-header "User-Agent" "~A" (user-agent-string user-agent)))
               (when basic-authorization
@@ -799,7 +832,8 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                  (when auto-referer
                                    (setq additional-headers (set-referer uri additional-headers)))
                                  (let* ((location (header-value :location headers))
-                                        (new-uri (puri:merge-uris location uri))
+                                        (new-uri (let (puri:*strict-parse*)
+                                                   (puri:merge-uris location uri)))
                                         ;; can we re-use the stream?
                                         (old-server-p (and (string= (puri:uri-host new-uri)
                                                                     (puri:uri-host uri))
@@ -830,7 +864,8 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                 :redirect (cond ((integerp redirect) (1- redirect))
                                                                 (t redirect))
                                                 :stream (and re-use-stream http-stream)
-                                                :additional-headers additional-headers
+                                                :additional-headers (remove "Authorization" additional-headers
+                                                                            :test 'string-equal :key 'car)
                                                 :parameters parameters
                                                 :preserve-uri t
                                                 :form-data (if (eq method :get)
@@ -851,7 +886,9 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                        external-format-body))
                                (when force-binary
                                  (setf (flexi-stream-element-type http-stream) 'octet))
-                               (unless (or want-stream (eq method :head))
+                               (unless (or want-stream
+                                           (eq method :head)
+                                           (= status-code 204))
                                  (let (trailers)
                                    (multiple-value-setq (body trailers)
                                      (read-body http-stream headers external-format-body

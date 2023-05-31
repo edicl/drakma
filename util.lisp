@@ -266,7 +266,7 @@ which are not meant as separators."
         (string-length (length string))
         search-start
         result)
-    (tagbody     
+    (tagbody
      ;; at this point we know that COOKIE-START is the start of a new
      ;; cookie (at the start of the string or behind a comma)
      next-cookie
@@ -282,7 +282,7 @@ which are not meant as separators."
             (equals-pos (and comma-pos (position #\= string :start comma-pos)))
             ;; check that (except for whitespace) there's only a token
             ;; (the name of the next cookie) between #\, and #\=
-            (new-cookie-start-p (and equals-pos                                     
+            (new-cookie-start-p (and equals-pos
                                      (every 'token-char-p
                                             (trim-whitespace string
                                                              :start (1+ comma-pos)
@@ -295,7 +295,7 @@ which are not meant as separators."
          (setq cookie-start (1+ end-pos))
          (go next-cookie))))))
 
-#-:lispworks
+#-:lispworks7.1
 (defun make-ssl-stream (http-stream &key certificate key certificate-password verify (max-depth 10) ca-file ca-directory
                                          hostname)
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
@@ -328,20 +328,18 @@ which are not meant as separators."
   #+(and (or :allegro-cl-express (not :allegro)) (not :mocl-ssl) (not :drakma-no-ssl))
   (let ((s http-stream)
         (ctx (cl+ssl:make-context :verify-depth max-depth
-                                  :verify-mode (if (eql verify :required)
-                                                   cl+ssl:+ssl-verify-peer+
-                                                   cl+ssl:+ssl-verify-none+)
+                                  :verify-mode cl+ssl:+ssl-verify-none+
+                                  :verify-callback nil
                                   :verify-location (or (and ca-file ca-directory
                                                             (list ca-file ca-directory))
                                                        ca-file ca-directory
                                                        :default))))
-    (cl+ssl:with-global-context (ctx)
+    (cl+ssl:with-global-context (ctx :auto-free-p t)
       (cl+ssl:make-ssl-client-stream
        (cl+ssl:stream-fd s)
+       :verify verify
        :hostname hostname
-       :close-callback (lambda ()
-                         (close s)
-                         (cl+ssl:ssl-ctx-free ctx))
+       :close-callback (lambda () (close s))
        :certificate certificate
        :key key
        :password certificate-password)))

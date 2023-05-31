@@ -28,9 +28,11 @@
 
 (defsystem :drakma-test
   :description "Test suite for drakma"
+  :author "Dr. Edi Weitz"
+  :license "BSD"
   :serial t
   :version "0.1"
-  :depends-on (:drakma :fiveam)
+  :depends-on (:drakma :fiveam :hunchentoot :easy-routes)
   :pathname #P"test/"
   :components ((:file "drakma-test"))
   :perform (test-op (o s)
