@@ -83,6 +83,7 @@ body using the boundary BOUNDARY."
              "Sends carriage return and linefeed to STREAM."
              (write-char #\Return stream)
              (write-char #\Linefeed stream)))
+      (setf (flexi-stream-external-format stream) external-format-out)
       (dolist (name/value parameters)
         (destructuring-bind (name . value)
             name/value
@@ -97,9 +98,7 @@ body using the boundary BOUNDARY."
                  (crlf)
                  (format stream "Content-Type: text/plain; charset=~a" external-format-out)
                  (crlf) (crlf)
-                 (setf (flexi-stream-external-format stream) external-format-out)
-                 (format stream "~A" value)
-                 (setf (flexi-stream-external-format stream) +latin-1+))
+                 (format stream "~A" value))
                 ((null value)
                  (crlf))
                 ((and (listp value)
