@@ -29,14 +29,21 @@
 
 (in-package :cl-user)
 
-#+:lispworks
-(unless (find-symbol "STREAM-WRITE-TIMEOUT" :stream)
-  (pushnew :lw-does-not-have-write-timeout *features*))
-
 (defpackage :drakma-asd
   (:use :cl :asdf))
 
 (in-package :drakma-asd)
+
+;;; When working on drakma under Lispworks, run (setup-lw-features)
+;;; to ensure that the Lispworks-related features are added.
+#+:lispworks
+(defun setup-lw-features ()
+  (unless (find-symbol "STREAM-WRITE-TIMEOUT" :stream)
+    (pushnew :lw-does-not-have-write-timeout *features*))
+  #+(or :lispworks4 :lispworks5 :lispworks6)
+  (pushnew :lw-simple-char *features*)
+  #-(or :lispworks4 :lispworks5 :lispworks6)
+  (pushnew :lw-use-comm *features*))
 
 (defsystem :drakma
   :description "Full-featured http/https client based on usocket"
@@ -44,6 +51,13 @@
   :license "BSD"
   :serial t
   :version "2.0.9"
+  #+:lispworks
+  :around-compile
+  #+:lispworks
+  (lambda (next)
+    (let ((*features* (copy-seq *features*)))
+      (setup-lw-features)
+      (funcall next)))
   :components ((:file "packages")
                (:file "specials")
                (:file "conditions")
@@ -59,7 +73,11 @@
                :cl-ppcre
                #-:drakma-no-chipz :chipz
                #-:lispworks :usocket
-               #-(or :lispworks7.1 (and :allegro (not :allegro-cl-express)) :mocl-ssl :drakma-no-ssl) :cl+ssl)
+               #-(or (and lispworks (not (or lispworks4 lispworks5 lispworks6)))
+                     (and :allegro (not :allegro-cl-express))
+                     :mocl-ssl
+                     :drakma-no-ssl)
+               :cl+ssl)
   :perform (test-op (o s)
                     (asdf:load-system :drakma-test)
                     (asdf:perform 'asdf:test-op :drakma-test)))
