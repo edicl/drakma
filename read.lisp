@@ -61,10 +61,12 @@ HTTP-REQUEST.  Returns NIL if there is no such header amongst
 HEADERS."
   (when-let (content-type (header-value :content-type headers))
     (with-sequence-from-string (stream content-type)
-      (let* ((*current-error-message* "Corrupted Content-Type header:")
+      (let* ((*current-error-message* (format nil "Corrupted Content-Type header:(~s)" content-type))
              (type (read-token stream))
-             (subtype (and (assert-char stream #\/)
-                           (read-token stream)))
+             (subtype (let ((subtype-pos (position #\/ type :test #'char=)))
+                        (cond (subtype-pos
+                               (prog1 (subseq type (1+ subtype-pos))
+                                      (setf type (subseq type 0 subtype-pos)))))))
              (parameters (read-name-value-pairs stream)))
         (values type subtype parameters)))))
 
