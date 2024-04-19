@@ -147,7 +147,7 @@ body using the boundary BOUNDARY."
           (replace result buffer :start1 index :end2 pos)
           while (= pos +buffer-size+)
           finally (adjust-array result size))
-    result))
+    (subseq result 0)))
 
 (defun read-body (stream headers textp &key (decode-content t))
   "Reads the message body from the HTTP stream STREAM using the
