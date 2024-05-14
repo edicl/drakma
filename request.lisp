@@ -218,12 +218,14 @@ headers of the chunked stream \(if any) as a second value."
                               form-data
                               cookie-jar
                               basic-authorization
+			      bearer-authorization
                               (user-agent :drakma)
                               (accept "*/*")
                               range
                               (proxy *default-http-proxy*)
                               (no-proxy-domains *no-proxy-domains*)
                               proxy-basic-authorization
+			      proxy-bearer-authorization
                               real-host
                               additional-headers
                               (redirect 5)
@@ -374,7 +376,11 @@ according to the `Set-Cookie' header\(s) sent back by the server.
 
 BASIC-AUTHORIZATION, if not NIL, should be a list of two strings
 \(username and password) which will be sent to the server for
-basic authorization.  USER-AGENT, if not NIL, denotes which
+basic authorization. BEARER-AUTHORIZATION, if not NIL, should be a
+string which will be sent to the server for bearer authorization.
+You can only supply one of both.
+
+USER-AGENT, if not NIL, denotes which
 `User-Agent' header will be sent with the request.  It can be one
 of the keywords :DRAKMA, :FIREFOX, :EXPLORER, :OPERA, or :SAFARI
 which denote the current version of Drakma or, in the latter four
@@ -395,11 +401,13 @@ server through which the request should be sent.  Or it can be a
 list of two values - a string denoting the proxy server and an
 integer denoting the port to use \(which will default to 80
 otherwise).  Defaults to *default-http-proxy*.
-PROXY-BASIC-AUTHORIZATION is used like
-BASIC-AUTHORIZATION, but for the proxy, and only if PROXY is
-true. If the host portion of the uri is present in the
-*no-proxy-domains* or the NO-PROXY-DOMAINS list then the proxy
-setting will be ignored for this request.
+PROXY-BASIC-AUTHORIZATION is used like BASIC-AUTHORIZATION, but for
+the proxy, and only if PROXY is true. PROXY-BEARER-AUTHORIZATION
+is used like BEARER-AUTHORIZATION, but for the proxy, and only if
+PROXY is true. You can only supply either PROXY-BASIC-AUTHORIZATION
+or PROXY-BEARER-AUTHORIZATION. If the host portion of the uri is
+present in the *no-proxy-domains* or the NO-PROXY-DOMAINS list then
+the proxy setting will be ignored for this request.
 
 If NO-PROXY-DOMAINS is set then it will supersede the
 *no-proxy-domains* variable. Inserting domains into this list will
@@ -705,18 +713,29 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                               (non-default-port uri)))
               (when user-agent
                 (write-header "User-Agent" "~A" (user-agent-string user-agent)))
-              (when basic-authorization
-                (write-header "Authorization" "Basic ~A"
-                              (base64:string-to-base64-string
-                               (format nil "~A:~A"
-                                       (first basic-authorization)
-                                       (second basic-authorization)))))
-              (when (and proxy proxy-basic-authorization)
-                (write-header "Proxy-Authorization" "Basic ~A"
-                              (base64:string-to-base64-string
-                               (format nil "~A:~A"
-                                       (first proxy-basic-authorization)
-                                       (second proxy-basic-authorization)))))
+	      (cond ((and basic-authorization bearer-authorization)
+		     (error "Please supply only basic or bearer authorization."))
+		    (basic-authorization
+		     (write-header "Authorization" "Basic ~A"
+				   (base64:string-to-base64-string
+				    (format nil "~A:~A"
+					    (first basic-authorization)
+					    (second basic-authorization)))))
+		    (bearer-authorization
+		     (write-header "Authorization" "Bearer ~A" bearer-authorization)))
+	      (when proxy
+		(cond ((and proxy-basic-authorization proxy-bearer-authorization)
+		       (error "Please supply only basic or bearer proxy-authorization."))
+		      (proxy-basic-authorization
+		       (write-header "Proxy-Authorization" "Basic ~A"
+				     (base64:string-to-base64-string
+				      (format nil "~A:~A"
+					      (first proxy-basic-authorization)
+					      (second proxy-basic-authorization)))))
+		      (proxy-bearer-authorization
+		       (write-header "Proxy-Authorization"
+				     "Bearer ~A"
+				     proxy-bearer-authorization))))
               (when accept
                 (write-header "Accept" "~A" accept))
               (when range
