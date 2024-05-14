@@ -40,7 +40,7 @@
   (unwind-protect
        (progn
          (setf *http-server*
-               (make-instance 'easy-routes:easy-routes-acceptor
+               (make-instance 'hunchentoot:easy-acceptor
                               :port 10456
                               :address "127.0.0.1"))
          (hunchentoot:start *http-server*)
@@ -130,10 +130,11 @@ But this is not according to HTTP spec."
 
 (test post-multipart-form
   (with-fixture init-destroy-httpd ()
-    (let ((drakma:*header-stream* *standard-output*))
+    (let ((drakma:*header-stream* *standard-output*)
+          (*default-pathname-defaults* #.(or *compile-file-pathname* *load-pathname*)))
       (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
           (drakma:http-request "http://127.0.0.1:10456/multipart-form/post"
-                               :method :post :parameters '(("a" . #P"README.md")))
+                               :method :post :parameters '(("a" . #P"../README.md")))
         (declare (ignore headers uri stream must-close))
         (is (= (length body-or-stream) 0))
         (is (= 201 status-code))))))
@@ -142,10 +143,11 @@ But this is not according to HTTP spec."
   "Beware, we just support this because it happens in the wild.
 But this is not according to HTTP spec."
   (with-fixture init-destroy-httpd ()
-    (let ((drakma:*header-stream* *standard-output*))
+    (let ((drakma:*header-stream* *standard-output*)
+          (*default-pathname-defaults* #.(or *compile-file-pathname* *load-pathname*)))
       (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
           (drakma:http-request "http://127.0.0.1:10456/multipart-form/put"
-                               :method :put :parameters '(("a" . #P"README.md")))
+                               :method :put :parameters '(("a" . #P"../README.md")))
         (declare (ignore headers uri stream must-close))
         (is (= (length body-or-stream) 0))
         (is (= 200 status-code))))))
@@ -237,7 +239,7 @@ But this is not according to HTTP spec."
            expected-content-type
            :end1 (length expected-content-type)))
 
-(easy-routes:defroute x-www-form-post ("/x-www-form/post" :method :post) ()
+(hunchentoot:define-easy-handler (x-www-form-post :uri "/x-www-form/post") ()
   (let ((expected-content-type "application/x-www-form-urlencoded"))
     (assert (content-type-eq-p
              expected-content-type
@@ -246,7 +248,7 @@ But this is not according to HTTP spec."
   (setf (hunchentoot:return-code hunchentoot:*reply*) 201)
   "")
 
-(easy-routes:defroute x-www-form-put ("/x-www-form/put" :method :put) ()
+(hunchentoot:define-easy-handler (x-www-form-put :uri "/x-www-form/put") ()
   (let ((expected-content-type "application/x-www-form-urlencoded")
         (raw-body (hunchentoot:raw-post-data :force-text t)))
     (assert (content-type-eq-p
@@ -256,7 +258,7 @@ But this is not according to HTTP spec."
   (setf (hunchentoot:return-code hunchentoot:*reply*) 200)
   "")
 
-(easy-routes:defroute multipart-form-post ("/multipart-form/post" :method :post) ()
+(hunchentoot:define-easy-handler (multipart-form-post :uri "/multipart-form/post") ()
   (let ((expected-content-type "multipart/form-data")
         (post-param (car (hunchentoot:post-parameters*))))
     (assert (content-type-eq-p
@@ -268,7 +270,7 @@ But this is not according to HTTP spec."
   (setf (hunchentoot:return-code hunchentoot:*reply*) 201)
   "")
 
-(easy-routes:defroute multipart-form-put ("/multipart-form/put" :method :put) ()
+(hunchentoot:define-easy-handler (multipart-form-put :uri "/multipart-form/put") ()
   (let ((expected-content-type "multipart/form-data")
         (raw-body (hunchentoot:raw-post-data :force-text t)))
     (assert (content-type-eq-p

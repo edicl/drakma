@@ -32,7 +32,7 @@
   :license "BSD"
   :serial t
   :version "0.1"
-  :depends-on (:drakma :fiveam :hunchentoot :easy-routes)
+  :depends-on (:drakma :fiveam :hunchentoot)
   :pathname #P"test/"
   :components ((:file "drakma-test"))
   :perform (test-op (o s)
