@@ -170,7 +170,8 @@ Returns TOKEN itself otherwise."
 and NAME is a keyword naming a header, this function returns the
 corresponding value of this header \(or NIL if it's not in
 HEADERS)."
-  (cdr (assoc name headers :test #'eq)))
+  (cdr (assoc name headers :test
+              (etypecase name (keyword #'eq) (string #'equalp)))))
 
 (defun parameter-present-p (name parameters)
   "If PARAMETERS is an alist of parameters as returned by, for
