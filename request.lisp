@@ -877,24 +877,23 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                        external-format-body))
                                (when force-binary
                                  (setf (flexi-stream-element-type http-stream) 'octet))
-                               (setf (chunked-input-stream-length (flexi-stream-stream http-stream))
-                                     (and want-stream
-                                          (parse-content-length headers)))
-                               (when want-stream
-                                 (setf (chunked-input-stream-eof-after-last-chunk (flexi-stream-stream http-stream))
-                                       (if (eql (chunked-input-stream-length (flexi-stream-stream http-stream)) 0)
-                                           :eof
-                                           t)))
-                               (unless (or want-stream
-                                           (eq method :head)
-                                           (= status-code 204))
-                                 (let (trailers)
-                                   (multiple-value-setq (body trailers)
-                                     (read-body http-stream headers external-format-body
-                                                :decode-content decode-content))
-                                   (when trailers
-                                     (drakma-warn "Adding trailers from chunked encoding to HTTP headers.")
-                                     (setq headers (nconc headers trailers)))))
+                               (cond (want-stream
+                                      (let ((length (parse-content-length headers)))
+                                       (setf (chunked-input-stream-length (flexi-stream-stream http-stream))
+                                             length
+                                             (chunked-input-stream-eof-after-last-chunk (flexi-stream-stream http-stream))
+                                             (if (eql length 0)
+                                                 :eof
+                                                 t))))
+                                     ((not (or (eq method :head)
+                                               (= status-code 204)))
+                                      (let (trailers)
+                                        (multiple-value-setq (body trailers)
+                                          (read-body http-stream headers external-format-body
+                                                     :decode-content decode-content))
+                                        (when trailers
+                                          (drakma-warn "Adding trailers from chunked encoding to HTTP headers.")
+                                          (setq headers (nconc headers trailers))))))
                                (setq done t)
                                (values (if want-stream
                                            (decode-flexi-stream headers http-stream
