@@ -149,6 +149,11 @@ body using the boundary BOUNDARY."
           finally (adjust-array result size))
     result))
 
+(defun parse-content-length (headers)
+  (when-let (value (and (not (header-value :transfer-encoding headers)) ;; see RFC 2616, section 4.4, 3.
+                        (header-value :content-length headers)))
+    (parse-integer value)))
+
 (defun read-body (stream headers textp &key (decode-content t))
   "Reads the message body from the HTTP stream STREAM using the
 information contained in HEADERS \(as produced by HTTP-REQUEST).  If
@@ -156,9 +161,7 @@ TEXTP is true, the body is assumed to be of content type `text' and
 will be returned as a string.  Otherwise an array of octets \(or NIL
 for an empty body) is returned.  Returns the optional `trailer' HTTP
 headers of the chunked stream \(if any) as a second value."
-  (let ((content-length (when-let (value (and (not (header-value :transfer-encoding headers)) ;; see RFC 2616, section 4.4, 3.
-                                              (header-value :content-length headers)))
-                          (parse-integer value)))
+  (let ((content-length (parse-content-length headers))
         (element-type (if textp
                         #+:lispworks7.1 'lw:simple-char #-:lispworks7.1 'character
                         'octet)))
@@ -184,7 +187,7 @@ headers of the chunked stream \(if any) as a second value."
                    (setf (flexi-stream-element-type stream) element-type)
                    ;; Help the streams on top of chunked streams
                    ;; detect EOF at the end of chunking without trying
-                   ;; to reading extra data.
+                   ;; to read extra data.
                    (setf (chunked-input-stream-eof-after-last-chunk (flexi-stream-stream stream)) t)
                    (unwind-protect
                         (%read-body (decode-flexi-stream headers stream
@@ -630,7 +633,9 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
               (cond (stream
                      (setf (flexi-stream-element-type http-stream)
                            #+:lispworks6 'lw:simple-char #-:lispworks6 'character
-                           (flexi-stream-external-format http-stream) +latin-1+))
+                           (flexi-stream-external-format http-stream) +latin-1+
+                           (chunked-input-stream-eof-after-last-chunk (flexi-stream-stream http-stream)) nil
+                           (chunked-input-stream-length (flexi-stream-stream http-stream)) nil))
                     (t
                      (setq http-stream (wrap-stream http-stream))))
               (when proxying-https-p
@@ -872,6 +877,14 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                        external-format-body))
                                (when force-binary
                                  (setf (flexi-stream-element-type http-stream) 'octet))
+                               (setf (chunked-input-stream-length (flexi-stream-stream http-stream))
+                                     (and want-stream
+                                          (parse-content-length headers)))
+                               (when want-stream
+                                 (setf (chunked-input-stream-eof-after-last-chunk (flexi-stream-stream http-stream))
+                                       (if (eql (chunked-input-stream-length (flexi-stream-stream http-stream)) 0)
+                                           :eof
+                                           t)))
                                (unless (or want-stream
                                            (eq method :head)
                                            (= status-code 204))
