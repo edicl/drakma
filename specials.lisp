@@ -41,7 +41,7 @@
 (define-constant +latin-1+ (make-external-format :latin-1 :eol-style :lf)
   "Default external format when reading headers.")
 
-(define-constant +redirect-codes+ '(301 302 303 307)
+(define-constant +redirect-codes+ '(301 302 303 307 308)
   "A list of all HTTP return codes that redirect us to another URI.")
 
 (define-constant +redirect-to-get-codes+ '(302 303)
