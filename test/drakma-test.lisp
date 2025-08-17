@@ -231,6 +231,55 @@ But this is not according to HTTP spec."
   (signals error
     (drakma:http-request "https://untrusted-root.badssl.com/" :verify :required)))
 
+;; ------------------- header tests ---------------------
+
+(test bearer-authorization
+  (let* ((stream (make-string-output-stream))
+	 (drakma:*header-stream* stream))
+    (drakma:http-request "http://codeberg.org/"
+			 :bearer-authorization "abdefgh")
+    (let ((header-list
+	    (mapcar (lambda (line)
+		      (ppcre:split (list :sequence ": ")
+				   line))
+		    (ppcre:split (list :sequence "
+")
+				 (get-output-stream-string stream) :limit 0)))
+	  (bearer-p
+	    nil))
+      (mapc (lambda (item)
+	      (when (and (string= (first item) "Authorization")
+			 (string= (second item) "Bearer abdefgh"))
+		(setf bearer-p t)))
+	    header-list)
+      (is-true bearer-p))))
+
+(test basic-authorization
+  (let* ((stream (make-string-output-stream))
+	 (drakma:*header-stream* stream))
+    (drakma:http-request "http://codeberg.org/"
+			 :basic-authorization (list "abdefgh" "asdgdfgdfg"))
+    (let ((header-list
+	    (mapcar (lambda (line)
+		      (ppcre:split (list :sequence ": ")
+				   line))
+		    (ppcre:split (list :sequence "
+")
+				 (get-output-stream-string stream) :limit 0)))
+	  (basic-p
+	    nil))
+      (mapc (lambda (item)
+	      (when (and (string= (first item) "Authorization")
+			 (string= (second item) "Basic YWJkZWZnaDphc2RnZGZnZGZn"))
+		(setf basic-p t)))
+	    header-list)
+      (is-true basic-p))))
+
+(test two-authorization-fail
+  (signals error
+    (drakma:http-request "http://codeberg.org/"
+			 :bearer-authorization "abdefgh"
+			 :basic-authorization (list "asdg" "adsg"))))
 
 ;; ------------------- server routes --------------------
 
