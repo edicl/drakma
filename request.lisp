@@ -909,9 +909,7 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                   (return-from http-request #'finish-request))
                 (finish-request content)))))
         ;; the cleanup form of the UNWIND-PROTECT above
-        (when (and http-stream
-                   (or (not done)
-                       (and must-close
-                            (not want-stream)))
-                   (not (eq content :continuation)))
-          (ignore-errors (close http-stream)))))))
+        (when (and http-stream (not (eq content :continuation)))
+          (flet ((close-aborting (abort) (ignore-errors (close http-stream :abort abort))))
+            (cond ((not done) (close-aborting t))
+                  ((and must-close (not want-stream)) (close-aborting nil)))))))))
