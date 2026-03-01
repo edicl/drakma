@@ -39,6 +39,7 @@
            #:*remove-duplicate-cookies-p*
            #:*default-http-proxy*
            #:*no-proxy-domains*
+           #:*on-http-204-with-content*
            #:*drakma-default-external-format*
            #:*header-stream*
            #:*ignore-unparseable-cookie-dates-p*
@@ -61,6 +62,7 @@
            #:decode-stream
            #:drakma-condition
            #:drakma-error
+           #:drakma-cerror
            #:drakma-warning
            #:get-content-type
            #:header-value
