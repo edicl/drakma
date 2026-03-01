@@ -732,16 +732,20 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                 (write-header "User-Agent" "~A" (user-agent-string user-agent)))
               (when basic-authorization
                 (write-header "Authorization" "Basic ~A"
-                              (base64:string-to-base64-string
-                               (format nil "~A:~A"
-                                       (first basic-authorization)
-                                       (second basic-authorization)))))
+                              (base64:usb8-array-to-base64-string
+                               (string-to-octets
+                                (format nil "~A:~A"
+                                        (first basic-authorization)
+                                        (second basic-authorization))
+                                :external-format *drakma-default-external-format*))))
               (when (and proxy proxy-basic-authorization)
                 (write-header "Proxy-Authorization" "Basic ~A"
-                              (base64:string-to-base64-string
-                               (format nil "~A:~A"
-                                       (first proxy-basic-authorization)
-                                       (second proxy-basic-authorization)))))
+                              (base64:usb8-array-to-base64-string
+                               (string-to-octets
+                                (format nil "~A:~A"
+                                        (first proxy-basic-authorization)
+                                        (second proxy-basic-authorization))
+                                :external-format *drakma-default-external-format*))))
               (when accept
                 (write-header "Accept" "~A" accept))
               (when range
