@@ -128,6 +128,58 @@ But this is not according to HTTP spec."
         (is (= (length body-or-stream) 0))
         (is (= 200 status-code))))))
 
+(test verify.malformed-204
+  "Beware, we just support this because it happens in the wild.
+But this is not according to HTTP spec."
+  (with-fixture init-destroy-httpd ()
+    (flet ((request () (drakma:http-request "http://127.0.0.1:10456/malformed-204")))
+      ;; :WARN (default)
+      (is (eq drakma:*on-http-204-with-content* :warn))
+      (let (warning)
+        (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
+            (handler-bind ((drakma:drakma-warning (lambda (c) (setf warning c)
+                                                    (muffle-warning c))))
+              (request))
+          (declare (ignore headers uri stream must-close))
+          (is (typep warning 'drakma:drakma-warning))
+          (is (= hunchentoot:+http-no-content+ status-code))
+          (is (equal "No Content" body-or-stream))))
+      ;; NIL
+      (let ((drakma:*on-http-204-with-content* nil))
+        (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
+            (handler-bind ((drakma:drakma-warning (lambda (c) (5am:fail "Unexpected ~S" c))))
+              (request))
+          (declare (ignore headers uri stream must-close))
+          (is (= hunchentoot:+http-no-content+ status-code))
+          (is (equal "No Content" body-or-stream))))
+      ;; :IGNORE
+      (let ((drakma:*on-http-204-with-content* :ignore))
+        (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
+            (handler-bind ((drakma:drakma-warning (lambda (c) (5am:fail "Unexpected ~S" c))))
+              (request))
+          (declare (ignore headers uri stream must-close))
+          (is (= hunchentoot:+http-no-content+ status-code))
+          (is (null body-or-stream))))
+      ;; :CERROR
+      (let ((drakma:*on-http-204-with-content* :cerror)
+            flag)
+        (multiple-value-bind (body-or-stream status-code headers uri stream must-close)
+            (handler-bind ((drakma:drakma-error (lambda (c) (setf flag t) (continue c))))
+              (request))
+          (declare (ignore headers uri stream must-close))
+          (is (not (null flag)))
+          (is (= hunchentoot:+http-no-content+ status-code))
+          (is (equal "No Content" body-or-stream))))
+      ;; :ERROR
+      (let ((drakma:*on-http-204-with-content* :error)
+            flag)
+        (signals drakma:drakma-error
+          (handler-bind ((drakma:drakma-error (lambda (c) (setf flag :before)
+                                                (continue c)
+                                                (setf flag :after))))
+            (request)))
+        (is (eq :after flag))))))
+
 (test post-multipart-form
   (with-fixture init-destroy-httpd ()
     (let ((drakma:*header-stream* *standard-output*)
@@ -231,7 +283,6 @@ But this is not according to HTTP spec."
   (signals error
     (drakma:http-request "https://untrusted-root.badssl.com/" :verify :required)))
 
-
 ;; ------------------- server routes --------------------
 
 (defun content-type-eq-p (expected-content-type header)
@@ -282,3 +333,9 @@ But this is not according to HTTP spec."
                         raw-body)))
   (setf (hunchentoot:return-code hunchentoot:*reply*) 200)
   "")
+
+(hunchentoot:define-easy-handler (malformed-204 :uri "/malformed-204") ()
+  ;; Note: this is going to warn on newer Hunchentoot.
+  ;; We are testing Drakma, though, so we don't worry about that.
+  (setf (hunchentoot:return-code*) hunchentoot:+http-no-content+)
+  "No Content")
