@@ -128,6 +128,15 @@ body using the boundary BOUNDARY."
       (format stream "--~A--" boundary)
       (crlf))))
 
+(defun handle-malformed-204 (content-length)
+  (let ((report "The server reported HTTP 204 No Content, but ~D bytes of content follow."))
+    (ecase *on-http-204-with-content*
+      ((nil))   ; explicitly do nothing
+      (:ignore) ; case handled in READ-BODY
+      (:warn (drakma-warn report content-length))
+      (:cerror (drakma-cerror "Read content body anyway." report content-length))
+      (:error (syntax-error report content-length)))))
+
 (defun %read-body (stream element-type)
   ;; On ABCL, a flexi-stream is not a normal stream. This is caused by
   ;; a bug in ABCL which is supposedly quite difficult to fix. More
@@ -146,7 +155,10 @@ body using the boundary BOUNDARY."
             (adjust-array result (setf result-length (* result-length 2))))
           (replace result buffer :start1 index :end2 pos)
           while (= pos +buffer-size+)
-          finally (adjust-array result size))
+          ;; If we read zero bytes, return NIL instead of #().
+          finally (if (zerop size)
+                      (setf result nil)
+                      (adjust-array result size)))
     result))
 
 (defun parse-content-length (headers)
@@ -154,7 +166,7 @@ body using the boundary BOUNDARY."
                         (header-value :content-length headers)))
     (parse-integer value)))
 
-(defun read-body (stream headers textp &key (decode-content t))
+(defun read-body (stream headers textp &key (decode-content t) status-code)
   "Reads the message body from the HTTP stream STREAM using the
 information contained in HEADERS \(as produced by HTTP-REQUEST).  If
 TEXTP is true, the body is assumed to be of content type `text' and
@@ -167,6 +179,9 @@ headers of the chunked stream \(if any) as a second value."
                         'octet)))
     (values (cond ((eql content-length 0) nil)
                   (content-length
+                   ;; guard against malformed HTTP 204 responses
+                   (when (= status-code 204)
+                     (handle-malformed-204 content-length))
                    (setf (flexi-stream-element-type stream) 'octet)
                    (let ((result (make-array content-length :element-type 'octet)))
                      #+:clisp
@@ -190,9 +205,14 @@ headers of the chunked stream \(if any) as a second value."
                    ;; to read extra data.
                    (setf (chunked-input-stream-eof-after-last-chunk (flexi-stream-stream stream)) t)
                    (unwind-protect
-                        (%read-body (decode-flexi-stream headers stream
-                                                         :decode-content decode-content)
-                                    element-type)
+                        ;; KLUDGE: we read the body first and report a malformed HTTP 204 later if necessary.
+                        ;; Simpler than checking in %READ-BODY, but more wasteful.
+                        (let ((body (%read-body (decode-flexi-stream headers stream
+                                                                     :decode-content decode-content)
+                                                element-type)))
+                          (when (and (= status-code 204) body)
+                            (handle-malformed-204 (length body)))
+                          body)
                      (setf (chunked-input-stream-eof-after-last-chunk (flexi-stream-stream stream)) nil))))
             (chunked-input-stream-trailers (flexi-stream-stream stream)))))
 
@@ -885,12 +905,18 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                              (if (eql length 0)
                                                  :eof
                                                  t))))
-                                     ((not (or (eq method :head)
-                                               (= status-code 204)))
+                                     (;; If the method is HEAD, don't read the body.
+                                      (eq method :head))
+                                     (;; If the status code is HTTP 204, try to nonetheless read the body
+                                      ;; unless the reading mode is set to :IGNORE.
+                                      ;; This is so that we can nonetheless use malformed HTTP 204 responses.
+                                      (and (= status-code 204)
+                                           (eq *on-http-204-with-content* :ignore)))
+                                     (t
                                       (let (trailers)
                                         (multiple-value-setq (body trailers)
                                           (read-body http-stream headers external-format-body
-                                                     :decode-content decode-content))
+                                                     :decode-content decode-content :status-code status-code))
                                         (when trailers
                                           (drakma-warn "Adding trailers from chunked encoding to HTTP headers.")
                                           (setq headers (nconc headers trailers))))))

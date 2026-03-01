@@ -258,6 +258,17 @@ it can be a list of two values - a string denoting the proxy server
 and an integer denoting the port to use \(which will default to 80
 otherwise).")
 
+(defparameter *on-http-204-with-content* :warn
+  "Defines behaviour in case the server attempts to send content
+after setting the return code to HTTP 204 No Content
+(resulting in a malformed HTTP response, as per
+https://datatracker.ietf.org/doc/html/rfc7231#section-6.3.5).
+NIL means the body is read and returned normally. :IGNORE ignores
+any content and Content-Length headers (the default of previous
+versions of Drakma). :WARN signals a warning and then reads the
+content. :CERROR signals a correctable error while handling the
+response. :ERROR signals an error while handling the response.")
+
 ;; stuff for Nikodemus Siivola's HYPERDOC
 ;; see <http://common-lisp.net/project/hyperdoc/>
 ;; and <http://www.cliki.net/hyperdoc>

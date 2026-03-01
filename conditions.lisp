@@ -41,6 +41,13 @@
   ()
   (:documentation "Like DRAKMA-ERROR but with formatting capabilities."))
 
+(defun drakma-cerror (continue-string format-control &rest format-arguments)
+  "Signals a correctable error of type DRAKMA-SIMPLE-ERROR with the provided
+format control and arguments."
+  (cerror continue-string 'drakma-simple-error
+          :format-control format-control
+          :format-arguments format-arguments))
+
 (define-condition drakma-warning (drakma-condition warning)
   ()
   (:documentation "Superclass for all warnings related to Drakma."))
