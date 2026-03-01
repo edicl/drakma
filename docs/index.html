@@ -1291,6 +1291,29 @@ T</span>
           </p>
         </clix:description></blockquote></p>
 
+
+      <p xmlns=""><a class="none" name="*on-http-204-with-content*"></a>
+      [Special variable]
+      <br><b>*on-http-204-with-content*</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Defines behaviour in case the server attempts to send content
+            after setting the return code to HTTP 204 No Content
+            (resulting in a malformed HTTP response, as per
+            <a href="https://datatracker.ietf.org/doc/html/rfc7231#section-6.3.5">
+              RFC 7231 Section 6.3.5</a>).
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <code>NIL</code> means the body is read and returned normally.
+            <code>:IGNORE</code> ignores any content and `Content-Length'
+            headers (the default of previous versions of Drakma).
+            <code>:WARN</code> signals a warning and then reads the
+            content. <code>:CERROR</code> signals a correctable error while
+            handling the response. <code>:ERROR</code> signals an error while
+            handling the response.
+          </p>
+        </clix:description></blockquote></p>
+
+
     
 
     <h4 xmlns=""><a name="headers">Headers</a></h4>
@@ -1677,6 +1700,9 @@ Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 </li>
 <li>
 <code><a href="#*no-proxy-domains*">*no-proxy-domains*</a></code><span class="entry-type">Special variable</span>
+</li>
+<li>
+<code><a href="#*on-http-204-with-content*">*on-http-204-with-content*</a></code><span class="entry-type">Special variable</span>
 </li>
 <li>
 <code><a href="#*remove-duplicate-cookies-p*">*remove-duplicate-cookies-p*</a></code><span class="entry-type">Special variable</span>

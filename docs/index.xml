@@ -608,7 +608,7 @@ T</span>
     </p>
     <p>
       The canonical location for the latest version of Drakma is <a
-      href="http://weitz.de/files/drakma.tar.gz">http://weitz.de/files/drakma.tar.gz</a>.
+      href="https://github.com/edicl/drakma/releases">https://github.com/edicl/drakma/releases</a>.
     </p>
   </clix:chapter>
 
@@ -1279,6 +1279,29 @@ T</span>
           </p>
         </clix:description>
       </clix:special-variable>
+
+
+      <clix:special-variable name="*on-http-204-with-content*">
+        <clix:description>
+          <p>
+            Defines behaviour in case the server attempts to send content
+            after setting the return code to HTTP 204 No Content
+            (resulting in a malformed HTTP response, as per
+            <a href="https://datatracker.ietf.org/doc/html/rfc7231#section-6.3.5">
+              RFC 7231 Section 6.3.5</a>).
+          </p>
+          <p>
+            <code>NIL</code> means the body is read and returned normally.
+            <code>:IGNORE</code> ignores any content and `Content-Length'
+            headers (the default of previous versions of Drakma).
+            <code>:WARN</code> signals a warning and then reads the
+            content. <code>:CERROR</code> signals a correctable error while
+            handling the response. <code>:ERROR</code> signals an error while
+            handling the response.
+          </p>
+        </clix:description>
+      </clix:special-variable>
+
 
     </clix:subchapter>
 
