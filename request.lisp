@@ -267,6 +267,7 @@ headers of the chunked stream \(if any) as a second value."
                               (write-timeout 20 write-timeout-provided-p)
                               #+:openmcl
                               deadline
+                              ssl-context
                               &aux (unparsed-uri (if (stringp uri) (copy-seq uri) (puri:copy-uri uri))))
   "Sends a HTTP request to a web server and returns its reply.  URI
 is where the request is sent to, and it is either a string denoting a
@@ -511,9 +512,15 @@ If DECODE-CONTENT is not NIL, then the content will automatically be
 decoded according to any encodings specified in the Content-Encoding
 header. The actual decoding is done by the DECODE-STREAM generic function,
 and you can implement new methods to support additional encodings.
-Any encodings in Transfer-Encoding, such as chunking, are always performed."
+Any encodings in Transfer-Encoding, such as chunking, are always performed.
+
+SSL-CONTEXT, if provided, is an SSL_CTX object \(as created by
+CL+SSL:MAKE-CONTEXT) that will be used by the request instead of
+creating a new context. This context will not be freed by Drakma; the
+caller is responsible for its lifetime. This is useful for thread
+safety when making concurrent HTTPS requests."
   #+lispworks7+
-  (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory))
+  (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory ssl-context))
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
   (setq uri (cond ((puri:uri-p uri) (puri:copy-uri uri))
@@ -649,7 +656,8 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                    :verify verify
                                                    :max-depth max-depth
                                                    :ca-file ca-file
-                                                   :ca-directory ca-directory)))
+                                                   :ca-directory ca-directory
+                                                   :ssl-context ssl-context)))
               (cond (stream
                      (setf (flexi-stream-element-type http-stream)
                            #+:lispworks6 'lw:simple-char #-:lispworks6 'character
@@ -693,7 +701,8 @@ Any encodings in Transfer-Encoding, such as chunking, are always performed."
                                                     :verify verify
                                                     :max-depth max-depth
                                                     :ca-file ca-file
-                                                    :ca-directory ca-directory))))
+                                                    :ca-directory ca-directory
+                                                    :ssl-context ssl-context))))
               (when-let (all-get-parameters
                          (and (not preserve-uri)
                               (append (dissect-query (puri:uri-query uri))

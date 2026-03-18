@@ -710,6 +710,7 @@ T</span>
             <a href="#arg-preserve-uri">preserve-uri</a>
             <a href="#arg-connection-timeout">connection-timeout</a>
             <a href="#arg-deadline">deadline</a>
+            <a href="#arg-ssl-context">ssl-context</a>
           </div>
           <div xmlns="http://www.w3.org/1999/xhtml" class="arglist-spacer">
             =&gt; body-or-stream<sup>0</sup>, status-code<sup>1</sup>,
@@ -1123,6 +1124,16 @@ T</span>
             and you can implement new methods to support additional
             encodings.  Any encodings in Transfer-Encoding, such as
             chunking, are always performed.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            <a name="arg-ssl-context"></a>
+            <code xmlns=""><i>ssl-context</i></code> can be specified to supply an
+            existing SSL context - an <code>SSL_CTX</code> object as returned
+            by <code>CL+SSL:MAKE-CONTEXT</code> - instead of having Drakma
+            create a fresh one for each request.  Drakma will not free a
+            context supplied this way; its lifetime is the caller's
+            responsibility. Reusing a single long-lived context is useful
+            when issuing many concurrent HTTPS requests.
           </p>
         </clix:description></blockquote></p>
 
