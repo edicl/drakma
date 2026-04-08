@@ -935,6 +935,8 @@ T</span>
             <code>NIL</code>, should be a list of two strings
             (username and password) which will be sent to the server
             for basic authorization.
+            Its encoding is affected by
+            <code xmlns=""><i>*drakma-default-external-format*</i></code>.
           </p>
           <p xmlns="http://www.w3.org/1999/xhtml">
             <a name="arg-user-agent"></a>
@@ -972,6 +974,8 @@ T</span>
             denoting the port to use (which will default to 80
             otherwise).  Defaults to
             <code xmlns=""><i>*default-http-proxy*</i></code>.
+            Its encoding is affected by
+            <code xmlns=""><i>*drakma-default-external-format*</i></code>.
             <code xmlns=""><i>proxy-basic-authorization</i></code> is used
             like <code xmlns=""><i>basic-authorization</i></code>, but for the
             proxy, and only if <code xmlns=""><i>proxy</i></code> is true.  If
