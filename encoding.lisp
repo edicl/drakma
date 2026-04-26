@@ -87,7 +87,7 @@ If DECODE-CONTENT is nil, only the Transfer-Encoding headers will be used."
             finally (return s)))))
 
 (defun decode-flexi-stream (headers stream &key (decode-content t))
-  (declare (flexi-input-stream stream))
+  (declare (type flexi-input-stream stream))
   "Perform all necessary decodings on the internal stream of a flexi-stream.
 Wrapper around decode-response-stream which preserverves the external format of the
 flexi-stream.
