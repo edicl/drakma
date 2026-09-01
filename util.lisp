@@ -298,10 +298,10 @@ which are not meant as separators."
 
 #-:lispworks7+
 (defun make-ssl-stream (http-stream &key certificate key certificate-password verify (max-depth 10) ca-file ca-directory
-                                         hostname)
+                                         hostname ssl-context)
   "Attaches SSL to the stream HTTP-STREAM and returns the SSL stream
 \(which will not be equal to HTTP-STREAM)."
-  (declare (ignorable http-stream certificate-password max-depth ca-directory hostname))
+  (declare (ignorable http-stream certificate-password max-depth ca-directory hostname ssl-context))
   (check-type verify (member nil :optional :required))
   (when (and certificate
              (not (probe-file certificate)))
@@ -328,14 +328,15 @@ which are not meant as separators."
     (rt:start-ssl http-stream :verify verify))
   #+(and (or :allegro-cl-express (not :allegro)) (not :mocl-ssl) (not :drakma-no-ssl))
   (let ((s http-stream)
-        (ctx (cl+ssl:make-context :verify-depth max-depth
-                                  :verify-mode cl+ssl:+ssl-verify-none+
-                                  :verify-callback nil
-                                  :verify-location (or (and ca-file ca-directory
-                                                            (list ca-file ca-directory))
-                                                       ca-file ca-directory
-                                                       :default))))
-    (cl+ssl:with-global-context (ctx :auto-free-p t)
+        (ctx (or ssl-context
+                 (cl+ssl:make-context :verify-depth max-depth
+                                      :verify-mode cl+ssl:+ssl-verify-none+
+                                      :verify-callback nil
+                                      :verify-location (or (and ca-file ca-directory
+                                                                (list ca-file ca-directory))
+                                                           ca-file ca-directory
+                                                           :default)))))
+    (cl+ssl:with-global-context (ctx :auto-free-p (not ssl-context))
       (cl+ssl:make-ssl-client-stream
        s
        :verify verify
