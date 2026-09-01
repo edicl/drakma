@@ -267,6 +267,7 @@ headers of the chunked stream \(if any) as a second value."
                               (write-timeout 20 write-timeout-provided-p)
                               #+:openmcl
                               deadline
+                              #+(and (or :allegro-cl-express (not :allegro)) (not :mocl-ssl) (not :drakma-no-ssl) (not :lispworks7+))
                               ssl-context
                               &aux (unparsed-uri (if (stringp uri) (copy-seq uri) (puri:copy-uri uri))))
   "Sends a HTTP request to a web server and returns its reply.  URI
@@ -520,7 +521,7 @@ creating a new context. This context will not be freed by Drakma; the
 caller is responsible for its lifetime. This is useful for thread
 safety when making concurrent HTTPS requests."
   #+lispworks7+
-  (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory ssl-context))
+  (declare (ignore certificate key certificate-password verify max-depth ca-file ca-directory))
   (unless (member protocol '(:http/1.0 :http/1.1) :test #'eq)
     (parameter-error "Don't know how to handle protocol ~S." protocol))
   (setq uri (cond ((puri:uri-p uri) (puri:copy-uri uri))
@@ -657,7 +658,10 @@ safety when making concurrent HTTPS requests."
                                                    :max-depth max-depth
                                                    :ca-file ca-file
                                                    :ca-directory ca-directory
-                                                   :ssl-context ssl-context)))
+                                                   #+(and (or :allegro-cl-express (not :allegro)) (not :mocl-ssl) (not :drakma-no-ssl))
+                                                   :ssl-context
+                                                   #+(and (or :allegro-cl-express (not :allegro)) (not :mocl-ssl) (not :drakma-no-ssl))
+                                                   ssl-context)))
               (cond (stream
                      (setf (flexi-stream-element-type http-stream)
                            #+:lispworks6 'lw:simple-char #-:lispworks6 'character
@@ -702,7 +706,10 @@ safety when making concurrent HTTPS requests."
                                                     :max-depth max-depth
                                                     :ca-file ca-file
                                                     :ca-directory ca-directory
-                                                    :ssl-context ssl-context))))
+                                                    #+(and (or :allegro-cl-express (not :allegro)) (not :mocl-ssl) (not :drakma-no-ssl))
+                                                    :ssl-context
+                                                    #+(and (or :allegro-cl-express (not :allegro)) (not :mocl-ssl) (not :drakma-no-ssl))
+                                                    ssl-context))))
               (when-let (all-get-parameters
                          (and (not preserve-uri)
                               (append (dissect-query (puri:uri-query uri))
