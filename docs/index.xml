@@ -915,6 +915,8 @@ T</span>
             <code>NIL</code>, should be a list of two strings
             (username and password) which will be sent to the server
             for basic authorization.
+            Its encoding is affected by
+            <clix:arg>*drakma-default-external-format*</clix:arg>.
           </p>
           <p>
             <a name="arg-user-agent"/>
@@ -952,6 +954,8 @@ T</span>
             denoting the port to use (which will default to 80
             otherwise).  Defaults to
             <clix:arg>*default-http-proxy*</clix:arg>.
+            Its encoding is affected by
+            <clix:arg>*drakma-default-external-format*</clix:arg>.
             <clix:arg>proxy-basic-authorization</clix:arg> is used
             like <clix:arg>basic-authorization</clix:arg>, but for the
             proxy, and only if <clix:arg>proxy</clix:arg> is true.  If
