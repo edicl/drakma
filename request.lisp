@@ -222,6 +222,29 @@ headers of the chunked stream \(if any) as a second value."
   component of the URI with no URL encoding or other modifications done."
   (cl-ppcre:regex-replace "[^/]+://[^/]*/?" uri-string "/"))
 
+(defclass basic-authorization ()
+  ((username :initarg :username :reader basic-authorization-username)
+   (password :initarg :password :reader basic-authorization-password))
+  (:documentation "Credentials for HTTP basic authorization.  Prints
+without its slots, so they stay out of backtraces and logs."))
+
+(defmethod print-object ((object basic-authorization) stream)
+  (if *print-readably*
+      (error 'print-not-readable :object object)
+      (print-unreadable-object (object stream :type t :identity t))))
+
+(defun make-basic-authorization (username password)
+  (make-instance 'basic-authorization :username username :password password))
+
+(defun basic-authorization-header-value (authorization)
+  "AUTHORIZATION is a BASIC-AUTHORIZATION or a list of username and password."
+  (base64:string-to-base64-string
+   (etypecase authorization
+     (basic-authorization (format nil "~A:~A"
+                                  (basic-authorization-username authorization)
+                                  (basic-authorization-password authorization)))
+     (list (format nil "~A:~A" (first authorization) (second authorization))))))
+
 (defun http-request (uri &rest args
                          &key (protocol :http/1.1)
                               (method :get)
@@ -397,9 +420,11 @@ potentially be sent to the server \(if the domain matches, if
 they haven't expired, etc.) - this cookie jar will be modified
 according to the `Set-Cookie' header\(s) sent back by the server.
 
-BASIC-AUTHORIZATION, if not NIL, should be a list of two strings
-\(username and password) which will be sent to the server for
-basic authorization.  USER-AGENT, if not NIL, denotes which
+BASIC-AUTHORIZATION, if not NIL, should be a BASIC-AUTHORIZATION
+object made by MAKE-BASIC-AUTHORIZATION, or a list of two strings
+\(username and password), which will be sent to the server for
+basic authorization.  Prefer the object: it prints unreadably, so
+the password does not end up in backtraces or logs.  USER-AGENT, if not NIL, denotes which
 `User-Agent' header will be sent with the request.  It can be one
 of the keywords :DRAKMA, :FIREFOX, :EXPLORER, :OPERA, or :SAFARI
 which denote the current version of Drakma or, in the latter four
@@ -748,16 +773,10 @@ safety when making concurrent HTTPS requests."
                 (write-header "User-Agent" "~A" (user-agent-string user-agent)))
               (when basic-authorization
                 (write-header "Authorization" "Basic ~A"
-                              (base64:string-to-base64-string
-                               (format nil "~A:~A"
-                                       (first basic-authorization)
-                                       (second basic-authorization)))))
+                              (basic-authorization-header-value basic-authorization)))
               (when (and proxy proxy-basic-authorization)
                 (write-header "Proxy-Authorization" "Basic ~A"
-                              (base64:string-to-base64-string
-                               (format nil "~A:~A"
-                                       (first proxy-basic-authorization)
-                                       (second proxy-basic-authorization)))))
+                              (basic-authorization-header-value proxy-basic-authorization)))
               (when accept
                 (write-header "Accept" "~A" accept))
               (when range

@@ -912,9 +912,14 @@ T</span>
           <p>
             <a name="arg-basic-authorization"/>
             <clix:arg>basic-authorization</clix:arg>, if not
-            <code>NIL</code>, should be a list of two strings
-            (username and password) which will be sent to the server
-            for basic authorization.
+            <code>NIL</code>, should be a
+            <clix:ref>BASIC-AUTHORIZATION</clix:ref> object created
+            with <clix:ref>MAKE-BASIC-AUTHORIZATION</clix:ref>, or a
+            list of two strings (username and password), which will
+            be sent to the server for basic authorization.  Prefer
+            the object: it prints unreadably, so the password does not
+            end up in backtraces or logs when the request signals an
+            error.
           </p>
           <p>
             <a name="arg-user-agent"/>
@@ -1108,6 +1113,55 @@ T</span>
           </p>
         </clix:description>
       </clix:function>
+
+      <clix:class name="basic-authorization">
+        <clix:description>
+          <p>
+            Instances of this class hold the username and password
+            for HTTP basic authorization and can be passed as the <a
+            href="#arg-basic-authorization"><clix:arg>basic-authorization</clix:arg></a>
+            and <a
+            href="#arg-proxy-basic-authorization"><clix:arg>proxy-basic-authorization</clix:arg></a>
+            arguments of <clix:ref>HTTP-REQUEST</clix:ref>.  Create
+            them with <clix:ref>MAKE-BASIC-AUTHORIZATION</clix:ref>.
+          </p>
+          <p>
+            Unlike a list of two strings, an instance prints without
+            its username and password, so the credentials do not show
+            up in backtraces, debugger output, or logs.  Printing it
+            with <code>*PRINT-READABLY*</code> true signals a
+            <code>PRINT-NOT-READABLE</code> error.
+          </p>
+          <pre><span class="repl-output">? </span><span class="repl-input">(drakma:make-basic-authorization "nanook" "igloo")</span>
+<span class="repl-output">#&lt;DRAKMA:BASIC-AUTHORIZATION {1004A21F53}&gt;</span>
+</pre>
+        </clix:description>
+      </clix:class>
+
+      <clix:function name="make-basic-authorization">
+        <clix:lambda-list>username password</clix:lambda-list>
+        <clix:returns>basic-authorization</clix:returns>
+        <clix:description>
+          Returns a new <clix:ref>BASIC-AUTHORIZATION</clix:ref>
+          object for the strings <clix:arg>username</clix:arg> and
+          <clix:arg>password</clix:arg>.
+        </clix:description>
+      </clix:function>
+
+      <clix:readers generic='true'>
+        <clix:listed-reader generic='true' name='basic-authorization-username'>
+          <clix:lambda-list>basic-authorization</clix:lambda-list>
+          <clix:returns>string</clix:returns>
+        </clix:listed-reader>
+        <clix:listed-reader generic='true' name='basic-authorization-password'>
+          <clix:lambda-list>basic-authorization</clix:lambda-list>
+          <clix:returns>string</clix:returns>
+        </clix:listed-reader>
+        <clix:description>
+          Return the username and password of a
+          <clix:ref>BASIC-AUTHORIZATION</clix:ref> object.
+        </clix:description>
+      </clix:readers>
 
       <clix:function name="parameter-present-p">
         <clix:lambda-list>name parameters</clix:lambda-list>

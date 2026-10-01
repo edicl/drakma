@@ -339,3 +339,28 @@ But this is not according to HTTP spec."
   ;; We are testing Drakma, though, so we don't worry about that.
   (setf (hunchentoot:return-code*) hunchentoot:+http-no-content+)
   "No Content")
+
+(test basic-authorization-prints-unreadably
+  (let ((authorization (drakma:make-basic-authorization "canary-user" "canary-password")))
+    (dolist (printed (list (prin1-to-string authorization)
+                           (princ-to-string authorization)
+                           (format nil "~S ~A" authorization authorization)))
+      (is (null (search "canary" printed))))
+    (signals print-not-readable
+      (let ((*print-readably* t))
+        ;; Not PRIN1-TO-STRING: SBCL may flush it when its value is unused.
+        (prin1 authorization (make-broadcast-stream))))))
+
+(hunchentoot:define-easy-handler (basic-authorization-echo :uri "/basic-authorization") ()
+  (multiple-value-bind (username password) (hunchentoot:authorization)
+    (format nil "~A:~A" username password)))
+
+(test basic-authorization-header
+  (with-fixture init-destroy-httpd ()
+    (dolist (authorization (list (drakma:make-basic-authorization "user" "pass word")
+                                 (list "user" "pass word")))
+      (multiple-value-bind (body status-code)
+          (drakma:http-request "http://127.0.0.1:10456/basic-authorization"
+                               :basic-authorization authorization)
+        (is (= 200 status-code))
+        (is (string= "user:pass word" body))))))

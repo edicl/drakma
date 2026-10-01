@@ -44,6 +44,9 @@
            #:*header-stream*
            #:*ignore-unparseable-cookie-dates-p*
            #:*text-content-types*
+           #:basic-authorization
+           #:basic-authorization-password
+           #:basic-authorization-username
            #:cookie
            #:cookie-error
            #:cookie-error-cookie
@@ -67,6 +70,7 @@
            #:get-content-type
            #:header-value
            #:http-request
+           #:make-basic-authorization
            #:parameter-error
            #:parameter-present-p
            #:parameter-value

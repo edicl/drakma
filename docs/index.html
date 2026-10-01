@@ -933,9 +933,14 @@ T</span>
           <p xmlns="http://www.w3.org/1999/xhtml">
             <a name="arg-basic-authorization"></a>
             <code xmlns=""><i>basic-authorization</i></code>, if not
-            <code>NIL</code>, should be a list of two strings
-            (username and password) which will be sent to the server
-            for basic authorization.
+            <code>NIL</code>, should be a
+            <code xmlns=""><a href="#basic-authorization">BASIC-AUTHORIZATION</a></code> object created
+            with <code xmlns=""><a href="#make-basic-authorization">MAKE-BASIC-AUTHORIZATION</a></code>, or a
+            list of two strings (username and password), which will
+            be sent to the server for basic authorization.  Prefer
+            the object: it prints unreadably, so the password does not
+            end up in backtraces or logs when the request signals an
+            error.
           </p>
           <p xmlns="http://www.w3.org/1999/xhtml">
             <a name="arg-user-agent"></a>
@@ -1135,6 +1140,48 @@ T</span>
             responsibility. Reusing a single long-lived context is useful
             when issuing many concurrent HTTPS requests.
           </p>
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="basic-authorization"></a>
+      [Standard class]
+      <br><b>basic-authorization</b><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Instances of this class hold the username and password
+            for HTTP basic authorization and can be passed as the <a href="#arg-basic-authorization"><code xmlns=""><i>basic-authorization</i></code></a>
+            and <a href="#arg-proxy-basic-authorization"><code xmlns=""><i>proxy-basic-authorization</i></code></a>
+            arguments of <code xmlns=""><a href="#http-request">HTTP-REQUEST</a></code>.  Create
+            them with <code xmlns=""><a href="#make-basic-authorization">MAKE-BASIC-AUTHORIZATION</a></code>.
+          </p>
+          <p xmlns="http://www.w3.org/1999/xhtml">
+            Unlike a list of two strings, an instance prints without
+            its username and password, so the credentials do not show
+            up in backtraces, debugger output, or logs.  Printing it
+            with <code>*PRINT-READABLY*</code> true signals a
+            <code>PRINT-NOT-READABLE</code> error.
+          </p>
+          <pre xmlns="http://www.w3.org/1999/xhtml"><span class="repl-output">? </span><span class="repl-input">(drakma:make-basic-authorization "nanook" "igloo")</span>
+<span class="repl-output">#&lt;DRAKMA:BASIC-AUTHORIZATION {1004A21F53}&gt;</span>
+</pre>
+        </clix:description></blockquote></p>
+
+      <p xmlns=""><a class="none" name="make-basic-authorization"></a>
+          [Function]
+          <br><b>make-basic-authorization</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">username password</clix:lambda-list></i>
+            =&gt;
+            <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">basic-authorization</clix:returns></i><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Returns a new <code><a href="#basic-authorization">BASIC-AUTHORIZATION</a></code>
+          object for the strings <code><i>username</i></code> and
+          <code><i>password</i></code>.
+        </clix:description></blockquote></p>
+
+      <p xmlns="">
+      [Generic readers]<br><a class="none" name="basic-authorization-username"></a><b>basic-authorization-username</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">basic-authorization</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">string</clix:returns></i><br><a class="none" name="basic-authorization-password"></a><b>basic-authorization-password</b> <i><clix:lambda-list xmlns:clix="http://bknr.net/clixdoc">basic-authorization</clix:lambda-list></i>
+        =&gt;
+        <i><clix:returns xmlns:clix="http://bknr.net/clixdoc">string</clix:returns></i><br><blockquote><clix:description xmlns:clix="http://bknr.net/clixdoc">
+          Return the username and password of a
+          <code><a href="#basic-authorization">BASIC-AUTHORIZATION</a></code> object.
         </clix:description></blockquote></p>
 
       <p xmlns=""><a class="none" name="parameter-present-p"></a>
@@ -1722,6 +1769,15 @@ Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 <code><a href="#*text-content-types*">*text-content-types*</a></code><span class="entry-type">Special variable</span>
 </li>
 <li>
+<code><a href="#basic-authorization">basic-authorization</a></code><span class="entry-type">Standard class</span>
+</li>
+<li>
+<code><a href="#basic-authorization-password">basic-authorization-password</a></code><span class="entry-type">Generic reader</span>
+</li>
+<li>
+<code><a href="#basic-authorization-username">basic-authorization-username</a></code><span class="entry-type">Generic reader</span>
+</li>
+<li>
 <code><a href="#cookie">cookie</a></code><span class="entry-type">Standard class</span>
 </li>
 <li>
@@ -1786,6 +1842,9 @@ Set-Cookie: a=1; Path=/; Secure, a=2; Path=/; Secure
 </li>
 <li>
 <code><a href="#http-request">http-request</a></code><span class="entry-type">Function</span>
+</li>
+<li>
+<code><a href="#make-basic-authorization">make-basic-authorization</a></code><span class="entry-type">Function</span>
 </li>
 <li>
 <code><a href="#parameter-error">parameter-error</a></code><span class="entry-type">Condition type</span>
