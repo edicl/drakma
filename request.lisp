@@ -65,14 +65,23 @@ depending on the type of CONTENT."
                 (when (zerop pos) (return))
                 (write-sequence buf stream :end pos)))))
           ((pathnamep content)
-           (with-open-file (from content :element-type 'octet)
-             ;; calls itself with a stream now
-             (send-content from stream)))
+           ;; Nothing to do for directories.
+           (when (uiop:file-exists-p content)
+             (with-open-file (from content :element-type 'octet)
+               ;; calls itself with a stream now
+               (send-content from stream))))
           ((or (functionp content)
                (and (symbolp content)
                     (fboundp content)))
            (funcall content stream))
           (t (parameter-error "Don't know how to send content ~S to server." content)))))
+
+(defun basename (pathname)
+  (first (last (pathname-directory
+                ;; Ensure directory _after_ truenamizing, otherwise if
+                ;; non-directory file exists it may not yield a directory.
+                (uiop:ensure-directory-pathname
+                 (uiop:ensure-pathname pathname :truenamize t))))))
 
 (defun make-form-data-function (parameters boundary external-format-out)
   "Creates and returns a closure which can be used as an argument for
@@ -112,7 +121,7 @@ body using the boundary BOUNDARY."
                                         (file-stream (or (file-namestring file-source)
                                                          "user-stream"))
                                         (stream "user-stream")
-                                        (pathname (file-namestring file-source)))))
+                                        (pathname (basename file-source)))))
                         (content-type (or (getf (rest value) :content-type)
                                           "application/octet-stream")))
                    (format stream "; filename=\"~A\"" filename)

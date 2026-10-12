@@ -52,7 +52,8 @@
                (:file "cookies")
                (:file "encoding")
                (:file "request"))
-  :depends-on (:puri
+  :depends-on (:uiop
+               :puri
                :cl-base64
                :chunga
                :flexi-streams
